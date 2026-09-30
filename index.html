@@ -2364,7 +2364,7 @@ function showSetup(){
   const prog=campProg();
   const ch=CAMP.map((id,i)=>`<button data-m="chap" data-v="${i}" aria-pressed="${menuSel.chap===i}" ${i>prog?'disabled':''}>${i>prog?ic('lock')+' ':i<prog?ic('check')+' ':''}${CAMP_TXT[id][0].split(' · ')[0]}<small>${LEVELS[id].name}</small></button>`).join('');
   const df=DIFFS.map((d,i)=>`<button data-m="di" data-v="${i}" aria-pressed="${menuSel.di===i}">${d.name}<small>${d.desc}</small></button>`).join('');
-  const hr=Object.entries(HEROES).map(([k,h])=>`<button data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}">${h.icon} ${h.short}<small>${h.sp.name}</small></button>`).join('');
+  const hr=Object.entries(HEROES).map(([k,h])=>`<button data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}">${ic(h.icon)} ${h.short}<small>${h.sp.name}</small></button>`).join('');
   let body='';
   if(m==='campanha')body=`<h3>${tr('Capítulo','Chapter')}</h3><div class="seg">${ch}</div><p class="small">${prog>=4?tr('Campanha terminada. Podes voltar a jogar qualquer capítulo.','Campaign complete. You can replay any chapter.'):tr('Ganha um capítulo para abrir o seguinte.','Win a chapter to unlock the next.')}</p>`;
   else if(m==='livre')body=`<h3>${tr('Mapa','Map')}</h3><div class="seg">${lv}</div>`;
@@ -2515,10 +2515,10 @@ function showEnd(win){
     <span>${tr('Espanhóis despachados','Spaniards dispatched')}</span><span>${st.kills}</span>
     <span>${tr('Toalhas salvas','Towels saved')}</span><span>${st.kills*2}</span>
     <span>${tr('Ouro ganho','Gold earned')}</span><span>${st.gold} ${ic('coin')}</span>
-    <span>${tr('Torre mais eficaz','Best tower')}</span><span>${best?TYPES[best.k].icon+' '+(best.lv>=3?TYPES[best.k].br[best.br].name:TYPES[best.k].name)+' ('+Math.round(best.dmgDone||0)+tr(' de dano)',' damage)'):tr('nenhuma, que vergonha','none, shame on you')}</span>
+    <span>${tr('Torre mais eficaz','Best tower')}</span><span>${best?ic(TYPES[best.k].icon)+' '+(best.lv>=3?TYPES[best.k].br[best.br].name:TYPES[best.k].name)+' ('+Math.round(best.dmgDone||0)+tr(' de dano)',' damage)'):tr('nenhuma, que vergonha','none, shame on you')}</span>
     <span>${S.hero.D.short}</span><span>${S.hero.kills} ${tr('derrotados, nível','defeated, level')} ${S.hero.lv}</span>${S.coop?(S.local?tr('<span>Modo</span><span>Mesmo ecrã</span>','<span>Mode</span><span>Same screen</span>'):tr('<span>Modo</span><span>Cooperativo</span>','<span>Mode</span><span>Co-op</span>')):''}
     <span>${tr('Maior matança','Best streak')}</span><span>${st.combo||0} ${tr('seguidos','in a row')}</span>
-    ${S.cards.length?`<span>${tr('Bênçãos e pactos','Blessings & pacts')}</span><span>${S.cards.map(id=>(CARDS.find(c=>c.id===id)||{}).ic||'').join(' ')}</span>`:''}
+    ${S.cards.length?`<span>${tr('Bênçãos e pactos','Blessings & pacts')}</span><span>${S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?ic(c.ic):'';}).join(' ')}</span>`:''}
     <span>${tr('Sino tocado','Bell rung')}</span><span>${st.bells} ${tr('vezes','times')}</span>
     <span>${tr('Tempo de cerco','Siege time')}</span><span>${mm}:${ss}</span></div>`;
   const M=END_MSG[S.lvl];
