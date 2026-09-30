@@ -1470,24 +1470,45 @@ function kill(e,src){
     S.texts.push({x:e.x,y:e.y+14,s:pick(Q.torre),t:0,T:1.3,sp:true});
   }
 }
+/* ================= Torres destrutíveis ================= */
+// vida por nível; cada vez que cai volta ao nível 1, e reparar custa mais ouro e mais tempo
+const towerMax=t=>[150,220,300,400,520][Math.max(0,Math.min(4,t.lv-1))]*(S.works&&S.works.muralha?1.2:1);
+const fixCost=t=>Math.round(TYPES[t.k].cost*(0.3+0.25*(t.deaths||1)));
+const fixDur=t=>4+5*(t.deaths||1);
+function hurtTower(t,d){if(!t||t.broken)return;if(t.hp==null)t.hp=towerMax(t);t.hp-=d;t.hitT=0.2;if(t.hp<=0)breakTower(t);}
+function breakTower(t){t.broken=true;t.hp=0;t.deaths=(t.deaths||0)+1;t.lv=1;t.br=0;t.spent=TYPES[t.k].cost;t.fixT=0;t.disT=0;
+  S.fx.push({k:'boom',x:t.x,y:t.y,r:30,t:0,T:0.6});smoke(t.x,t.y,12);chips(t.x,t.y,16,'#8a7a62',1.4);sfx('smash');jolt(5);
+  S.texts.push({x:t.x,y:t.y-30,s:pick([tr('Deitaram-nos a torre abaixo!','They knocked our tower down!'),tr('Lá se foi a torre!','There goes the tower!'),tr('Chamem o pedreiro!','Call the stonemason!')]),t:0,T:2,big:true});
+  NET.twDirty=true;if(typeof S.sel==='number'&&SLOTS[S.sel].tower===t)renderPanel();}
+// reparada (ou melhorada): vida cheia e de volta ao combate
+function fixTower(t){t.broken=false;t.fixT=0;t.fixD=0;t.hp=towerMax(t);t.upAt=performance.now();NET.twDirty=true;}
 /* ================= Portas ================= */
 // atirador com uma porta fechada ao alcance (ao longo do caminho): fica parado a disparar; devolve se está a disparar
 function rangedHold(e,dt){
   const R=e.f.ranged;
   for(const q of LV.pathGates[e.p]){const G=S.gates[q.i];if(G.broken||e.d>=q.d-e.r)continue;
-    if(q.d-e.d>R.range)return false;
-    e.rcd=(e.rcd==null?0.5:e.rcd)-dt;e.aim=q.i;
+    if(q.d-e.d>R.range)break;
+    e.rcd=(e.rcd==null?0.5:e.rcd)-dt;e.aim=q.i;e.aimT=null;
     if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const g=LV.gates[q.i],d=Math.hypot(g.x-e.x,g.y-e.y);
       S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:g.x+(Math.random()-0.5)*6,ty:g.y+(Math.random()-0.5)*6,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg,gi:q.i});
       if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
     return true;}
-  return false;
+  // sem porta ao alcance: atacam a torre de pé mais próxima
+  let tw=e.aimT&&!e.aimT.broken&&S.towers.includes(e.aimT)&&Math.hypot(e.aimT.x-e.x,e.aimT.y-e.y)<=R.range?e.aimT:null;
+  if(!tw){let bd=R.range;for(const t of S.towers){if(t.broken)continue;const d=Math.hypot(t.x-e.x,t.y-e.y);if(d<=bd){bd=d;tw=t;}}}
+  e.aimT=tw;if(!tw){e.aim=null;return false;}
+  e.aim=-1;e.rcd=(e.rcd==null?0.5:e.rcd)-dt;
+  if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const d=Math.hypot(tw.x-e.x,tw.y-e.y);
+    S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:tw.x+(Math.random()-0.5)*8,ty:tw.y-4+(Math.random()-0.5)*8,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg,ti:tw.si});
+    if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
+  return true;
 }
 function updateEproj(dt){
   for(const q of S.eproj){q.t+=dt;if(q.t<q.T)continue;q.done=true;const G=S.gates[q.gi],g=LV.gates[q.gi];
     if(q.k==='shell'){S.fx.push({k:'boom',x:q.tx,y:q.ty,r:22,t:0,T:0.45});chips(q.tx,q.ty,6,'#6d624e');sfx('boom');jolt(1.5);}
     else chips(q.tx,q.ty,1,'#7a5230',0.4);
-    if(G&&!G.broken){G.hp-=q.dmg*S.diff.dmg;G.hitT=0.2;if(G.hp<=0)breakGate(q.gi);}}
+    if(q.ti!=null){const s=SLOTS[q.ti];if(s&&s.tower)hurtTower(s.tower,q.dmg*S.diff.dmg);}
+    else if(G&&!G.broken){G.hp-=q.dmg*S.diff.dmg;G.hitT=0.2;if(G.hp<=0)breakGate(q.gi);}}
   S.eproj=S.eproj.filter(q=>!q.done);
 }
 const GATE_HP=450;
@@ -1497,7 +1518,7 @@ function breakGate(i){const G=S.gates[i],g=LV.gates[i];G.broken=true;G.hp=0;
   S.fx.push({k:'boom',x:g.x,y:g.y,r:30,t:0,T:0.6});smoke(g.x,g.y,10);chips(g.x,g.y,14,'#7a5230',1.3);sfx('smash');jolt(5);
   S.texts.push({x:g.x,y:g.y-26,s:tr('Arrombaram a porta!','They broke the gate!'),t:0,T:2,big:true});}
 function applyWork(k,load){
-  if(k==='muralha')S.gates.forEach(G=>{G.max=GATE_HP*1.6;if(!load){G.hp=G.max;G.broken=false;}});
+  if(k==='muralha'){S.gates.forEach(G=>{G.max=GATE_HP*1.6;if(!load){G.hp=G.max;G.broken=false;}});if(!load)S.towers.forEach(t=>{if(!t.broken)t.hp=towerMax(t);});}
   if(k==='recon'&&!load)S.lives=Math.min(S.startLives,S.lives+5);
 }
 function repairGates(){S.gates.forEach((G,i)=>{const g=LV.gates[i];if(G.broken||G.hp<G.max){chips(g.x,g.y,6,'#c9971c',0.6);S.fx.push({k:'ring',x:g.x,y:g.y,r:24,t:0,T:0.6,c:'201,151,28'});}
@@ -1613,7 +1634,7 @@ function updateHero(dt){
         burn:B?{dps:B.dps*(hUp(h,'burn')?2:1)*S.mods.hero,t:B.t}:null});if(B)sfx('oil');}}
   }
 }
-function nearestTower(e,R){let b=null,bd=R;for(const t of S.towers){const d=Math.hypot(t.x-e.x,t.y-e.y);if(d<bd&&!(t.disT>0)){bd=d;b=t;}}return b;}
+function nearestTower(e,R){let b=null,bd=R;for(const t of S.towers){const d=Math.hypot(t.x-e.x,t.y-e.y);if(d<bd&&!(t.disT>0)&&!t.broken){bd=d;b=t;}}return b;}
 function bossAct(e){
   const b=e.f.boss;
   if(b==='merc'){e.bcd=4;
@@ -1680,6 +1701,8 @@ function update(dt){
   if(S.lives<=0&&!S.over){S.lives=0;endGame(false);return;}
   const fog=S.weather==='nevoeiro';
   for(const t of S.towers){
+    if(t.broken){if(t.fixT>0){t.fixT-=dt;if(t.fixT<=0){fixTower(t);S.texts.push({x:t.x,y:t.y-28,s:tr('Torre reparada!','Tower repaired!'),ic:'hammer',t:0,T:1.4});sfx('coin');built(t,true);
+      if(typeof S.sel==='number'&&SLOTS[S.sel].tower===t)renderPanel();}}continue;}
     if(t.disT>0){t.disT-=dt;continue;}
     t.cd-=dt;if(t.cd>0)continue;const st=tstat(t);
     if(t.k==='cal'){
@@ -1752,7 +1775,7 @@ function ageVisuals(dt){
     else if(p.k==='bread'){p.vy+=260*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;}
     else if(p.k==='chip'){p.vy+=320*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.97;p.rot+=p.vr*dt;}}
   S.parts=S.parts.filter(p=>p.t<p.T);
-  for(const t of S.towers)if(t.kick>0)t.kick=Math.max(0,t.kick-dt*7);
+  for(const t of S.towers){if(t.kick>0)t.kick=Math.max(0,t.kick-dt*7);if(t.hitT>0)t.hitT-=dt;if(t.broken&&!(t.fixT>0)&&Math.random()<dt*2)smoke(t.x+(Math.random()-0.5)*14,t.y-4,1);}
   S.comboPop=Math.max(0,S.comboPop-dt*4);
   // o coração a arder deita fumo
   if(S.started&&!S.over&&LV.heart){const st=heartStage();if(st>=2&&Math.random()<dt*(st===3?5:2.5))smoke(LV.heart.x+(Math.random()-0.5)*14,LV.heart.y-12,1);}
@@ -2265,7 +2288,7 @@ function drawSiege(e){const c=ctx,u=e.r/13,moving=!(e.cur===0||e.stunT>0);c.save
   c.fillStyle='#9b2226';c.beginPath();c.moveTo(0,-19);c.lineTo(0,-26);c.lineTo(6,-24.5+Math.sin(S.t*6)*0.8);c.lineTo(0,-23);c.fill();c.strokeStyle=INK;c.lineWidth=0.8;c.beginPath();c.moveTo(0,-19);c.lineTo(0,-26);c.stroke();
   c.fillStyle='#3a3530';[-6,6].forEach(x=>{c.beginPath();c.arc(x,10.5,2.8,0,Math.PI*2);c.fill();c.stroke();});
   c.restore();}
-function drawBombard(e){const c=ctx,g=e.aim!=null&&S.gates[e.aim]&&!S.gates[e.aim].broken?LV.gates[e.aim]:null,a=g?Math.atan2(g.y-e.y,g.x-e.x):e.a;
+function drawBombard(e){const c=ctx,g=e.aimT&&!e.aimT.broken?e.aimT:e.aim!=null&&S.gates[e.aim]&&!S.gates[e.aim].broken?LV.gates[e.aim]:null,a=g?Math.atan2(g.y-e.y,g.x-e.x):e.a;
   c.save();c.translate(e.x,e.y);c.fillStyle='rgba(46,36,25,.25)';c.beginPath();c.ellipse(1,4,13,6,a,0,Math.PI*2);c.fill();
   c.rotate(a);c.strokeStyle=INK;c.lineWidth=1.1;c.fillStyle='#6e4b2a';c.fillRect(-11,-6,18,12);c.strokeRect(-11,-6,18,12);
   c.fillStyle='#3a3530';[[-7,-8],[3,-8],[-7,8],[3,8]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,2.8,0,Math.PI*2);c.fill();c.stroke();});
@@ -2437,10 +2460,29 @@ function drawTowerBuilding(c,t){
   if(lv>=4){
     towerBanner(c,sq?rx-2:rx-3,yT-ph-4,'#e8c24a',3,9);}
 }
+// torre deitada abaixo: monte de pedras, cotos de parede e, se estiver em obras, andaime e barra de progresso
+function drawRuin(t){
+  const c=ctx;c.save();c.translate(t.x,t.y);c.lineJoin='round';
+  c.fillStyle='rgba(46,36,25,.22)';c.beginPath();c.ellipse(0,6,17,7,0,0,Math.PI*2);c.fill();
+  c.strokeStyle=INK;c.lineWidth=1;c.fillStyle='#a8977a';
+  c.beginPath();c.moveTo(-12,6);c.lineTo(-12,-6);c.lineTo(-8,-9);c.lineTo(-6,-3);c.lineTo(-6,6);c.closePath();c.fill();c.stroke();
+  c.beginPath();c.moveTo(6,6);c.lineTo(6,-2);c.lineTo(9,-5);c.lineTo(12,-1);c.lineTo(12,6);c.closePath();c.fill();c.stroke();
+  [[-4,4,5],[3,5,4.5],[-9,7,4],[9,8,3.5],[0,0,3.5],[-1,8,3],[5,1,3]].forEach(([x,y,r],i)=>{c.fillStyle=i%2?'#bfae8e':'#948469';c.beginPath();c.ellipse(x,y,r,r*0.7,i,0,Math.PI*2);c.fill();c.stroke();});
+  c.strokeStyle='rgba(46,36,25,.5)';c.lineWidth=0.6;c.beginPath();c.moveTo(-11,-2);c.lineTo(-7,-2);c.moveTo(-11,2);c.lineTo(-7,2);c.moveTo(7,2);c.lineTo(11,2);c.stroke();
+  if(t.fixT>0){c.strokeStyle='#7a5230';c.lineWidth=1.4;c.beginPath();c.moveTo(-14,8);c.lineTo(-14,-14);c.moveTo(14,8);c.lineTo(14,-14);c.moveTo(-14,-8);c.lineTo(14,-8);c.moveTo(-14,0);c.lineTo(14,0);c.stroke();
+    const u=t.fixD?1-t.fixT/t.fixD:0;c.fillStyle='rgba(46,36,25,.6)';c.fillRect(-15,-22,30,5);c.fillStyle='#c9971c';c.fillRect(-15,-22,30*Math.max(0,Math.min(1,u)),5);c.strokeStyle=INK;c.lineWidth=0.8;c.strokeRect(-15,-22,30,5);
+    drawIc(c,'hammer',0,-30+(RM()?0:Math.sin(S.t*8)*1.5),12);}
+  c.restore();
+}
 function drawTower(t){
+  if(t.broken){drawRuin(t);return;}
   const sc=towerAnimScale(t);
   if(sc!==1){ctx.save();ctx.translate(t.x,t.y);ctx.scale(sc,sc);ctx.translate(-t.x,-t.y);drawTowerBase(t);ctx.restore();}else drawTowerBase(t);
   drawTowerFx(t);
+  // vida: só aparece quando a torre já levou
+  const m=towerMax(t);if(t.hp!=null&&t.hp<m-0.5){const u=Math.max(0,t.hp/m),y=t.y-34;
+    ctx.fillStyle='rgba(46,36,25,.6)';ctx.fillRect(t.x-13,y,26,4);ctx.fillStyle=u>0.5?'#5e7a36':u>0.25?'#c9971c':'#9b2226';ctx.fillRect(t.x-13,y,26*u,4);
+    ctx.strokeStyle=t.hitT>0?'#fff6d8':INK;ctx.lineWidth=0.8;ctx.strokeRect(t.x-13,y,26,4);}
 }
 function drawTowerBase(t){
   ctx.save();ctx.translate(t.x,t.y);ctx.lineJoin='round';
@@ -3023,13 +3065,21 @@ const RAD={ring:52,btn:22};// em píxeis de ecrã (não mudam com o zoom)
 const radK=()=>1/(scale*VIEW.z);
 const TYPE_KEYS=['arq','bes','tra','cal'];
 function radialButtons(){
-  if(!S||typeof S.sel!=='number'||S.over)return null;const s=SLOTS[S.sel];if(!s||s.tower)return null;
+  if(!S||typeof S.sel!=='number'||S.over)return null;const s=SLOTS[S.sel];if(!s)return null;
   const k=radK(),R=RAD.ring*k;
+  if(s.tower){const t=s.tower;return t.broken&&!(t.fixT>0)?[{key:'fix',x:s.x,y:s.y-R,r:RAD.btn*k,fix:true}]:null;}
   return TYPE_KEYS.map((key,i)=>{const a=-Math.PI/2+i*Math.PI/2;return{key,x:s.x+Math.cos(a)*R,y:s.y+Math.sin(a)*R,r:RAD.btn*k};});
 }
 function drawRadial(){
   const bs=radialButtons();if(!bs)return;
   const s=SLOTS[S.sel],g=myGold(),k=radK(),t=Math.min(1,(performance.now()-(S.selT||0))/140),e=1-Math.pow(1-t,3);
+  if(bs[0].fix){const b=bs[0],c=fixCost(s.tower),ok=g>=c,x=s.x,y=s.y+(b.y-s.y)*e,r=b.r*(0.6+0.4*e);ctx.save();
+    ctx.globalAlpha=ok?1:0.55;ctx.fillStyle=ok?'#fbf3df':'#d9ccb0';ctx.strokeStyle=ok?'#c9971c':'#8a7350';ctx.lineWidth=2.5*k;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();drawIc(ctx,'hammer',x,y-3*k,r*1.05);
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`bold ${Math.round(10*k*10)/10}px Georgia,serif`;ctx.fillStyle=ok?'#7a5a10':'#8a2a22';ctx.fillText(c,x,y+r*0.62);
+    ctx.globalAlpha=1;ctx.font=`italic ${11*k}px Georgia,serif`;const l=tr('Reparar','Repair')+' · '+fixDur(s.tower)+'s',w=ctx.measureText(l).width+12*k;
+    ctx.fillStyle='rgba(251,243,223,.95)';ctx.strokeStyle='#3e3222';ctx.lineWidth=1.2*k;ctx.fillRect(x-w/2,y-r-22*k,w,16*k);ctx.strokeRect(x-w/2,y-r-22*k,w,16*k);
+    ctx.fillStyle='#2e2419';ctx.fillText(l,x,y-r-14*k);ctx.restore();return;}
   ctx.save();
   ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=1.5*k;ctx.setLineDash([3*k,4*k]);ctx.beginPath();ctx.arc(s.x,s.y,RAD.ring*k*e,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
   const arm=S.radArm&&TYPES[S.radArm]?S.radArm:null;
@@ -3057,6 +3107,8 @@ function drawRadial(){
 function radialHit(x,y){
   const bs=radialButtons();if(!bs)return false;
   for(const b of bs){if(Math.hypot(b.x-x,b.y-y)<=b.r*1.25){
+    if(b.fix){const t=SLOTS[S.sel].tower;if(myGold()<fixCost(t)){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Falta ouro','Not enough gold'),t:0,T:1,sp:true});sfx('hit');}
+      else act({a:'fix',i:S.sel});return true;}
     const T=TYPES[b.key];
     if(myGold()<T.cost){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Falta ouro','Not enough gold'),t:0,T:1,sp:true});sfx('hit');S.radArm=null;}
     else if(S.radArm!==b.key){S.radArm=b.key;S.radArmT=performance.now();sfx('coin');}// 1.º toque: escolhe e mostra o alcance
@@ -3339,10 +3391,12 @@ function doAct(a,who){
   const s=a.i!=null?SLOTS[a.i]:null;
   switch(a.a){
     case'build':{const T=TYPES[a.k];if(!s||s.tower||!T||!pay(who,T.cost))return;S.built.add(a.k);
-      s.tower={k:a.k,lv:1,br:0,cd:0,spent:T.cost,x:s.x,y:s.y,ang:-Math.PI/2,pri:'primeiro',dmgDone:0,owner:who,si:a.i};S.towers.push(s.tower);sfx('coin');built(s);
+      s.tower={k:a.k,lv:1,br:0,cd:0,spent:T.cost,x:s.x,y:s.y,ang:-Math.PI/2,pri:'primeiro',dmgDone:0,owner:who,si:a.i,deaths:0};s.tower.hp=towerMax(s.tower);S.towers.push(s.tower);sfx('coin');built(s);
       if(Math.random()<0.6){const q=pick(Q.build);S.texts.push({x:s.x,y:s.y-26,s:q,t:0,T:1.6,sp:true});say(q,'pt-PT');}break;}
-    case'up':{const t=s&&s.tower;if(!t||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;sfx('coin');built(s,t.lv>=4);break;}
-    case'br':{const t=s&&s.tower;if(!t||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;sfx('coin');built(s,true);break;}
+    case'up':{const t=s&&s.tower;if(!t||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);break;}
+    case'br':{const t=s&&s.tower;if(!t||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
+    case'fix':{const t=s&&s.tower;if(!t||!t.broken||t.fixT>0||!pay(who,fixCost(t)))return;t.fixD=t.fixT=fixDur(t);sfx('coin');chips(t.x,t.y,6,'#c9971c',0.6);
+      S.texts.push({x:t.x,y:t.y-28,s:tr('Mãos à obra!','Get to work!'),ic:'hammer',t:0,T:1.3});if(S.sel===a.i)renderPanel();break;}
     case'pri':{const t=s&&s.tower;if(!t)return;const ks=Object.keys(PRI);t.pri=ks[(ks.indexOf(t.pri)+1)%ks.length];break;}
     case'sell':{const t=s&&s.tower;if(!t||(t.owner||1)!==who)return;const g=Math.floor(t.spent*0.7);if(who===2)S.gold2+=g;else S.gold+=g;
       S.towers=S.towers.filter(x=>x!==t);s.tower=null;break;}
@@ -3490,7 +3544,7 @@ function renderPanel(){
   else if(t.lv>=5){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}: ${T.L5[t.br]}</p>`;}
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
   p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/5${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
-    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}</div>
+    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída: repara-a no botão do mapa','destroyed: repair it with the map button')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
     <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
@@ -3795,7 +3849,7 @@ function menuBgCheck(){if(MBG.on&&S&&S.started&&!S.over&&$('modal').hidden&&!$('
 function saveGame(){
   if(!S||S.coop||DUEL||!S.started||S.over)return;
   LS.set('save',{lvl:S.lvl,di:S.di,hero:S.hero.id,gold:S.gold,lives:S.lives,sl:S.startLives,wave:S.wave,cOpen:S.cOpen,inf:S.infinite,camp:S.campaign,
-    tw:S.towers.map(t=>[t.si,t.k,t.lv,t.br,t.pri,t.spent,Math.round(t.dmgDone||0)]),st:S.stats,built:[...S.built],hk:S.hero.kills,hl:S.hero.lv,hx:Math.round(S.hero.xp),hu:S.hero.ups,hg:S.hero.gift||0,works:S.works,cards:S.cards,offer:S.offer,at:Date.now()});
+    tw:S.towers.map(t=>[t.si,t.k,t.lv,t.br,t.pri,t.spent,Math.round(t.dmgDone||0),Math.round(t.hp==null?-1:t.hp),t.deaths||0,t.broken?1:0,Math.ceil(t.fixT||0),t.fixD||0]),st:S.stats,built:[...S.built],hk:S.hero.kills,hl:S.hero.lv,hx:Math.round(S.hero.xp),hu:S.hero.ups,hg:S.hero.gift||0,works:S.works,cards:S.cards,offer:S.offer,at:Date.now()});
 }
 function clearSave(){try{localStorage.removeItem('cerco-save');}catch(e){}}
 function loadSave(){
@@ -3807,7 +3861,8 @@ function loadSave(){
   // efeitos imediatos (vidas, ouro) já estão no que se guardou; só se reaplicam os modificadores
   S.cards=(d.cards||[]).filter(id=>CARDS.some(c=>c.id===id));S.cards.forEach(id=>{const c=CARDS.find(x=>x.id===id);if(!c.now)applyCard(c,true);});
   S.offer=Array.isArray(d.offer)&&d.offer.every(id=>CARDS.some(c=>c.id===id))?d.offer:null;S.dmgStage=heartStage();
-  d.tw.forEach(([si,k,lv,br,pri,spent,dmg])=>{const s=SLOTS[si];if(!s)return;const t={k,lv,br,cd:0,spent,x:s.x,y:s.y,ang:-Math.PI/2,pri,dmgDone:dmg,owner:1,si};s.tower=t;S.towers.push(t);});
+  d.tw.forEach(([si,k,lv,br,pri,spent,dmg,hp,de,bk,fx,fd])=>{const s=SLOTS[si];if(!s)return;const t={k,lv,br,cd:0,spent,x:s.x,y:s.y,ang:-Math.PI/2,pri,dmgDone:dmg,owner:1,si,deaths:de|0,broken:!!bk,fixT:fx||0,fixD:fd||0};
+    t.hp=t.broken?0:hp>0?Math.min(hp,towerMax(t)):towerMax(t);s.tower=t;S.towers.push(t);});
   if(S.cOpen)drawBG();
   S.started=true;S.paused=false;S.nextT=S.wave>0?18:null;
   toast(tr('Partida retomada depois da vaga ','Game resumed after wave ')+S.wave+'.');
@@ -3985,7 +4040,7 @@ function snapshot(){
   const h=S.hero;
   const x=S.texts.filter(t=>!t.net).slice(0,6).map(t=>{t.net=1;return[t.s,r(t.x),r(t.y),t.T,t.big?1:0,t.sp?1:0,t.ic||0];});
   const f=S.fx.filter(q=>!q.net).slice(0,8).map(q=>{q.net=1;return[q.k,r(q.x),r(q.y),r(q.r),q.T,q.c||0,r(q.x2||0),r(q.y2||0)];});
-  const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?1:0]);
+  const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?1:0,t.broken?-1:r((t.hp==null?1:t.hp/towerMax(t))*100),t.fixD?r((1-t.fixT/t.fixD)*100):0,t.fixT>0?1:0]);
   const d={g:[S.gold,S.gold2],l:S.lives,w:S.wave,wx:S.weather,sp:S.spawning?1:0,nt:S.nextT==null?-1:Math.ceil(S.nextT),inf:S.infinite?1:0,co:S.cOpen?1:0,pa:S.paused?1:0,
     cd:[S.cd.rain,S.cd.gate,S.cd.bell,S.cd.hero].map(v=>Math.ceil(v)),h:[r(h.x),r(h.y),r(h.hp/h.max*100),h.dead?1:0,h.lv,h.kills,Math.ceil(h.respawn),r(h.ang*10),h.swing>0?1:0,r(heroXpF(h)*100),h.ups.join('')],
     n:S.towers.length,e,bt,p:p.concat(ep),x,f,ta,v:S.voiceQ.splice(0,2),cb:[S.combo,Math.ceil(S.comboT*10)],gt:S.gates.map(G=>G.broken?-1:Math.round(G.hp/G.max*100)),wk:S.works};
@@ -3999,15 +4054,17 @@ function netSend(now){
   if(!NET.R||NET.role!=='host'||!NET.partner||!S||!S.coop)return;
   if(now-NET.lastSt>=125){NET.lastSt=now;NET.R.emit('st',snapshot()).catch(()=>{});}
   if(NET.twDirty||now-NET.lastTw>1500){NET.twDirty=false;NET.lastTw=now;
-    NET.R.emit('tw',S.towers.map(t=>[t.si,t.k,t.lv,t.br,PRIK.indexOf(t.pri),t.owner||1,t.spent,Math.round(t.dmgDone||0)])).catch(()=>{});}
+    NET.R.emit('tw',twList()).catch(()=>{});}
 }
+const twList=o=>S.towers.map(t=>[t.si,t.k,t.lv,t.br,PRIK.indexOf(t.pri),o||t.owner||1,t.spent,Math.round(t.dmgDone||0),t.deaths||0,t.broken?1:0]);
 function applyTw(list){
   if(!Array.isArray(list))return;
-  const sig=()=>{const s=typeof S.sel==='number'&&SLOTS[S.sel];const t=s&&s.tower;return t?[t.k,t.lv,t.br,t.pri,t.owner].join():'';};const before=sig();
+  const sig=()=>{const s=typeof S.sel==='number'&&SLOTS[S.sel];const t=s&&s.tower;return t?[t.k,t.lv,t.br,t.pri,t.owner,t.broken,t.deaths].join():'';};const before=sig();
   const prevT={};S.towers.forEach(t=>prevT[t.si]=t);
   SLOTS.forEach(s=>s.tower=null);
-  S.towers=list.filter(v=>Array.isArray(v)&&SLOTS[v[0]]&&TYPES[v[1]]).map(([si,k,lv,br,pri,owner,spent,dmg])=>{const s=SLOTS[si];
-    const t={k,lv:lv|0,br:br|0,pri:PRIK[pri]||'primeiro',owner,spent,dmgDone:dmg,x:s.x,y:s.y,ang:-Math.PI/2,si,cd:0};const o=prevT[si];if(o&&o.k===k){t.bornAt=o.bornAt;t._lv=o._lv;t.upAt=o.upAt;t.ang=o.ang;}s.tower=t;return t;});
+  S.towers=list.filter(v=>Array.isArray(v)&&SLOTS[v[0]]&&TYPES[v[1]]).map(([si,k,lv,br,pri,owner,spent,dmg,de,bk])=>{const s=SLOTS[si];
+    const t={k,lv:lv|0,br:br|0,pri:PRIK[pri]||'primeiro',owner,spent,dmgDone:dmg,x:s.x,y:s.y,ang:-Math.PI/2,si,cd:0,deaths:de|0,broken:!!bk};const o=prevT[si];if(o&&o.k===k){t.bornAt=o.bornAt;t._lv=o._lv;t.upAt=o.upAt;t.ang=o.ang;t.hp=o.hp;t.fixT=o.fixT;t.fixD=o.fixD;}
+    if(t.hp==null||t.broken)t.hp=t.broken?0:towerMax(t);s.tower=t;return t;});
   // só reconstrói o painel se a torre selecionada mudou (o anfitrião reenvia a lista a cada 1,5 s)
   if(typeof S.sel==='number'&&sig()!==before)renderPanel();
 }
@@ -4030,7 +4087,9 @@ function applySnap(d){
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/100;o.al=al/10;o.mv=!!mv;return o;});
   NH.emap=nm;NH.snapT=performance.now();
   S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:v[0]===4?{k:'eshell',x:v[1],y:v[2]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':v[0]===5?'fireball':'bread',x:v[1],y:v[2],ang:v[3]/10});
-  if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{S.towers[i].ang=v[0]/10;S.towers[i].disT=v[1]?1:0;});
+  if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{const t=S.towers[i];t.ang=v[0]/10;t.disT=v[1]?1:0;if(v[2]==null)return;const was=t.broken;
+    t.broken=v[2]<0;const hp=t.broken?0:v[2]/100*towerMax(t);if(t.hp!=null&&hp<t.hp-0.5)t.hitT=0.2;t.hp=hp;t.fixD=v[4]?100:0;t.fixT=v[4]?100-v[3]:0;
+    if(was!==t.broken&&typeof S.sel==='number'&&SLOTS[S.sel].tower===t)renderPanel();});
   (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],ic:ICONS[v[6]]?v[6]:undefined,t:0}));
   (d.f||[]).forEach(v=>{if(!['boom','ring','oil','rain','fire','tent'].includes(v[0]))return;S.fx.push({k:v[0],x:v[1],y:v[2],r:v[3],T:v[4],c:v[5]||undefined,x2:v[6],y2:v[7],t:0,hits:3});
     if(v[0]==='boom')sfx('boom');else if(v[0]==='oil')sfx('oil');else if(v[0]==='fire'||v[0]==='tent')sfx('roar');});
@@ -4127,8 +4186,9 @@ function botThink(dt){
   const free=SLOTS.map((s,i)=>i).filter(i=>!SLOTS[i].tower).sort((a,b)=>S.bScore[b]-S.bScore[a]);
   const want=3+Math.floor(S.wave*0.6),ups=S.towers.filter(t=>t.lv<5).map(t=>({t,c:TYPES[t.k].up[t.lv-1]})).sort((a,b)=>a.c-b.c);
   const build=()=>{const k=S.towers.length?pickW({arq:3,bes:2.5,tra:2,cal:1.6}):'arq';return{c:TYPES[k].cost,go:()=>doAct({a:'build',i:free[0],k},1)};};
-  let plan=null;
-  if(free.length&&(S.towers.length<want||!ups.length))plan=build();
+  let plan=null;const ruin=S.towers.find(t=>t.broken&&!(t.fixT>0));
+  if(ruin)plan={c:fixCost(ruin),go:()=>doAct({a:'fix',i:ruin.si},1)};
+  else if(free.length&&(S.towers.length<want||!ups.length))plan=build();
   else if(ups.length){const u=ups[0];plan={c:u.c,go:()=>doAct(u.t.lv===2?{a:'br',i:u.t.si,b:Math.random()<0.5?0:1}:{a:'up',i:u.t.si},1)};}
   // mandar tropas: só com defesa montada e sem gastar o ouro do próximo plano; é mais atrevido nas dificuldades altas
   if(S.wave>=1&&S.towers.length>=3&&Math.random()<([0.2,0.32,0.45][S.di]||0.3)){const res=plan?plan.c*0.7:0;
@@ -4188,7 +4248,7 @@ function duelNet(now){
   withSide(DUEL.me,()=>{
     if(now-NET.lastSt>=150){NET.lastSt=now;NET.R.emit('st',snapshot()).catch(()=>{});}
     if(NET.twDirty||now-NET.lastTw>1500){NET.twDirty=false;NET.lastTw=now;
-      NET.R.emit('tw',S.towers.map(t=>[t.si,t.k,t.lv,t.br,PRIK.indexOf(t.pri),1,t.spent,Math.round(t.dmgDone||0)])).catch(()=>{});}});
+      NET.R.emit('tw',twList(1)).catch(()=>{});}});
 }
 function duelWire(R){
   const ok=m=>DUEL&&DUEL.net&&!DUEL.over&&m.peer===NET.partner;
