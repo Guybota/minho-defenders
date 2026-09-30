@@ -476,6 +476,7 @@ const ICONS=(()=>{
     swim:c(12,7.5,3.3,'#e0b88a')+s('M4 13.5l3-2.5 3 2M20 13.5l-3-2.5-3 2',null,1.5)+`<path d="M2 16.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0M2 20.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0" fill="none" stroke="${WA}" stroke-width="1.8" stroke-linecap="round"/>`,
     plus:s('M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',P)+f('M10.2 4.2h3.6v6h6v3.6h-6v6h-3.6v-6h-6v-3.6h6z',R),
     siege:s('M6 21.5V6l6-3.5L18 6v15.5z',WD)+s('M6 10h12M6 14.5h12M6 18.5h12M9 6v15.5M15 6v15.5',null,.8)+s('M10 21.5v-4h4v4',K,1)+c(7,21.5,1.6,ST,1)+c(17,21.5,1.6,ST,1),
+    cannon:s('M3.5 15.5L16 8.5l2.4 4.2-12.5 7z','#4a4038')+c(18.6,10.4,1.6,K,1)+s('M8.5 12.8l1.6 2.8M12.5 10.6l1.6 2.8',null,.9)+s('M5 20.5h11',WD,2.2)+c(9,19.5,3,'#8a5a32',1.3)+c(9,19.5,.9,K,.8)+`<circle cx="21" cy="6" r="1.4" fill="#c8541e"/><circle cx="22.5" cy="3.8" r=".9" fill="#e8c24a"/>`,
     powers:s('M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z',GL)+f('M11.4 5.5l-1 3.6-3.4 1.3 3.2.2z',P)+s('M19 2.8v3.4M17.3 4.5h3.4M5 17.8v3.4M3.3 19.5h3.4',null,1.3)+`<circle cx="12" cy="12" r="1.6" fill="${R}" stroke="${K}" stroke-width=".8"/>`,
     ram:s('M3.5 9.5h14l3 2.5-3 2.5h-14z',WD)+s('M17.5 9.5c1.5 0 3 1 3 2.5s-1.5 2.5-3 2.5',ST)+s('M7 9.5V4.5M13 9.5V4.5M5 4.5h10',null,1.5)+c(6,18,2.5,ST)+c(15,18,2.5,ST)+s('M6 14.5v1M15 14.5v1',null,1.2)
   };
@@ -658,7 +659,10 @@ const FOES={
   merc:{name:tr('Mercador das Toalhas','The Towel Merchant'),hp:2400,spd:22,armor:9,gold:60,r:17,col:'#e9dcc0',leak:8,boss:'merc',intro:tr('Chegou o Mercador das Toalhas!','The Towel Merchant has arrived!'),death:'«¡Mis toallas de oferta!»'},
   coca:{name:tr('A Coca','The Coca'),hp:2700,spd:26,armor:6,gold:120,r:18,col:'#3f7a3a',leak:8,boss:'coca',fly:true,noslow:true,intro:tr('A Coca atravessa o Minho!','The Coca is crossing the Minho!'),death:tr('A Coca caiu! Nem São Jorge fazia melhor.','The Coca is down! Not even Saint George did better.')},
   polvo:{name:tr('Polvo da Lagarteira','Lagarteira Octopus'),hp:3200,spd:18,armor:5,gold:120,r:18,col:'#8a3f6e',leak:8,boss:'polvo',swim:true,intro:tr('Sai das rochas o Polvo da Lagarteira!','The Lagarteira Octopus rises from the rocks!'),death:tr('Polvo à lagareiro para o jantar!','Octopus à lagareiro for dinner!')},
-  cervo:{name:tr('Cervo Gigante','Giant Stag'),hp:2300,spd:40,armor:4,gold:120,r:17,col:'#7a5530',leak:8,boss:'cervo',noslow:true,intro:tr('Desce do monte o Cervo Gigante!','The Giant Stag charges down the hill!'),death:tr('O Cervo volta para o monte, envergonhado.','The Stag slinks back up the hill, ashamed.')}
+  cervo:{name:tr('Cervo Gigante','Giant Stag'),hp:2300,spd:40,armor:4,gold:120,r:17,col:'#7a5530',leak:8,boss:'cervo',noslow:true,intro:tr('Desce do monte o Cervo Gigante!','The Giant Stag charges down the hill!'),death:tr('O Cervo volta para o monte, envergonhado.','The Stag slinks back up the hill, ashamed.')},
+  // atiradores: param à distância de uma porta fechada e atacam-na de longe
+  arqc:{name:tr('Archeiro castelhano','Castilian archer'),hp:45,spd:40,armor:0,gold:7,r:7,col:'#5e7a36',leak:1,ranged:{range:95,rate:1.3,dmg:9,k:'arrow'}},
+  bomb:{name:tr('Bombarda','Bombard'),hp:280,spd:17,armor:5,gold:22,r:12,col:'#4a4038',leak:3,ranged:{range:190,rate:3.4,dmg:75,k:'shell'}}
 };
 const BOSS={valenca:'merc',moncao:'coca',ancora:'polvo',cerveira:'cervo'};
 const DIFFS=[
@@ -676,12 +680,16 @@ const WEATHER={sol:{ic:'sun',name:tr('Sol','Sun')},noite:{ic:'moon',name:tr('Noi
 function waveDef(w){
   const g=[['peao',6+Math.round(w*2),0.8]];
   if(w>=3)g.push(['cav',Math.floor(w*1.2),0.65]);
+  // atiradores logo a seguir, para chegarem às portas ainda fechadas
+  if(w>=3)g.push(['arqc',Math.floor(w*0.7),0.9]);
   if(w>=4)g.push(['torre',Math.max(1,Math.floor((w-2)/2)),2.6]);
+  if(w>=6)g.push(['bomb',Math.max(1,Math.floor((w-3)/3)),3.2]);
   if(w>=6)g.push(['nad',3+Math.floor(w/2),0.7]);
   if(w>=5)g.push(['esc',w-2,1.0]);
   if(w>=6&&w%2===0)g.push(['cont',Math.floor(w/3),1.1]);
   if(w>=8)g.push(['cura',Math.max(1,Math.floor((w-5)/3)),2.0]);
   if(w>=7)g.push(['ari',Math.floor((w-4)/2),2.4]);
+
   if(w%10===0)g.push([BOSS[LV.id],1,3]);
   else if(w%5===0)g.push(['cap',Math.ceil(w/5),4]);
   const q=[];g.forEach(([t,c,gap])=>{for(let i=0;i<c;i++)q.push({t,gap:i===c-1?1.6:gap});});
@@ -945,7 +953,7 @@ function newGame(lvl,di,heroId){
   loadLevel(lvl);
   const D=DIFFS[di],HD=HEROES[heroId];
   S={lvl,di,diff:D,gold:D.gold,gold2:D.gold,lives:D.lives,startLives:D.lives,wave:0,spawning:false,queue:[],spawnT:0,nextT:null,pendingBonus:0,
-    enemies:[],born:[],towers:[],proj:[],fx:[],texts:[],parts:[],speed:1,paused:false,over:false,started:false,sel:null,aim:null,t:0,side:0,
+    enemies:[],born:[],towers:[],proj:[],eproj:[],fx:[],texts:[],parts:[],speed:1,paused:false,over:false,started:false,sel:null,aim:null,t:0,side:0,
     cOpen:false,weather:'sol',infinite:false,cd:{rain:0,gate:0,bell:0,hero:0},idleT:8,built:new Set(),
     coop:false,remote:false,me:1,campaign:null,voiceQ:[],
     shake:0,flash:0,stop:0,heartHit:0,dmgStage:0,combo:0,comboT:0,comboPop:0,mods:MOD0(),cards:[],offer:null,
@@ -1058,6 +1066,25 @@ function kill(e,src){
   }
 }
 /* ================= Portas ================= */
+// atirador com uma porta fechada ao alcance (ao longo do caminho): fica parado a disparar; devolve se está a disparar
+function rangedHold(e,dt){
+  const R=e.f.ranged;
+  for(const q of LV.pathGates[e.p]){const G=S.gates[q.i];if(G.broken||e.d>=q.d-e.r)continue;
+    if(q.d-e.d>R.range)return false;
+    e.rcd=(e.rcd==null?0.5:e.rcd)-dt;e.aim=q.i;
+    if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const g=LV.gates[q.i],d=Math.hypot(g.x-e.x,g.y-e.y);
+      S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:g.x+(Math.random()-0.5)*6,ty:g.y+(Math.random()-0.5)*6,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg,gi:q.i});
+      if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
+    return true;}
+  return false;
+}
+function updateEproj(dt){
+  for(const q of S.eproj){q.t+=dt;if(q.t<q.T)continue;q.done=true;const G=S.gates[q.gi],g=LV.gates[q.gi];
+    if(q.k==='shell'){S.fx.push({k:'boom',x:q.tx,y:q.ty,r:22,t:0,T:0.45});chips(q.tx,q.ty,6,'#6d624e');sfx('boom');jolt(1.5);}
+    else chips(q.tx,q.ty,1,'#7a5230',0.4);
+    if(G&&!G.broken){G.hp-=q.dmg*S.diff.dmg;G.hitT=0.2;if(G.hp<=0)breakGate(q.gi);}}
+  S.eproj=S.eproj.filter(q=>!q.done);
+}
 const GATE_HP=450;
 // força com que cada inimigo arromba uma porta (por segundo)
 const gateDps=e=>(e.t==='ari'?55:e.f.boss?40:e.t==='cap'?25:e.t==='torre'?14:e.t==='esc'?8:e.t==='mini'?3:5)*S.diff.dmg;
@@ -1144,6 +1171,7 @@ function update(dt){
     if(e.slowT>0){e.slowT-=dt;if(e.slowT<=0)e.slowF=1;}
     if(e.stunT>0){e.stunT-=dt;e.cur=0;if(e.stunT<=0)e.eat=false;}
     else if(e.blocked)e.cur=0;
+    else if(e.f.ranged&&!inRiver(e.x,e.y)&&rangedHold(e,dt))e.cur=0;
     else{e.cur=e.spd*e.slowF*(S.weather==='chuva'?0.9:1);e.d+=e.cur*dt;
       if(!e.f.fly)for(const q of LV.pathGates[e.p]){const G=S.gates[q.i];if(G.broken||e.d>=q.d+2)continue;const stop=q.d-e.r-7;
         if(e.d>stop&&e.d<q.d+2){e.d=stop;e.cur=0;G.hp-=gateDps(e)*dt;G.hitT=0.15;if(Math.random()<dt*3)chips(LV.gates[q.i].x,LV.gates[q.i].y,1,'#7a5230',0.5);
@@ -1205,6 +1233,7 @@ function update(dt){
       for(const e of S.enemies)if(!e.dead&&Math.hypot(e.x-f.x,e.y-f.y)<=f.r)hurt(e,30+S.wave*2.5,false,null,true);sfx('arrow');}}
   }
   S.proj=S.proj.filter(p=>!p.done);
+  updateEproj(dt);
   S.enemies=S.enemies.filter(e=>!e.dead);
   if(S.born.length){for(const c of S.born){const q=posAt(PATHS[c.p],c.d);c.a=q.a;c.x=q.x;c.y=q.y;S.enemies.push(c);}S.born=[];}
   if(!S.spawning&&!S.enemies.length&&S.pendingBonus>0){
@@ -1479,7 +1508,14 @@ function drawFoe(e){
   if(water&&!e.f.fly){ctx.save();ctx.rotate(e.a);ctx.fillStyle='#6e4b2a';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(-16,-6);ctx.lineTo(12,-6);ctx.lineTo(19,0);ctx.lineTo(12,6);ctx.lineTo(-16,6);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
   ctx.strokeStyle='#2e2419';ctx.lineWidth=1.3;
-  if(e.t==='ari'){
+  if(e.t==='bomb'){// bombarda em carreta de madeira, virada para a porta que ataca
+    const g=e.aim!=null&&S.gates[e.aim]&&!S.gates[e.aim].broken?LV.gates[e.aim]:null,a=g?Math.atan2(g.y-e.y,g.x-e.x):e.a;
+    ctx.rotate(a);ctx.fillStyle='#6e4b2a';ctx.fillRect(-11,-7,18,14);ctx.strokeRect(-11,-7,18,14);
+    ctx.fillStyle='#3a3530';[[-7,-8.5],[3,-8.5],[-7,8.5],[3,8.5]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.stroke();});
+    ctx.translate(-(e.kick||0)*3,0);ctx.fillStyle=e.col;ctx.fillRect(-8,-4,22,8);ctx.strokeRect(-8,-4,22,8);
+    ctx.fillStyle='#2e2419';ctx.beginPath();ctx.arc(14,0,3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#8a7a5a';ctx.lineWidth=1;[-3,3,9].forEach(x=>{ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x,4);ctx.stroke();});
+  }else if(e.t==='ari'){
     ctx.rotate(e.a);ctx.fillStyle=e.col;ctx.fillRect(-14,-8,28,16);ctx.strokeRect(-14,-8,28,16);
     ctx.fillStyle='#4a3420';ctx.fillRect(10,-3,8,6);ctx.strokeRect(10,-3,8,6);
   }else if(e.t==='torre'){
@@ -1490,6 +1526,10 @@ function drawFoe(e){
     if(e.t==='cav'){ctx.save();ctx.rotate(e.a);ctx.fillStyle='#5b4431';ctx.beginPath();ctx.ellipse(0,0,12,5,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();}
     ctx.fillStyle=e.col;ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();ctx.stroke();
     if(e.t==='cura'){ctx.fillStyle='#3d7a34';ctx.fillRect(-1.5,-5,3,10);ctx.fillRect(-5,-1.5,10,3);}
+    else if(e.t==='arqc'){const g=e.aim!=null&&S.gates[e.aim]&&!S.gates[e.aim].broken?LV.gates[e.aim]:null,a=g?Math.atan2(g.y-e.y,g.x-e.x):e.a;
+      ctx.save();ctx.rotate(a);ctx.strokeStyle='#4a3420';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(2,0,7,-1.1,1.1);ctx.stroke();
+      ctx.strokeStyle='rgba(46,36,25,.7)';ctx.lineWidth=0.6;ctx.beginPath();ctx.moveTo(2+7*Math.cos(1.1),-7*Math.sin(1.1));ctx.lineTo(2+7*Math.cos(1.1),7*Math.sin(1.1));ctx.stroke();ctx.restore();
+      ctx.fillStyle='#e8c24a';ctx.fillRect(-2.5,-2.5,5,5);}
     else if(e.t==='cont'){ctx.fillStyle='#c9a36b';ctx.beginPath();ctx.arc(e.r-1,-e.r+2,4,0,Math.PI*2);ctx.fill();ctx.stroke();}
     else if(e.t!=='mini'&&e.t!=='nad'){ctx.fillStyle='#e8c24a';ctx.fillRect(-2.5,-2.5,5,5);}
     if(e.t==='esc'){ctx.fillStyle='#c9c2b0';ctx.rotate(e.a);ctx.fillRect(e.r-1,-5,3,10);}
@@ -1674,7 +1714,7 @@ function drawUpgradeMarks(){
     ctx.fill();ctx.stroke();});
 }
 // próxima vaga: composição e setas nos caminhos durante a contagem
-const E_IC={peao:'dagger',cav:'horse',esc:'shield',nad:'swim',cont:'coinbag',cura:'plus',torre:'siege',ari:'ram',cap:'crown',merc:'basket',coca:'dragon',polvo:'octopus',cervo:'stag'};
+const E_IC={arqc:'bow',bomb:'cannon',peao:'dagger',cav:'horse',esc:'shield',nad:'swim',cont:'coinbag',cura:'plus',torre:'siege',ari:'ram',cap:'crown',merc:'basket',coca:'dragon',polvo:'octopus',cervo:'stag'};
 let nextCache={w:-1,lv:null,v:null};
 function nextWaveInfo(){
   if(!S||S.over||S.spawning||!S.started)return null;
@@ -1754,11 +1794,17 @@ function draw(){
     if(p.k==='stone'){const u=p.t/p.T,x=p.sx+(p.tx-p.sx)*u,y=p.sy+(p.ty-p.sy)*u,h=Math.sin(Math.PI*u)*45;
       ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y,4,2,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle=p.burn?'#c0561e':'#6d624e';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y-h,4.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
+    else if(p.k==='eshell'){ctx.fillStyle='#2e2419';ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();}
     else if(p.k==='stoneRaw'){ctx.fillStyle=p.burn?'#c0561e':'#6d624e';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,4.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
     else if(p.k==='bread'){ctx.fillStyle='#c98c45';ctx.strokeStyle='#2e2419';ctx.lineWidth=0.8;ctx.beginPath();ctx.ellipse(p.x,p.y,4,2.6,p.ang||0,0,Math.PI*2);ctx.fill();ctx.stroke();}
     else{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang||0);ctx.strokeStyle=p.burn?'#c0561e':'#2e2419';ctx.lineWidth=p.k==='bolt'?2.2:1.4;
       ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(4,0);ctx.stroke();ctx.fillStyle='#2e2419';ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(2,-2.5);ctx.lineTo(2,2.5);ctx.fill();ctx.restore();}
   }
+  for(const q of S.eproj){const u=Math.min(1,q.t/q.T),x=q.sx+(q.tx-q.sx)*u,y=q.sy+(q.ty-q.sy)*u;
+    if(q.k==='shell'){const h=Math.sin(Math.PI*u)*55;ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y,4,2,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#2e2419';ctx.beginPath();ctx.arc(x,y-h,4.2,0,Math.PI*2);ctx.fill();}
+    else{const a=Math.atan2(q.ty-q.sy,q.tx-q.sx);ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.strokeStyle='#7b0f0f';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(4,0);ctx.stroke();
+      ctx.fillStyle='#2e2419';ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(2,-2.3);ctx.lineTo(2,2.3);ctx.fill();ctx.restore();}}
   for(const f of S.fx){const p=f.t/f.T;
     if(f.k==='boom'){ctx.fillStyle=`rgba(110,80,50,${0.5*(1-p)})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(0.4+0.6*p),0,Math.PI*2);ctx.fill();}
     else if(f.k==='ring'){ctx.strokeStyle=`rgba(${f.c||'155,34,38'},${1-p})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(f.x,f.y,f.r*p+6,0,Math.PI*2);ctx.stroke();}
@@ -2448,6 +2494,8 @@ function coopUnavailable(msg){
 function snapshot(){
   const r=v=>Math.round(v);
   const e=S.enemies.slice(0,90).map(x=>[x.id,ET.indexOf(x.t),r(x.x),r(x.y),r(x.a*10),r(x.hp/x.max*100),(x.slowT>0?1:0)|(x.stunT>0?2:0)|(x.eat?4:0)|(x.burnT>0?8:0)]);
+  const ep=S.eproj.slice(0,12).map(q=>{const u=Math.min(1,q.t/q.T),x=r(q.sx+(q.tx-q.sx)*u),y=r(q.sy+(q.ty-q.sy)*u);
+    return q.k==='shell'?[4,x,r(y-Math.sin(Math.PI*u)*55),0]:[1,x,y,r(Math.atan2(q.ty-q.sy,q.tx-q.sx)*10)];});
   let p=S.proj.slice(0,40).map(q=>{if(q.k==='stone'){const u=q.t/q.T;return[0,r(q.sx+(q.tx-q.sx)*u),r(q.sy+(q.ty-q.sy)*u-Math.sin(Math.PI*u)*45),q.burn?1:0];}
     return[q.k==='arrow'?1:q.k==='bolt'?2:3,r(q.x),r(q.y),r((q.ang||0)*10)];});
   const h=S.hero;
@@ -2456,7 +2504,7 @@ function snapshot(){
   const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?1:0]);
   const d={g:[S.gold,S.gold2],l:S.lives,w:S.wave,wx:S.weather,sp:S.spawning?1:0,nt:S.nextT==null?-1:Math.ceil(S.nextT),inf:S.infinite?1:0,co:S.cOpen?1:0,pa:S.paused?1:0,
     cd:[S.cd.rain,S.cd.gate,S.cd.bell,S.cd.hero].map(v=>Math.ceil(v)),h:[r(h.x),r(h.y),r(h.hp/h.max*100),h.dead?1:0,h.lv,h.kills,Math.ceil(h.respawn),r(h.ang*10),h.swing>0?1:0],
-    n:S.towers.length,e,p,x,f,ta,v:S.voiceQ.splice(0,2),cb:[S.combo,Math.ceil(S.comboT*10)],gt:S.gates.map(G=>G.broken?-1:Math.round(G.hp/G.max*100))};
+    n:S.towers.length,e,p:p.concat(ep),x,f,ta,v:S.voiceQ.splice(0,2),cb:[S.combo,Math.ceil(S.comboT*10)],gt:S.gates.map(G=>G.broken?-1:Math.round(G.hp/G.max*100))};
   let s=JSON.stringify(d);
   const cap=NET.R&&NET.R.small?2600:3800;
   if(s.length>cap){d.p=[];s=JSON.stringify(d);}
@@ -2493,7 +2541,7 @@ function applySnap(d){
     if(!o){const f=FOES[t];o={id,t,f,r:f.r,col:f.col,max:1,x,y,px:x,py:y,off:0};}
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/10;o.hp=hp/100;o.max=1;o.slowT=fl&1?1:0;o.stunT=fl&2?1:0;o.eat=!!(fl&4);o.burnT=fl&8?1:0;nm.set(id,o);return o;}).filter(Boolean);
   NET.emap=nm;NET.snapT=performance.now();
-  S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':'bread',x:v[1],y:v[2],ang:v[3]/10});
+  S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:v[0]===4?{k:'eshell',x:v[1],y:v[2]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':'bread',x:v[1],y:v[2],ang:v[3]/10});
   if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{S.towers[i].ang=v[0]/10;S.towers[i].disT=v[1]?1:0;});
   (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],ic:ICONS[v[6]]?v[6]:undefined,t:0}));
   (d.f||[]).forEach(v=>{if(!['boom','ring','oil','rain','fire','tent'].includes(v[0]))return;S.fx.push({k:v[0],x:v[1],y:v[2],r:v[3],T:v[4],c:v[5]||undefined,x2:v[6],y2:v[7],t:0,hits:3});
@@ -2650,7 +2698,7 @@ function showHelp(back){
     <p>${ic('swords')} Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
     <p>${ic('cross')} A cada 3 vagas o povo oferece ajuda: escolhe uma de três bênçãos ou pactos. Os pactos dão muito, mas cobram alguma coisa.</p>
     <p>Nas vagas 10 e 20 aparece a lenda de cada praça: o Mercador das Toalhas em Valença, a Coca em Monção, o Polvo da Lagarteira em Âncora e o Cervo Gigante em Cerveira. A Coca voa e o Polvo e a Coca deixam torres fora de combate por uns segundos.</p>
-    <p>Nadadores vêm pelo meio. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Na vaga 10 rebentam o postigo e passam a usar três caminhos.</p>
+    <p>Nadadores vêm pelo meio. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Archeiros e bombardas param longe e atacam as portas à distância: as bombardas são lentas mas arrombam uma porta em poucos tiros. Na vaga 10 rebentam o postigo e passam a usar três caminhos.</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
