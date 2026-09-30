@@ -261,7 +261,8 @@ button.main .ripple{background:rgba(255,255,255,.35)}
 .gchip{position:absolute;right:.3rem;top:-.2rem;font-weight:700;font-size:.95rem;color:#2f6a1e;text-shadow:0 1px 0 rgba(255,255,255,.7);pointer-events:none;animation:gchip 1.1s ease-out forwards}
 .gchip.neg{color:var(--red)}
 @keyframes gchip{0%{transform:translateY(6px) scale(.7);opacity:0}15%{transform:translateY(0) scale(1.15);opacity:1}100%{transform:translateY(-26px) scale(1);opacity:0}}
-.coin{position:fixed;left:0;top:0;z-index:40;font-size:18px;pointer-events:none;will-change:transform;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.ico{width:1.2em;height:1.2em;display:inline-block;vertical-align:-.24em;flex:none}
+.coin{position:fixed;left:0;top:0;z-index:40;font-size:20px;line-height:0;pointer-events:none;will-change:transform;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .banner{position:absolute;left:0;right:0;top:15%;display:flex;justify-content:center;pointer-events:none;z-index:3}
 .banner .rib{position:relative;background:linear-gradient(#fbf3df,#ecdcb6);border:2px solid #3e3222;box-shadow:0 6px 20px rgba(0,0,0,.35);padding:.5rem 2.6rem .55rem;text-align:center;color:#2e2419;
   animation:ribIn .5s cubic-bezier(.2,1.4,.4,1) both, ribOut .45s ease-in 1.8s forwards}
@@ -331,28 +332,28 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
   </div>
   <div class="stats">
     <div class="st cardsHud" id="cardsHud" hidden title="Bênçãos e pactos"></div>
-    <div class="st wxs" title="Tempo"><span class="wx" id="wx">☀️</span></div>
-    <div class="st" id="stWave"><span class="si">⚔️</span><span class="sv"><small>Vaga</small><b id="wave">0/20</b></span><i class="meter"><i id="mWave"></i></i></div>
-    <div class="st" id="stGold"><span class="si">💰</span><span class="sv"><small>Ouro</small><b id="gold">0</b></span></div>
-    <div class="st" id="gold2w" hidden title="Ouro do parceiro"><span class="si">👥</span><span class="sv"><small>Parceiro</small><b id="gold2">0</b></span></div>
-    <div class="st" id="stLives" title="Vidas da praça"><span class="si">🏰</span><span class="sv"><small>Praça</small><b id="lives">0</b></span><i class="meter"><i id="mLives"></i></i></div>
+    <div class="st wxs" title="Tempo"><span class="wx" id="wx" data-ic="sun"></span></div>
+    <div class="st" id="stWave"><span class="si" data-ic="swords"></span><span class="sv"><small>Vaga</small><b id="wave">0/20</b></span><i class="meter"><i id="mWave"></i></i></div>
+    <div class="st" id="stGold"><span class="si" data-ic="coin"></span><span class="sv"><small>Ouro</small><b id="gold">0</b></span></div>
+    <div class="st" id="gold2w" hidden title="Ouro do parceiro"><span class="si" data-ic="duo"></span><span class="sv"><small>Parceiro</small><b id="gold2">0</b></span></div>
+    <div class="st" id="stLives" title="Vidas da praça"><span class="si" data-ic="castle"></span><span class="sv"><small>Praça</small><b id="lives">0</b></span><i class="meter"><i id="mLives"></i></i></div>
   </div>
   <div class="bar">
     <button id="bWave" class="main"><span id="bWaveT">Chamar vaga</span><i id="bWaveF"></i></button>
     <button id="bSpeed" aria-label="Velocidade">×1</button>
-    <button id="bPause" aria-label="Pausa">⏸</button>
-    <button id="bSound" aria-label="Som">🔊</button>
-    <button id="bMenu" aria-label="Menu">☰</button>
+    <button id="bPause" aria-label="Pausa" data-ic="pause"></button>
+    <button id="bSound" aria-label="Som" data-ic="snd2"></button>
+    <button id="bMenu" aria-label="Menu" data-ic="menu"></button>
   </div>
 </header>
 <div id="stage"><canvas id="c"></canvas>
   <div id="zoomb"><button data-z="in" aria-label="Aproximar">＋</button><button data-z="out" aria-label="Afastar">－</button><button data-z="reset" aria-label="Ver mapa inteiro">⤢</button></div>
   <div id="panel" aria-live="polite"></div></div>
 <nav id="abil" aria-label="Poderes">
-  <button class="ab" data-ab="rain"><span class="ai">🏹</span><span class="an">Flechas</span><em></em><i></i></button>
-  <button class="ab" data-ab="gate"><span class="ai">🚪</span><span class="an">Portas</span><em></em><i></i></button>
-  <button class="ab" data-ab="bell"><span class="ai">🔔</span><span class="an">Sino</span><em></em><i></i></button>
-  <button class="ab" data-ab="hero"><span class="ai" id="heroIc">🥖</span><span class="an" id="heroNm">Heroína</span><em></em><i></i></button>
+  <button class="ab" data-ab="rain"><span class="ai" data-ic="arrows"></span><span class="an">Flechas</span><em></em><i></i></button>
+  <button class="ab" data-ab="gate"><span class="ai" data-ic="gate"></span><span class="an">Portas</span><em></em><i></i></button>
+  <button class="ab" data-ab="bell"><span class="ai" data-ic="bell"></span><span class="an">Sino</span><em></em><i></i></button>
+  <button class="ab" data-ab="hero"><span class="ai" id="heroIc" data-ic="baguette"></span><span class="an" id="heroNm">Heroína</span><em></em><i></i></button>
 </nav>
 <div id="menubg" hidden aria-hidden="true"></div>
 <div id="toast"></div>
@@ -377,6 +378,97 @@ document.documentElement.lang=LANG==='en'?'en':'pt-PT';
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const LS={get(k,d){try{const v=localStorage.getItem('cerco-'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
           set(k,v){try{localStorage.setItem('cerco-'+k,JSON.stringify(v));}catch(e){}}};
+
+/* ---- 00b-icones.js ---- */
+/* Ícones desenhados à mão em SVG (24×24), no traço de gravura do mapa: tinta K, pergaminho, vermelho, ouro.
+   ic(nome) dá o SVG para HTML (a tinta segue o tema); icImg(nome) dá uma imagem para desenhar no canvas. */
+const ICONS=(()=>{
+  const K='K',R='#9b2226',G='#c9971c',GL='#e8c24a',P='#efe3c6',B='#2f4a73',GR='#6f9a3a',GD='#4a6b2e',WD='#8a5a32',ST='#a89878',WA='#2a6f8a',OR='#c8541e';
+  const s=(d,f,w)=>`<path d="${d}" fill="${f||'none'}" stroke="${K}" stroke-width="${w||1.4}" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const f=(d,c)=>`<path d="${d}" fill="${c}"/>`;
+  const c=(x,y,r,fl,w)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fl||'none'}" stroke="${K}" stroke-width="${w||1.4}"/>`;
+  const sword=m=>`<g${m?' transform="matrix(-1 0 0 1 24 0)"':''}>${s('M4 4l12 12',null,3.4)}<path d="M4 4l12 12" stroke="#e4dcc6" stroke-width="1.3" stroke-linecap="round"/>${s('M13.5 18.5l5-5',null,2.2)}${s('M17 17l2.6 2.6',null,2)}${c(20.2,20.2,1.3,G,1)}</g>`;
+  const flame=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k})">${s('M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 2 1 3 2 3 0-3 0-5 1-8z',OR)}${f('M12 11c.5 2 3 3 3 5.5a3 3 0 0 1-6 0c0-1.5 1-2.5 1.6-3.4.2 1 .6 1.4 1 1.4 0-1.2 0-2.3.4-3.5z',GL)}</g>`;
+  const I={
+    coin:c(12,12,8.5,G)+c(12,12,6,null,.9)+s('M12 8.2v7.6M8.2 12h7.6',null,1.6)+f('M7 8.5a6 6 0 0 1 3-2.5',P),
+    swords:sword(0)+sword(1),
+    castle:s('M3.5 21V10h3v2h2.2v-2h2.1v2h2.4v-2h2.1v2h2.2v-2h3v11z',ST)+s('M9.8 21v-3.6a2.2 2.2 0 0 1 4.4 0V21',K)+s('M12 10V3.2l4.2 1.5L12 6.2',R)+s('M5 15h2M17 15h2',null,1.1),
+    duo:c(15.5,7.5,3,R)+s('M9.5 19.5c0-4 2.6-6.5 6-6.5s6 2.5 6 6.5z',R)+c(8.5,8.5,3.2,B)+s('M2 20.5c0-4.2 2.9-6.8 6.5-6.8S15 16.3 15 20.5z',B),
+    p1:c(12,12,7,B,1.6)+f('M8.5 9.5a4 4 0 0 1 3-2.5',P),
+    p2:c(12,12,7,R,1.6)+f('M8.5 9.5a4 4 0 0 1 3-2.5',P),
+    sun:s('M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1',null,1.6)+c(12,12,5,GL),
+    moon:s('M14.5 3.5a8.5 8.5 0 1 0 6 14 7 7 0 1 1-6-14z',GL)+c(9,13,.9,null,.8)+c(11.5,17,.6,null,.8),
+    rain:s('M6.5 14.5a4 4 0 0 1-.3-8 5.5 5.5 0 0 1 10.4 1.4 3.3 3.3 0 0 1 .9 6.6z',P)+`<path d="M8 17.5l-1 3M12 17.5l-1 3M16 17.5l-1 3" stroke="${WA}" stroke-width="1.8" stroke-linecap="round"/>`,
+    fog:s('M3 7.5c3-2 5 2 9 0s6 2 9 0M3 12c3-2 5 2 9 0s6 2 9 0M3 16.5c3-2 5 2 9 0s6 2 9 0',null,1.7),
+    pause:s('M7 5h3.2v14H7zM13.8 5H17v14h-3.2z',K,1),
+    play:s('M7 4.5l12 7.5-12 7.5z',K,1),
+    snd0:s('M3.5 9h4l5-4v14l-5-4h-4z',K,1)+s('M16 9l5 6M21 9l-5 6',null,1.8),
+    snd1:s('M3.5 9h4l5-4v14l-5-4h-4z',K,1)+s('M15.5 9a4 4 0 0 1 0 6',null,1.7),
+    snd2:s('M3.5 9h4l5-4v14l-5-4h-4z',K,1)+s('M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',null,1.7),
+    menu:s('M4 6.5h16M4 12h16M4 17.5h16',null,2.2),
+    gear:`<circle cx="12" cy="12" r="8" fill="none" stroke="${K}" stroke-width="3.6" stroke-dasharray="2.6 2.63"/>`+c(12,12,6,ST)+c(12,12,2.3,P),
+    help:c(12,12,9,P)+s('M9.3 9.4a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9v.6',null,1.8)+`<circle cx="12" cy="17.4" r="1.2" fill="${K}"/>`,
+    globe:c(12,12,9,P)+s('M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18M4.8 7h14.4M4.8 17h14.4',null,1)+s('M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0',null,1.4),
+    map:s('M3 6.5l6-2.3 6 2.3 6-2.3v13.6l-6 2.3-6-2.3-6 2.3z',P)+s('M9 4.2v13.6M15 6.5v13.6',null,.9)+`<path d="M5 15c2-1 3-4 6-4s3 3 6 1" fill="none" stroke="${R}" stroke-width="1.3" stroke-dasharray="1.6 1.4"/>`+s('M17 10.2l2 2M19 10.2l-2 2',null,1.3),
+    trophy:s('M7 3.5h10v5a5 5 0 0 1-10 0z',G)+s('M7 5H4.2c0 3 1.2 4.5 3.2 5M17 5h2.8c0 3-1.2 4.5-3.2 5',null,1.3)+s('M12 13.5v3.5M8.5 20.5h7l-1-3.5h-5z',WD)+f('M9 5v3.5a3 3 0 0 0 1.5 2.6',GL),
+    medal:s('M7 2.5h4l2 7h-4zM17 2.5h-4l-2 7h4z',R)+c(12,15,6,G)+s('M12 11.6l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z',GL,.9),
+    scroll:s('M6 4.5h11a2 2 0 0 1 2 2V17h-2',P)+s('M17 17H7a2 2 0 0 0 0 4h11a2 2 0 0 0 2-2v-2',P)+s('M6 4.5a2 2 0 0 0-2 2v1.5h4V6.5a2 2 0 0 0-2-2zM8 6.5V19',P)+s('M10.5 9h6M10.5 11.5h6M10.5 14h4',null,1),
+    lock:s('M8 11V8a4 4 0 0 1 8 0v3',null,2)+s('M5.5 11h13v9.5h-13z',G)+s('M12 14.5v2.5',null,2),
+    check:`<path d="M4.5 12.5l5 5L19.5 7" fill="none" stroke="${GD}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+    heart:s('M12 20.5S3.5 15 3.5 9.2A4.3 4.3 0 0 1 12 7.5a4.3 4.3 0 0 1 8.5 1.7C20.5 15 12 20.5 12 20.5z',R)+f('M6.3 8.2a2.4 2.4 0 0 1 2.2-1.6',P),
+    target:c(12,12,9,P)+c(12,12,6,R)+c(12,12,3,P)+`<circle cx="12" cy="12" r="1.1" fill="${K}"/>`,
+    hourglass:s('M5.5 3h13M5.5 21h13',null,2)+s('M7 3.5c0 5 4 6 4 8.5s-4 3.5-4 8.5h10c0-5-4-6-4-8.5s4-3.5 4-8.5z',P)+f('M8.3 19.8c.4-2.6 2.2-3.8 3.7-4.6 1.5.8 3.3 2 3.7 4.6zM9.2 7h5.6c-.6 1.3-1.7 2.2-2.8 2.8-1.1-.6-2.2-1.5-2.8-2.8z',G),
+    star:s('M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z',GL),
+    warn:s('M12 3.2l9.5 17H2.5z',GL)+s('M12 9.5v5',null,2.2)+`<circle cx="12" cy="17.4" r="1.2" fill="${K}"/>`,
+    flame:flame(0,0,1),
+    infinite:s('M12 12c-2-3-3.8-4.5-5.8-4.5a4.5 4.5 0 0 0 0 9c2 0 3.8-1.5 5.8-4.5s3.8-4.5 5.8-4.5a4.5 4.5 0 0 1 0 9c-2 0-3.8-1.5-5.8-4.5z',null,2),
+    /* poderes */
+    arrows:[[5,3],[11,2],[16.5,4.5]].map(([x,y])=>`<g transform="translate(${x-4} ${y})">${s('M4 1l0 13',null,1.5)}${s('M1.8 11.5L4 15.8 6.2 11.5z',ST,1)}${s('M4 1l-1.8-1M4 1l1.8-1M4 3l-1.8-1M4 3l1.8-1',null,1)}</g>`).join('')+s('M2.5 21.5c3-1.5 16-1.5 19 0',null,1.2),
+    gate:s('M4 21.5V10a8 8 0 0 1 16 0v11.5z',WD)+s('M7.5 21.5v-11M12 21.5V5M16.5 21.5v-11M4.5 12.5h15M4 17h16',null,1)+`<circle cx="15" cy="15" r="1" fill="${G}" stroke="${K}" stroke-width=".8"/>`,
+    bell:s('M12 2.5v2',null,1.8)+s('M6 17.5c1-1.5 1.5-3 1.5-6.5a4.5 4.5 0 0 1 9 0c0 3.5.5 5 1.5 6.5z',G)+s('M4.5 17.5h15',null,2)+c(12,20,1.7,WD,1.2)+f('M9 10.5c0-1.6.8-2.8 2-3.3',GL),
+    baguette:s('M4.5 20.5c-1.5-1.5-1-4 1.5-6.5L14 6c2.5-2.5 5-3 6.5-1.5S21 8.5 18.5 11l-8 8c-2.5 2.5-4.5 3-6 1.5z','#d9a45a')+s('M8 14.5l2 2.5M11.5 11l2 2.5M15 7.5l2 2.5',null,1.2),
+    bread:s('M3 15.5c0-5.2 4-9 9-9s9 3.8 9 9c0 2-1.5 3-3 3H6c-1.5 0-3-1-3-3z','#d9a45a')+s('M8 9.5l1.5 3M12 8.5v3.5M16 9.5l-1.5 3',null,1.2)+f('M6 12c.5-2 2-3.5 4-4.2',P),
+    /* torres */
+    bow:s('M6 3c7 2 11 7 11 18',null,2.4)+`<path d="M6 3c7 2 11 7 11 18" fill="none" stroke="${WD}" stroke-width="1.1"/>`+s('M6 3L17 21',null,.8)+s('M3.5 18.5L19 6',null,1.4)+s('M19 6l-3.6.4 1.2 1.5 1.5 1.2z',ST,1)+s('M3.5 18.5l.2-2.3M3.5 18.5l2.3-.2',null,1.1),
+    crossbow:s('M12 4v16.5',null,3.2)+`<path d="M12 4v16.5" stroke="${WD}" stroke-width="1.6" stroke-linecap="round"/>`+s('M3 11c3-3.5 15-3.5 18 0',null,2)+s('M3 11L12 13.5 21 11',null,.8)+s('M12 3l-1.8 2.8h3.6z',ST,1),
+    stone:s('M4 14.5c-1-4 2-8.5 7-9 5-.6 9 2.6 9 7 0 4.5-3.5 7.5-8.5 7.5-4 0-6.7-2-7.5-5.5z',ST)+s('M9 9l2.5 3-1.5 3M14.5 8.5l-1 3.5 3 2',null,1)+f('M7 10c.6-1.6 2-2.8 3.8-3.2',P),
+    cauldron:flame(3.4,-1.5,.72)+s('M3.5 12.5h17c0 5-3.5 8-8.5 8s-8.5-3-8.5-8z',K,1.2)+s('M2.5 12.5h19',null,2.2)+s('M6.5 20l-1 2M17.5 20l1 2',null,1.5),
+    /* bênçãos e pactos */
+    cross:s('M10 2.5h4v6h6v4h-6v9h-4v-9H4v-4h6z',G)+f('M11 3.5h1.2v6h-1.2z',GL),
+    hammer:s('M13.5 10.5L4.5 19.5a1.6 1.6 0 0 0 2.3 2.3l9-9',WD)+s('M10.5 6.5l4-4 1.5 1.5 3.5.5-.5 1.5 2.5 2.5-4 4z',ST)+s('M17 3.5l3.5 3.5',null,1),
+    wine:s('M8.5 2.5h4v5c3 1 4 3 4 5.5v8.5h-12V13c0-2.5 1-4.5 4-5.5z','#3f6e2e')+s('M5.6 13.5h9.8v5H5.6z',P,1)+s('M9 1.8h3',null,1.8)+s('M18.5 21.5v-5m-1.5-4h3c0 2-1.5 4-1.5 4',null,1.2),
+    bricks:s('M2.5 5.5h19v14h-19z','#b5563a')+s('M2.5 10.2h19M2.5 14.8h19M9 5.5v4.7M16 5.5v4.7M5.5 10.2v4.6M12.5 10.2v4.6M19 10.2v4.6M9 14.8v4.7M16 14.8v4.7',null,1),
+    bowl:s('M2.5 11.5h19c0 5-4 8.5-9.5 8.5s-9.5-3.5-9.5-8.5z',ST)+f('M4 12c1 1 15 1 16 0-.3.7-15.7.7-16 0z',GR)+s('M8.5 8.5c0-1.5 1.2-1.5 1.2-3M12.5 8.5c0-1.5 1.2-1.5 1.2-3',null,1.1)+f('M7 11.2c1-.6 2-.4 2.6.2M14 11c1-.5 2-.2 2.6.3',GD),
+    eye:s('M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z',P)+c(12,12,3.8,WA)+`<circle cx="12" cy="12" r="1.6" fill="${K}"/>`+s('M12 2v1.8M5 4.2l1 1.5M19 4.2l-1 1.5',null,1.3),
+    olive:s('M3 21c5-5 10-9 18-17',null,1.4)+s('M7.5 16.5c-1-3 1-5 3-5.5-.2 2.4-1 4.5-3 5.5zM13 11c-.5-3 1.5-5 3.5-5-.2 2.3-1.3 4.2-3.5 5z',GR,1)+`<ellipse cx="13.5" cy="16.5" rx="2.5" ry="3" fill="${GD}" stroke="${K}" stroke-width="1.2"/><ellipse cx="18.5" cy="11.5" rx="2.1" ry="2.6" fill="${GD}" stroke="${K}" stroke-width="1.2"/>`,
+    basket:s('M7 10c0-3.5 2.2-6 5-6s5 2.5 5 6',null,1.8)+s('M5 9.5h14l-1.5 11h-11z','#c9a060')+s('M7 13h10M7.4 16.5h9.2M9.3 9.5l.7 11M14.7 9.5l-.7 11',null,.8)+s('M4 9.5c3 1.8 13 1.8 16 0l-1-2.2c-3 1.4-11 1.4-14 0z',R,1.1),
+    coinbag:s('M9 6.5L7.5 3h9L15 6.5','#b08850')+s('M9 6.5h6c4 3 6 6.5 6 9.5 0 3.5-3 5.5-9 5.5S3 19.5 3 16c0-3 2-6.5 6-9.5z','#b08850')+s('M8.5 6.5h7',null,2)+c(12,15,3,G,1.1)+s('M12 13.5v3',null,.9),
+    dagger:s('M12 2l2 3v9h-4V5z','#e4dcc6')+s('M12 4.5v8.5',null,.8)+s('M7 14h10',null,2.2)+s('M12 15v4.5',WD,2.4)+c(12,21,1.3,G,1),
+    crown:s('M3 18.5L2.5 7.5l5 4.5L12 5l4.5 7 5-4.5-.5 11z',G)+s('M3 18.5h18v2.5H3z',G)+`<circle cx="12" cy="14.5" r="1.4" fill="${R}" stroke="${K}" stroke-width=".8"/>`+c(2.5,7.2,1,GL,.9)+c(12,4.8,1,GL,.9)+c(21.5,7.2,1,GL,.9),
+    fish:s('M2.5 12c3.5-5 11-6 15.5-.1C13.5 17.9 6 17 2.5 12z','#8fa3a8')+s('M18 11.9l3.5-3.5v7z','#8fa3a8')+`<circle cx="6.5" cy="11" r="1" fill="${K}"/>`+s('M9.5 9.5c1 1.5 1 3.5 0 5',null,.9),
+    helmet:s('M2.5 14.5c3-1 5-1.2 9.5-1.2s6.5.2 9.5 1.2c-2 2-4.5 2.5-9.5 2.5s-7.5-.5-9.5-2.5z',ST)+s('M6.5 13.5c0-5 2.5-8 5.5-8s5.5 3 5.5 8',ST)+s('M12 5.5V2.8',null,1.8)+s('M12 5.5c0 2.5 0 5 0 7.8',null,.8),
+    castleflag:'',
+    dragon:s('M3 17c2-1 4-1 6 0 1-4 4-6.5 8-6.5l1.5-3 1 3.2 2.5.8-2.5 1.8c-2 .5-3.5 2-4 4.2-1 3.5-4 5-7.5 4.5-2.5-.4-4-2-5-4z',GR)+s('M9.5 12.5L6 4.5l7 5',GD)+`<circle cx="18" cy="11.8" r=".8" fill="${K}"/>`+s('M4 21l1.5-2.5M8 21.8l.5-2.5',null,1.2),
+    octopus:s('M6 12a6 6 0 0 1 12 0c0 2-1 3-2 3.5',`#8a3f6e`)+s('M6 12c0 2 1 3 2 3.5',null,1.4)+s('M8 15.5c-1 2-3.5 3-5 2M10 16c0 2.5-1 4-2.5 5M14 16c0 2.5 1 4 2.5 5M16 15.5c1 2 3.5 3 5 2M12 16.2v4.8',null,1.8)+f('M6.1 12.2a6 6 0 0 1 11.8 0c0 1.5-.8 3-3 3.6H9c-2-.6-2.9-2-2.9-3.6z','#8a3f6e')+`<circle cx="10" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/><circle cx="14" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/>`,
+    stag:s('M9 13c-1 5 1 8.5 3 8.5s4-3.5 3-8.5c-.5-2-5.5-2-6 0z','#9a6a3a')+s('M9.5 12.5C7 11 5.5 8.5 5.5 5M5.5 8.5L2.5 7M6.5 6L4.5 2.5M14.5 12.5c2.5-1.5 4-4 4-7.5M18.5 8.5l3-1.5M17.5 6l2-3.5',null,1.6)+`<circle cx="10.6" cy="15.5" r=".8" fill="${K}"/><circle cx="13.4" cy="15.5" r=".8" fill="${K}"/><ellipse cx="12" cy="20" rx="1.3" ry=".9" fill="${K}"/>`,
+    horse:s('M7 21.5c0-4 1-7 3-9.5L6 12.5c-1.5 0-2.5-1.5-1.5-3L9 4.5 9.5 2l2 2c4.5.5 7.5 4 7.5 9v8.5z','#b98a52')+s('M11 4.5c2 1 3 3 3 6',null,1)+`<circle cx="9.3" cy="7.8" r=".9" fill="${K}"/>`,
+    shield:s('M12 2.5l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10v-6z','#6a3a7d')+s('M12 2.5v19M4 10.5h16',null,.9)+f('M12 3.2l7.3 2.7v4.6H12z',P),
+    swim:c(12,7.5,3.3,'#e0b88a')+s('M4 13.5l3-2.5 3 2M20 13.5l-3-2.5-3 2',null,1.5)+`<path d="M2 16.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0M2 20.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0" fill="none" stroke="${WA}" stroke-width="1.8" stroke-linecap="round"/>`,
+    plus:s('M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',P)+f('M10.2 4.2h3.6v6h6v3.6h-6v6h-3.6v-6h-6v-3.6h6z',R),
+    siege:s('M6 21.5V6l6-3.5L18 6v15.5z',WD)+s('M6 10h12M6 14.5h12M6 18.5h12M9 6v15.5M15 6v15.5',null,.8)+s('M10 21.5v-4h4v4',K,1)+c(7,21.5,1.6,ST,1)+c(17,21.5,1.6,ST,1),
+    ram:s('M3.5 9.5h14l3 2.5-3 2.5h-14z',WD)+s('M17.5 9.5c1.5 0 3 1 3 2.5s-1.5 2.5-3 2.5',ST)+s('M7 9.5V4.5M13 9.5V4.5M5 4.5h10',null,1.5)+c(6,18,2.5,ST)+c(15,18,2.5,ST)+s('M6 14.5v1M15 14.5v1',null,1.2)
+  };
+  delete I.castleflag;
+  return I;
+})();
+const icSvg=(n,ink)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${(ICONS[n]||'').replace(/"K"/g,'"'+ink+'"')}</svg>`;
+// os ícones só de tinta (pausa, som, menu…) seguem a cor do texto; os outros são «autocolantes» com contorno fixo
+const IC_MONO=new Set(['pause','play','snd0','snd1','snd2','menu','fog','infinite']);
+function ic(n,cls){return icSvg(n,IC_MONO.has(n)?'currentColor':'#2e2419').replace('<svg ','<svg class="ico'+(cls?' '+cls:'')+'" aria-hidden="true" focusable="false" ');}
+const IC_IMG={};
+function icImg(n){let im=IC_IMG[n];if(!im){im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icSvg(n,'#2e2419'));IC_IMG[n]=im;}return im;}
+document.querySelectorAll('[data-ic]').forEach(e=>{e.innerHTML=ic(e.dataset.ic);});
+function drawIc(c,n,x,y,sz){const im=icImg(n);if(im.complete&&im.naturalWidth)c.drawImage(im,x-sz/2,y-sz/2,sz,sz);}
 
 /* ---- 01-geometria-mapas.js ---- */
 /* ================= Geometria ================= */
@@ -514,16 +606,16 @@ function dPath(x,y){let m=1e9;for(const P of PATHS)for(const s of P.seg.slice(1)
 /* ---- 02-regras-humor.js ---- */
 /* ================= Regras ================= */
 const TYPES={
-  arq:{name:tr('Arqueiros','Archers'),icon:'🏹',cost:50,up:[60,100,150],dmg:[9,15],range:[105,115],rate:[0.55,0.5],col:'#4a6b2e',desc:tr('Tiro rápido a um alvo.','Fast shots, single target.'),
+  arq:{name:tr('Arqueiros','Archers'),icon:'bow',cost:50,up:[60,100,150],dmg:[9,15],range:[105,115],rate:[0.55,0.5],col:'#4a6b2e',desc:tr('Tiro rápido a um alvo.','Fast shots, single target.'),
     br:[{name:tr('Flechas de fogo','Fire arrows'),desc:tr('Incendeiam o alvo','Set the target ablaze'),dmg:20,range:125,rate:0.42,burn:{dps:9,t:3}},
         {name:tr('Arco longo','Longbow'),desc:tr('Muito mais alcance','Much longer range'),dmg:27,range:165,rate:0.5}]},
-  bes:{name:tr('Besteiros','Crossbowmen'),icon:'🎯',cost:90,up:[90,150,220],dmg:[30,55],range:[140,155],rate:[1.3,1.2],pierce:true,col:'#2f4a73',desc:tr('Ignoram armadura.','Ignore armour.'),
+  bes:{name:tr('Besteiros','Crossbowmen'),icon:'crossbow',cost:90,up:[90,150,220],dmg:[30,55],range:[140,155],rate:[1.3,1.2],pierce:true,col:'#2f4a73',desc:tr('Ignoram armadura.','Ignore armour.'),
     br:[{name:tr('Balestra pesada','Heavy arbalest'),desc:tr('Golpes enormes','Huge hits'),dmg:160,range:175,rate:1.45},
         {name:tr('Besta de repetição','Repeating crossbow'),desc:tr('Dispara a rodos','Fires non-stop'),dmg:55,range:160,rate:0.45}]},
-  tra:{name:tr('Trabuco','Trebuchet'),icon:'🪨',cost:130,up:[120,190,260],dmg:[28,48],range:[150,165],rate:[2.4,2.2],splash:[45,52],col:'#6b4a2a',desc:tr('Pedras com dano em área.','Stones with area damage.'),
+  tra:{name:tr('Trabuco','Trebuchet'),icon:'stone',cost:130,up:[120,190,260],dmg:[28,48],range:[150,165],rate:[2.4,2.2],splash:[45,52],col:'#6b4a2a',desc:tr('Pedras com dano em área.','Stones with area damage.'),
     br:[{name:tr('Pedras em chamas','Flaming stones'),desc:tr('Área que arde','Burning area'),dmg:72,range:180,rate:2.0,splash:62,burn:{dps:10,t:3}},
         {name:tr('Longo alcance','Long range'),desc:tr('Acerta em meio mapa','Hits half the map'),dmg:85,range:245,rate:2.1,splash:50}]},
-  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'🔥',cost:80,up:[80,130,190],dmg:[6,10],range:[70,78],rate:[0.9,0.85],slow:[0.5,0.45],col:'#9b2226',desc:tr('Queima e abranda.','Burns and slows.'),
+  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'cauldron',cost:80,up:[80,130,190],dmg:[6,10],range:[70,78],rate:[0.9,0.85],slow:[0.5,0.45],col:'#9b2226',desc:tr('Queima e abranda.','Burns and slows.'),
     br:[{name:tr('Azeite fervente','Scalding oil'),desc:tr('Queima muito mais','Burns much more'),dmg:26,range:86,rate:0.8,slow:0.45},
         {name:tr('Pez pegajoso','Sticky pitch'),desc:tr('Quase os cola ao chão','Nearly glues them to the ground'),dmg:12,range:96,rate:0.8,slow:0.2}]}
 };
@@ -549,13 +641,13 @@ const DIFFS=[
   {id:'castelhano',name:tr('Castelhano','Castilian'),desc:tr('O jogo normal','The normal game'),hp:1,gold:180,lives:20,dmg:1},
   {id:'paco',name:tr('Capitão Paco','Captain Paco'),desc:tr('Sofre, português','Suffer, Portuguese'),hp:1.35,gold:150,lives:10,dmg:1.3}];
 const HEROES={
-  padeira:{name:tr('Padeira de Aljubarrota','The Baker of Aljubarrota'),short:tr('Padeira','Baker'),icon:'🥖',col:'#f2ead4',dress:'#8a3a22',hp:230,dmg:24,rate:0.8,range:28,melee:true,
+  padeira:{name:tr('Padeira de Aljubarrota','The Baker of Aljubarrota'),short:tr('Padeira','Baker'),icon:'baguette',col:'#f2ead4',dress:'#8a3a22',hp:230,dmg:24,rate:0.8,range:28,melee:true,
     sp:{name:tr('Pá do forno','Oven shovel'),desc:tr('Pancada em área que atordoa','Stunning area smash'),cd:18}},
-  deuladeu:{name:'Deu-la-Deu Martins',short:'Deu-la-Deu',icon:'🍞',col:'#f2ead4',dress:'#2f4a73',hp:180,dmg:15,rate:0.6,range:85,melee:false,
+  deuladeu:{name:'Deu-la-Deu Martins',short:'Deu-la-Deu',icon:'bread',col:'#f2ead4',dress:'#2f4a73',hp:180,dmg:15,rate:0.6,range:85,melee:false,
     sp:{name:tr('Chuva de pão','Bread rain'),desc:tr('Param todos para comer','Everyone stops to eat'),cd:22}}
 };
 const ABIL={rain:{cd:25,name:tr('Chuva de flechas','Arrow rain')},gate:{cd:40,name:tr('Fechar portas','Close the gates')},bell:{cd:45,name:tr('Sino','Bell')}};
-const WEATHER={sol:{ic:'☀️',name:tr('Sol','Sun')},noite:{ic:'🌙',name:tr('Noite','Night')},chuva:{ic:'🌧️',name:tr('Chuva','Rain')},nevoeiro:{ic:'🌫️',name:tr('Nevoeiro','Fog')}};
+const WEATHER={sol:{ic:'sun',name:tr('Sol','Sun')},noite:{ic:'moon',name:tr('Noite','Night')},chuva:{ic:'rain',name:tr('Chuva','Rain')},nevoeiro:{ic:'fog',name:tr('Nevoeiro','Fog')}};
 function waveDef(w){
   const g=[['peao',6+Math.round(w*2),0.8]];
   if(w>=3)g.push(['cav',Math.floor(w*1.2),0.65]);
@@ -581,17 +673,17 @@ const COMBO_T=2.5;
 const MOD0=()=>({dmg:1,range:1,rate:1,gold:1,hp:1,cd:1,hero:1,oil:1,sight:false});
 // now: efeito imediato (não se volta a aplicar ao carregar a partida); once: só se escolhe uma vez; ok: quando pode aparecer
 const CARDS=[
-  {id:'teotonio',ic:'✝️',k:'b',name:tr('Bênção de São Teotónio','Blessing of Saint Theotonius'),desc:tr('+12% de alcance em todas as torres.','+12% range on all towers.'),fx:M=>{M.range*=1.12;}},
-  {id:'ferreiros',ic:'⚒️',k:'b',name:tr('Ferreiros de Guimarães','Blacksmiths of Guimarães'),desc:tr('+18% de dano em todas as torres.','+18% damage on all towers.'),fx:M=>{M.dmg*=1.18;}},
-  {id:'vinho',ic:'🍷',k:'b',name:tr('Vinho Verde para a tropa','Vinho Verde for the troops'),desc:tr('Todas as torres disparam 12% mais depressa.','All towers fire 12% faster.'),fx:M=>{M.rate*=0.88;}},
-  {id:'pedreiros',ic:'🧱',k:'b',name:tr('Pedreiros de Braga','Stonemasons of Braga'),desc:tr('Reparam as muralhas: recuperas 6 vidas.','They repair the walls: you recover 6 lives.'),now:true,ok:()=>S.lives<S.startLives,fx:()=>{S.lives=Math.min(S.startLives,S.lives+6);}},
-  {id:'sineiro',ic:'🔔',k:'b',name:tr('Sineiro madrugador','Early-rising bell-ringer'),desc:tr('Os poderes recarregam 30% mais depressa.','Powers recharge 30% faster.'),fx:M=>{M.cd*=0.7;}},
-  {id:'caldo',ic:'🥣',k:'b',name:tr('Caldo verde da avó','Grandma’s caldo verde'),desc:tr('A heroína fica com +40% de vida e de dano.','The heroine gets +40% health and damage.'),fx:M=>{M.hero*=1.4;}},
-  {id:'luzia',ic:'👁️',k:'b',name:tr('Promessa a Santa Luzia','A vow to Saint Lucy'),desc:tr('As torres veem bem de noite e no nevoeiro.','Towers see clearly at night and in fog.'),once:true,fx:M=>{M.sight=true;}},
-  {id:'azeite',ic:'🫒',k:'b',name:tr('Azeite de Trás-os-Montes','Trás-os-Montes olive oil'),desc:tr('O azeite a ferver queima +60%.','Boiling oil burns +60% more.'),ok:()=>S.built.has('cal'),fx:M=>{M.oil*=1.6;}},
-  {id:'toalhas',ic:'🧺',k:'p',name:tr('Pacto das Toalhas','The Towel Pact'),desc:tr('Inimigos com +15% de vida, mas dão +35% de ouro.','Enemies have +15% health but give +35% gold.'),fx:M=>{M.hp*=1.15;M.gold*=1.35;}},
-  {id:'contrabando',ic:'💰',k:'p',name:tr('Acordo com contrabandistas','Deal with the smugglers'),desc:tr('+200 de ouro já, mas perdes 3 vidas.','+200 gold now, but you lose 3 lives.'),now:true,ok:()=>S.lives>5,fx:()=>{addGold('all',200);S.lives-=3;}},
-  {id:'mercenarios',ic:'🗡️',k:'p',name:tr('Mercenários galegos','Galician mercenaries'),desc:tr('+30% de dano nas torres, mas −10% de alcance.','+30% tower damage, but −10% range.'),fx:M=>{M.dmg*=1.3;M.range*=0.9;}}
+  {id:'teotonio',ic:'cross',k:'b',name:tr('Bênção de São Teotónio','Blessing of Saint Theotonius'),desc:tr('+12% de alcance em todas as torres.','+12% range on all towers.'),fx:M=>{M.range*=1.12;}},
+  {id:'ferreiros',ic:'hammer',k:'b',name:tr('Ferreiros de Guimarães','Blacksmiths of Guimarães'),desc:tr('+18% de dano em todas as torres.','+18% damage on all towers.'),fx:M=>{M.dmg*=1.18;}},
+  {id:'vinho',ic:'wine',k:'b',name:tr('Vinho Verde para a tropa','Vinho Verde for the troops'),desc:tr('Todas as torres disparam 12% mais depressa.','All towers fire 12% faster.'),fx:M=>{M.rate*=0.88;}},
+  {id:'pedreiros',ic:'bricks',k:'b',name:tr('Pedreiros de Braga','Stonemasons of Braga'),desc:tr('Reparam as muralhas: recuperas 6 vidas.','They repair the walls: you recover 6 lives.'),now:true,ok:()=>S.lives<S.startLives,fx:()=>{S.lives=Math.min(S.startLives,S.lives+6);}},
+  {id:'sineiro',ic:'bell',k:'b',name:tr('Sineiro madrugador','Early-rising bell-ringer'),desc:tr('Os poderes recarregam 30% mais depressa.','Powers recharge 30% faster.'),fx:M=>{M.cd*=0.7;}},
+  {id:'caldo',ic:'bowl',k:'b',name:tr('Caldo verde da avó','Grandma’s caldo verde'),desc:tr('A heroína fica com +40% de vida e de dano.','The heroine gets +40% health and damage.'),fx:M=>{M.hero*=1.4;}},
+  {id:'luzia',ic:'eye',k:'b',name:tr('Promessa a Santa Luzia','A vow to Saint Lucy'),desc:tr('As torres veem bem de noite e no nevoeiro.','Towers see clearly at night and in fog.'),once:true,fx:M=>{M.sight=true;}},
+  {id:'azeite',ic:'olive',k:'b',name:tr('Azeite de Trás-os-Montes','Trás-os-Montes olive oil'),desc:tr('O azeite a ferver queima +60%.','Boiling oil burns +60% more.'),ok:()=>S.built.has('cal'),fx:M=>{M.oil*=1.6;}},
+  {id:'toalhas',ic:'basket',k:'p',name:tr('Pacto das Toalhas','The Towel Pact'),desc:tr('Inimigos com +15% de vida, mas dão +35% de ouro.','Enemies have +15% health but give +35% gold.'),fx:M=>{M.hp*=1.15;M.gold*=1.35;}},
+  {id:'contrabando',ic:'coinbag',k:'p',name:tr('Acordo com contrabandistas','Deal with the smugglers'),desc:tr('+200 de ouro já, mas perdes 3 vidas.','+200 gold now, but you lose 3 lives.'),now:true,ok:()=>S.lives>5,fx:()=>{addGold('all',200);S.lives-=3;}},
+  {id:'mercenarios',ic:'dagger',k:'p',name:tr('Mercenários galegos','Galician mercenaries'),desc:tr('+30% de dano nas torres, mas −10% de alcance.','+30% tower damage, but −10% range.'),fx:M=>{M.dmg*=1.3;M.range*=0.9;}}
 ];
 
 /* ================= Coração da praça ================= */
@@ -600,9 +692,9 @@ const HEART_TXT=['',tr('As muralhas racham!','The walls are cracking!'),tr('Fogo
 /* ================= Humor ================= */
 const Q={
   die:['¡Ay, mi madre!','¡Madre mía!','¡Mis toallas!','¡Caramba!','¡Me cago en…!','¡Socorro, mamá!','¡Esto no es Benidorm!','¡Olé… no!'],
-  leak:['Foi comprar toalhas! 🧺','Lá se foi mais um às compras','Entrou para ver os lençóis','Passou sem pagar portagem!','Ai o caraças!'],
+  leak:['Foi comprar toalhas!','Lá se foi mais um às compras','Entrou para ver os lençóis','Passou sem pagar portagem!','Ai o caraças!'],
   build:[tr('Às ordens!','At your command!'),'Bora lá, carago!','Deixa-os vir!','Já cheira a pólvora… ou a bifana','Aqui ninguém passa!'],
-  idle:['Alguém trouxe bifanas?','Ó chefe, há vinho verde?','Estou de olho neles 👀','Vai-te embora pra Galiza!','Isto hoje está calmo…','A minha mãe fazia melhor pontaria','Quem é que deixou o portão aberto?','Cheira-me a paella…'],
+  idle:['Alguém trouxe bifanas?','Ó chefe, há vinho verde?','Estou de olho neles','Vai-te embora pra Galiza!','Isto hoje está calmo…','A minha mãe fazia melhor pontaria','Quem é que deixou o portão aberto?','Cheira-me a paella…'],
   wave:['Lá vêm eles outra vez…','Estão com saudades das toalhas','Mais barcas no rio!','Parece que ninguém lhes disse que perderam','Olha, olha, mais castelhanos!','Hoje o rio está cheio de turistas armados'],
   torre:['Surpresa! Vinha cheia!','Era um Cavalo de Tróia do Minho!','Saem como sardinhas da lata!'],
   cap:['Chegou o Capitão Paco!','O Capitão Paco quer falar com o gerente','Capitão Paco: «¡Esta vez sí!»'],
@@ -611,9 +703,9 @@ const Q={
   weather:{noite:'Cai a noite… os arqueiros veem mal',chuva:'Chove a potes! O azeite arrefece',nevoeiro:'Nevoeiro no Minho… não se veem as barcas'}
 };
 if(LANG==='en')Object.assign(Q,{
-  leak:['Gone towel shopping! 🧺','Another one off to the shops','Just popped in to see the bedsheets','Got through without paying the toll!','Oh, for crying out loud!'],
+  leak:['Gone towel shopping!','Another one off to the shops','Just popped in to see the bedsheets','Got through without paying the toll!','Oh, for crying out loud!'],
   build:['At your command!','Come on, lads!','Let them come!','Smells like gunpowder… or a bifana','None shall pass!'],
-  idle:['Did anyone bring bifanas?','Oi, boss, any vinho verde?','I’ve got my eye on them 👀','Go back to Galicia!','Quiet day today…','My mum has better aim','Who left the gate open?','I smell paella…'],
+  idle:['Did anyone bring bifanas?','Oi, boss, any vinho verde?','I’ve got my eye on them','Go back to Galicia!','Quiet day today…','My mum has better aim','Who left the gate open?','I smell paella…'],
   wave:['Here they come again…','They miss the towels','More boats on the river!','Nobody told them they lost','Look, look, more Castilians!','The river is full of armed tourists today'],
   torre:['Surprise! It was full!','A Trojan Horse of the Minho!','Out they pop like sardines from a tin!'],
   cap:['Captain Paco has arrived!','Captain Paco wants to speak to the manager','Captain Paco: «¡Esta vez sí!»'],
@@ -729,7 +821,7 @@ const PH={
   'Aqui ninguém passa!':'AHKIY5 NIYNGAY5N PAA5SAH.',
   'Alguém trouxe bifanas?':'AALGAY5N TROW5SIX BIYFAX5NAHSH?',
   'Ó chefe, há vinho verde?':'AO5 SHEH5FIX, AA4 VIY5NYUW VEH5RDIX?',
-  'Estou de olho neles 👀':'IXSHTOW5 DIX OH5LYUW NEH5LIXSH.',
+  'Estou de olho neles':'IXSHTOW5 DIX OH5LYUW NEH5LIXSH.',
   'Vai-te embora pra Galiza!':'VAY5TIX AYMBAO5DXAH PRAH GAHLIY5ZAH.',
   'Isto hoje está calmo…':'IY5SHTUW OH5ZHIX IXSHTAA4 KAA5LMUW.',
   'A minha mãe fazia melhor pontaria':'AH MIY5NYAH MAYN FAHZIY5AH MIXLYAO5R POWNTAHDXIY5AH.',
@@ -776,29 +868,29 @@ function say(text,lang,force,who){
     else{const d=speak(text,who);voxUntil=now+d;}
   }catch(e){}
 }
-const SND_IC=['🔇','🔉','🔊'];
+const SND_IC=['snd0','snd1','snd2'];
 
 /* ---- 04-conquistas-recordes.js ---- */
 /* ================= Conquistas ================= */
 const ACH=[
-  {id:'semtoalha',ic:'🧺',name:tr('Nem uma toalha perdida','Not a single towel lost'),desc:tr('Ganha um mapa sem perder vidas.','Win a map without losing a life.')},
-  {id:'soazeite',ic:'🔥',name:tr('Só azeite','Oil only'),desc:tr('Ganha usando apenas caldeirões de azeite.','Win using only boiling oil.')},
-  {id:'paco',ic:'👑',name:tr('Adeus, Paco','Adiós, Paco'),desc:tr('Derrota o Capitão Paco.','Defeat Captain Paco.')},
-  {id:'padeira',ic:'🥖',name:tr('Pá na mão','Shovel in hand'),desc:tr('A heroína derrota 100 inimigos num jogo.','The heroine defeats 100 enemies in one game.')},
-  {id:'sino',ic:'🔔',name:tr('Tocam os sinos','Ring the bells'),desc:tr('Toca o sino 10 vezes num jogo.','Ring the bell 10 times in one game.')},
-  {id:'sardinha',ic:'🐟',name:tr('Sardinha em lata','Sardines in a tin'),desc:tr('Derrota 50 soldadinhos saídos de torres de cerco num jogo.','Defeat 50 little soldiers from siege towers in one game.')},
-  {id:'fiscal',ic:'🧾',name:tr('Fiscal das Finanças','Tax inspector'),desc:tr('Derrota 25 contrabandistas num jogo.','Defeat 25 smugglers in one game.')},
-  {id:'infinito',ic:'♾️',name:tr('Infinito e mais além','To infinity and beyond'),desc:tr('Chega à vaga 30 no modo infinito.','Reach wave 30 in endless mode.')},
-  {id:'maispaco',ic:'😤',name:tr('Mais Paco que o Paco','More Paco than Paco'),desc:tr('Ganha na dificuldade Capitão Paco.','Win on Captain Paco difficulty.')},
-  {id:'minho',ic:'🏰',name:tr('Senhor do Alto Minho','Lord of the Alto Minho'),desc:tr('Ganha nos quatro mapas.','Win on all four maps.')},
-  {id:'lendas',ic:'🐉',name:tr('Caçador de lendas','Legend hunter'),desc:tr('Derrota a Coca, o Mercador, o Polvo e o Cervo.','Defeat the Coca, the Merchant, the Octopus and the Stag.')},
-  {id:'campanha',ic:'📜',name:tr('Alto Minho livre','The Alto Minho is free'),desc:tr('Termina a campanha.','Finish the campaign.')},
-  {id:'amigos',ic:'👥',name:tr('Amigos para sempre','Friends forever'),desc:tr('Ganha um mapa em cooperativo.','Win a map in co-op.')},
-  {id:'aljubarrota',ic:'⚔️',name:tr('Isto é Aljubarrota!','This is Aljubarrota!'),desc:tr('Faz uma matança de 40 abates seguidos.','Reach a 40-kill streak.')}
+  {id:'semtoalha',ic:'basket',name:tr('Nem uma toalha perdida','Not a single towel lost'),desc:tr('Ganha um mapa sem perder vidas.','Win a map without losing a life.')},
+  {id:'soazeite',ic:'flame',name:tr('Só azeite','Oil only'),desc:tr('Ganha usando apenas caldeirões de azeite.','Win using only boiling oil.')},
+  {id:'paco',ic:'crown',name:tr('Adeus, Paco','Adiós, Paco'),desc:tr('Derrota o Capitão Paco.','Defeat Captain Paco.')},
+  {id:'padeira',ic:'baguette',name:tr('Pá na mão','Shovel in hand'),desc:tr('A heroína derrota 100 inimigos num jogo.','The heroine defeats 100 enemies in one game.')},
+  {id:'sino',ic:'bell',name:tr('Tocam os sinos','Ring the bells'),desc:tr('Toca o sino 10 vezes num jogo.','Ring the bell 10 times in one game.')},
+  {id:'sardinha',ic:'fish',name:tr('Sardinha em lata','Sardines in a tin'),desc:tr('Derrota 50 soldadinhos saídos de torres de cerco num jogo.','Defeat 50 little soldiers from siege towers in one game.')},
+  {id:'fiscal',ic:'scroll',name:tr('Fiscal das Finanças','Tax inspector'),desc:tr('Derrota 25 contrabandistas num jogo.','Defeat 25 smugglers in one game.')},
+  {id:'infinito',ic:'infinite',name:tr('Infinito e mais além','To infinity and beyond'),desc:tr('Chega à vaga 30 no modo infinito.','Reach wave 30 in endless mode.')},
+  {id:'maispaco',ic:'helmet',name:tr('Mais Paco que o Paco','More Paco than Paco'),desc:tr('Ganha na dificuldade Capitão Paco.','Win on Captain Paco difficulty.')},
+  {id:'minho',ic:'castle',name:tr('Senhor do Alto Minho','Lord of the Alto Minho'),desc:tr('Ganha nos quatro mapas.','Win on all four maps.')},
+  {id:'lendas',ic:'dragon',name:tr('Caçador de lendas','Legend hunter'),desc:tr('Derrota a Coca, o Mercador, o Polvo e o Cervo.','Defeat the Coca, the Merchant, the Octopus and the Stag.')},
+  {id:'campanha',ic:'scroll',name:tr('Alto Minho livre','The Alto Minho is free'),desc:tr('Termina a campanha.','Finish the campaign.')},
+  {id:'amigos',ic:'duo',name:tr('Amigos para sempre','Friends forever'),desc:tr('Ganha um mapa em cooperativo.','Win a map in co-op.')},
+  {id:'aljubarrota',ic:'swords',name:tr('Isto é Aljubarrota!','This is Aljubarrota!'),desc:tr('Faz uma matança de 40 abates seguidos.','Reach a 40-kill streak.')}
 ];
 let achDone=LS.get('ach',{});
 function unlock(id){if(achDone[id])return;achDone[id]=Date.now();LS.set('ach',achDone);const a=ACH.find(x=>x.id===id);
-  toast(`<b>${tr('Conquista','Achievement')}:</b> ${a.ic} ${a.name}`);sfx('ach');}
+  toast(`<b>${tr('Conquista','Achievement')}:</b> ${ic(a.ic)} ${a.name}`);sfx('ach');}
 function toast(html){const t=document.createElement('div');t.className='toast';t.innerHTML=html;$('toast').appendChild(t);setTimeout(()=>t.remove(),3200);}
 
 /* ================= Recordes partilhados ================= */
@@ -836,8 +928,8 @@ function newGame(lvl,di,heroId){
     hero:{id:heroId,D:HD,x:LV.goal.x+26,y:LV.goal.y+14,tx:null,ty:null,hp:HD.hp,max:HD.hp,cd:0,dead:false,respawn:0,kills:0,lv:1,ang:0,quiet:0,swing:0}};
   VIEW.z=1;VIEW.ox=-MX;VIEW.oy=-MY;BZ=1;defeatFx(false);
   $('title').textContent=LV.full||(tr('Cerco de ','Siege of ')+LV.name);
-  $('heroIc').textContent=HD.icon;$('heroNm').textContent=HD.short;
-  $('bSpeed').textContent='×1';$('bPause').textContent='⏸';lastGold=-1;
+  $('heroIc').innerHTML=ic(HD.icon);$('heroNm').textContent=HD.short;
+  $('bSpeed').textContent='×1';$('bPause').innerHTML=ic('pause');lastGold=-1;
   drawBG();renderPanel();
 }
 function mkFoe(t,p,d){
@@ -863,7 +955,7 @@ function startWave(early,who){
   S.nextT=null;S.wave++;S.queue=waveDef(S.wave);S.spawning=true;S.spawnT=0;S.started=true;
   S.weather=S.wave<=2?'sol':pick(['sol','sol','sol','noite','noite','chuva','chuva','nevoeiro','nevoeiro']);
   S.texts.push({x:W/2,y:430,s:S.wave%10===0?tr('Cuidado: vem aí uma lenda!','Watch out: a legend is coming!'):S.wave%5===0?pick(Q.cap):pick(Q.wave),t:0,T:2.4,big:true});
-  if(S.weather!=='sol')S.texts.push({x:W/2,y:462,s:WEATHER[S.weather].ic+' '+Q.weather[S.weather],t:0,T:2.8});
+  if(S.weather!=='sol')S.texts.push({x:W/2,y:462,s:Q.weather[S.weather],ic:WEATHER[S.weather].ic,t:0,T:2.8});
   sfx('drum');
   if(S.wave===10&&!S.cOpen){S.cOpen=true;drawBG();
     const g=LV.gates.find(x=>x.post);S.fx.push({k:'boom',x:g.x,y:g.y,r:50,t:0,T:0.7});smoke(g.x,g.y,14);chips(g.x,g.y,10,'#8d7f66');sfx('boom');jolt(8);
@@ -1101,7 +1193,7 @@ function ageVisuals(dt){
 function applyCard(c,load){
   c.fx(S.mods);if(load)return;
   S.cards.push(c.id);S.dmgStage=Math.min(S.dmgStage,heartStage());
-  S.texts.push({x:W/2,y:470,s:c.ic+' '+c.name,t:0,T:2.4,big:true});sfx('ach');
+  S.texts.push({x:W/2,y:470,s:c.name,ic:c.ic,t:0,T:2.4,big:true});sfx('ach');
 }
 
 /* ---- 06-fundo.js ---- */
@@ -1249,7 +1341,7 @@ function drawTowerBase(t){
     const b=Math.sin(S.t*6)*1.5;ctx.beginPath();ctx.arc(-2,-3-b,1.3,0,Math.PI*2);ctx.arc(2,-4+b,1.1,0,Math.PI*2);ctx.fill();}
   ctx.restore();
   if(t.disT>0){ctx.fillStyle='rgba(40,35,30,.55)';ctx.beginPath();ctx.arc(t.x,t.y,15,0,Math.PI*2);ctx.fill();
-    ctx.font='13px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t.disK==='polvo'?'🐙':'🔥',t.x,t.y);}
+    drawIc(ctx,t.disK==='polvo'?'octopus':'flame',t.x,t.y,16);}
   if(S.local){ctx.strokeStyle=(t.owner||1)===2?'#9b2226':'#2f4a73';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(t.x,t.y,17,0,Math.PI*2);ctx.stroke();}
   else if(S.coop&&(t.owner||1)!==S.me){ctx.strokeStyle='#2f4a73';ctx.lineWidth=2;ctx.setLineDash([2,2]);ctx.beginPath();ctx.arc(t.x,t.y,17,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   for(let i=0;i<t.lv;i++){ctx.fillStyle=i>=2?'#e8c24a':'#c9971c';ctx.strokeStyle='#2e2419';ctx.lineWidth=0.8;
@@ -1287,7 +1379,7 @@ function drawFoe(e){
   }
   ctx.restore();
   if(e.t==='cap')label(ctx,tr('Capitão Paco','Captain Paco'),e.x,e.y+e.r+10,11,true,'#7b0f0f');
-  if(e.eat&&e.stunT>0){ctx.font='12px serif';ctx.textAlign='center';ctx.fillText('🍞',e.x+8,e.y-e.r-4);}
+  if(e.eat&&e.stunT>0)drawIc(ctx,'bread',e.x+8,e.y-e.r-5,12);
   else if(e.stunT>0){ctx.strokeStyle='rgba(46,36,25,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(e.x,e.y-e.r-5,4,S.t*8,S.t*8+4);ctx.stroke();}
   if(e.slowT>0){ctx.strokeStyle='rgba(255,140,40,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(e.x,e.y,e.r+4,0,Math.PI*2);ctx.stroke();}
   if(e.burnT>0){ctx.fillStyle=`rgba(230,110,30,${0.5+0.3*Math.sin(S.t*20)})`;ctx.beginPath();ctx.arc(e.x+3,e.y-e.r,2.5,0,Math.PI*2);ctx.fill();}
@@ -1406,10 +1498,10 @@ function drawRadial(){
     ctx.fillStyle=`rgba(${pal().rng},.10)`;ctx.strokeStyle=`rgba(${pal().rng},.8)`;ctx.lineWidth=1.8*k;ctx.setLineDash([6*k,5*k]);ctx.lineDashOffset=-S.t*12*k;
     ctx.beginPath();ctx.arc(s.x,s.y,R,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;
     const ly=s.y-(RAD.ring+RAD.btn+22)*k;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.font=`bold ${14*k}px Georgia,serif`;const t1=T.name+' · '+T.cost+' 💰',t2=tr('Toca outra vez para construir','Tap again to build');
+    ctx.font=`bold ${14*k}px Georgia,serif`;const t1=T.name+' · '+T.cost+'    ',t2=tr('Toca outra vez para construir','Tap again to build');
     const w=Math.max(ctx.measureText(t1).width,(ctx.font=`italic ${11*k}px Georgia,serif`,ctx.measureText(t2).width))+16*k;
     ctx.fillStyle='rgba(251,243,223,.95)';ctx.strokeStyle='#3e3222';ctx.lineWidth=1.2*k;ctx.fillRect(s.x-w/2,ly-17*k,w,34*k);ctx.strokeRect(s.x-w/2,ly-17*k,w,34*k);
-    ctx.fillStyle='#2e2419';ctx.font=`bold ${14*k}px Georgia,serif`;ctx.fillText(t1,s.x,ly-6*k);
+    ctx.fillStyle='#2e2419';ctx.font=`bold ${14*k}px Georgia,serif`;ctx.fillText(t1,s.x,ly-6*k);drawIc(ctx,'coin',s.x+ctx.measureText(t1).width/2-8*k,ly-6*k,15*k);
     ctx.fillStyle='#9b2226';ctx.font=`italic ${11*k}px Georgia,serif`;ctx.fillText(t2,s.x,ly+8*k);}
   bs.forEach(b=>{
     const T=TYPES[b.key],ok=g>=T.cost,x=s.x+(b.x-s.x)*e,y=s.y+(b.y-s.y)*e,armed=arm===b.key,r=b.r*(0.6+0.4*e)*(armed?1.22+0.05*Math.sin(S.t*6):arm?0.9:1);
@@ -1417,7 +1509,7 @@ function drawRadial(){
     if(armed){ctx.fillStyle='rgba(232,194,74,.35)';ctx.beginPath();ctx.arc(x,y,r+6*k,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle=armed?'#fff6d8':ok?'#fbf3df':'#d9ccb0';ctx.strokeStyle=armed?'#c9971c':ok?towerCol(b.key):'#8a7350';ctx.lineWidth=(armed?3.5:2.5)*k;
     ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.font=`${Math.round(17*k*10)/10}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#2e2419';ctx.fillText(T.icon,x,y-3*k);
+    drawIc(ctx,T.icon,x,y-3*k,r*1.05);ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font=`bold ${Math.round(10*k*10)/10}px Georgia,serif`;ctx.fillStyle=ok?'#7a5a10':'#8a2a22';ctx.fillText(T.cost,x,y+r*0.62);
     ctx.globalAlpha=1;
   });
@@ -1444,7 +1536,7 @@ function drawUpgradeMarks(){
     ctx.fill();ctx.stroke();});
 }
 // próxima vaga: composição e setas nos caminhos durante a contagem
-const E_IC={peao:'🗡️',cav:'🐎',esc:'🛡️',nad:'🏊',cont:'🧳',cura:'➕',torre:'🗼',ari:'🪵',cap:'👑',merc:'🧺',coca:'🐉',polvo:'🐙',cervo:'🦌'};
+const E_IC={peao:'dagger',cav:'horse',esc:'shield',nad:'swim',cont:'coinbag',cura:'plus',torre:'siege',ari:'ram',cap:'crown',merc:'basket',coca:'dragon',polvo:'octopus',cervo:'stag'};
 let nextCache={w:-1,lv:null,v:null};
 function nextWaveInfo(){
   if(!S||S.over||S.spawning||!S.started)return null;
@@ -1475,10 +1567,10 @@ function drawWavePreview(){
   const n=nextWaveInfo();if(!n||S.enemies.some(e=>e.f.boss))return;
   const items=Object.entries(n.cnt);
   ctx.font="bold 13px Georgia,serif";
-  const head=(n.boss?'⚠️ ':'')+tr('Próxima vaga','Next wave')+' '+n.w+(S.nextT!=null?' · '+Math.ceil(S.nextT)+'s':'');
-  const cells=items.map(([t,c])=>E_IC[t]+' '+c);
+  const head=tr('Próxima vaga','Next wave')+' '+n.w+(S.nextT!=null?' · '+Math.ceil(S.nextT)+'s':'');
+  const cells=items.map(([t,c])=>String(c));
   ctx.font="13px Georgia,serif";
-  const cw=cells.map(s=>ctx.measureText(s).width+12);
+  const cw=cells.map(s=>ctx.measureText(s).width+32);
   ctx.font="bold 13px Georgia,serif";const hw=ctx.measureText(head).width;
   const bossTxt=n.boss?tr('Lenda','Legend')+': '+FOES[n.boss].name:'';
   const w=Math.min(W-24,Math.max(hw,cw.reduce((a,b)=>a+b,0),n.boss?ctx.measureText(bossTxt).width:0)+20),h=n.boss?62:44,x0=W/2-w/2,y0=hudTop();
@@ -1486,8 +1578,8 @@ function drawWavePreview(){
   ctx.fillRect(x0,y0,w,h);ctx.strokeRect(x0,y0,w,h);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=n.boss?'#9b2226':'#2e2419';ctx.fillText(head,W/2,y0+12);
   ctx.font="13px Georgia,serif";ctx.fillStyle='#2e2419';ctx.textAlign='left';
-  let x=W/2-cw.reduce((a,b)=>a+b,0)/2+6;cells.forEach((s,i)=>{ctx.fillText(s,x,y0+31);x+=cw[i];});
-  if(n.boss){ctx.textAlign='center';ctx.font="italic bold 13px Georgia,serif";ctx.fillStyle='#9b2226';ctx.fillText(bossTxt,W/2,y0+50);}
+  let x=W/2-cw.reduce((a,b)=>a+b,0)/2+6;cells.forEach((s,i)=>{drawIc(ctx,E_IC[items[i][0]],x+8,y0+31,17);ctx.fillText(s,x+19,y0+31);x+=cw[i];});
+  if(n.boss){ctx.textAlign='center';ctx.font="italic bold 13px Georgia,serif";ctx.fillStyle='#9b2226';ctx.fillText(bossTxt,W/2+9,y0+50);drawIc(ctx,'warn',W/2-ctx.measureText(bossTxt).width/2-4,y0+50,15);}
 }
 
 function draw(){
@@ -1512,7 +1604,7 @@ function draw(){
     ctx.fillStyle=`rgba(210,120,30,${0.28*(1-p)})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(0.6+0.4*p),0,Math.PI*2);ctx.fill();}
   drawHeart();
   if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,H+MY);ctx.stroke();ctx.restore();
-    label(ctx,tr('🔵 Jogador 1','🔵 Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('🔴 Jogador 2','🔴 Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
+    label(ctx,tr('Jogador 1','Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('Jogador 2','Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
   drawPathArrows();
   S.enemies.forEach(drawFoe);
   drawHero();
@@ -1565,13 +1657,19 @@ function draw(){
   }
   const fs=FS();
   for(const x of S.texts){const p=x.t/x.T;ctx.globalAlpha=Math.max(0,1-p*p);
-    if(x.sp){ctx.font=`italic ${Math.round(12*fs)}px 'IM Fell English',Georgia,serif`;const w=ctx.measureText(x.s).width+12,hh=19*fs,bx=Math.max(14,Math.min(W-14-w,x.x-w/2)),by=x.y-p*10-10;
-      ctx.fillStyle='#fbf3df';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.rect(bx,by,w,hh);ctx.fill();ctx.stroke();
+    if(x.sp){ctx.font=`italic ${Math.round(12*fs)}px 'IM Fell English',Georgia,serif`;const w=ctx.measureText(x.s.replace(/\s*💰/g,'')).width+12+(x.s.includes('💰')?14*fs:0),hh=19*fs,bx=Math.max(14,Math.min(W-14-w,x.x-w/2)),by=x.y-p*10-10;
+      const cn=x.s.includes('💰'),ts=cn?x.s.replace(/\s*💰/g,''):x.s;
+    ctx.fillStyle='#fbf3df';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.rect(bx,by,w,hh);ctx.fill();ctx.stroke();
       ctx.beginPath();ctx.moveTo(x.x-4,by+hh);ctx.lineTo(x.x,by+hh+6);ctx.lineTo(x.x+4,by+hh);ctx.fill();
-      ctx.fillStyle='#2e2419';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(x.s,bx+6,by+hh/2+0.5);ctx.globalAlpha=1;continue;}
-    ctx.font=`${Math.round((x.big?22:13)*fs)}px 'IM Fell English',Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeStyle='rgba(233,220,188,.95)';ctx.strokeText(x.s,x.x,x.y-p*20);
-    ctx.fillStyle=x.big?'#9b2226':'#7a5a10';ctx.fillText(x.s,x.x,x.y-p*20);ctx.globalAlpha=1;}
+      ctx.fillStyle='#2e2419';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(ts,bx+6,by+hh/2+0.5);
+      if(cn)drawIc(ctx,'coin',bx+w-6-6*fs,by+hh/2,13*fs);ctx.globalAlpha=1;continue;}
+    const sz=Math.round((x.big?22:13)*fs),iw=sz*1.15,y=x.y-p*20,cn=x.s.includes('💰'),ts=cn?x.s.replace(/\s*💰/g,''):x.s;
+    ctx.font=`${sz}px 'IM Fell English',Georgia,serif`;ctx.textAlign='left';ctx.textBaseline='middle';
+    const tw=ctx.measureText(ts).width;let cx=x.x-(tw+(x.ic?iw+4:0)+(cn?iw+3:0))/2;
+    if(x.ic&&ICONS[x.ic]){drawIc(ctx,x.ic,cx+iw/2,y,iw);cx+=iw+4;}
+    ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeStyle='rgba(233,220,188,.95)';ctx.strokeText(ts,cx,y);
+    ctx.fillStyle=x.big?'#9b2226':'#7a5a10';ctx.fillText(ts,cx,y);
+    if(cn)drawIc(ctx,'coin',cx+tw+3+iw/2,y,iw);ctx.globalAlpha=1;}
   // camada de ecrã
   ctx.setTransform(scale*dpr,0,0,scale*dpr,MX*scale*dpr,MY*scale*dpr);
   const boss=S.enemies.find(e=>e.f.boss);
@@ -1586,11 +1684,11 @@ function draw(){
     ctx.save();ctx.translate(x0,y0);ctx.scale(s,s);
     ctx.fillStyle='rgba(251,243,223,.92)';ctx.strokeStyle=mult>1?'#9b2226':'#2e2419';ctx.lineWidth=1.2;ctx.fillRect(0,0,118,34);ctx.strokeRect(0,0,118,34);
     ctx.font="bold 15px 'IM Fell English',Georgia,serif";ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle=mult>1?'#9b2226':'#2e2419';
-    ctx.fillText('⚔️ '+S.combo+' '+tr('seguidos','in a row'),6,12);
+    drawIc(ctx,'swords',13,12,15);ctx.fillText(S.combo+' '+tr('seguidos','in a row'),24,12);
     ctx.font="italic 11px 'IM Fell English',Georgia,serif";ctx.fillStyle='#6b5a42';ctx.fillText(mult>1?tr('Ouro ×','Gold ×')+mult:tr('Matança a começar…','Streak starting…'),6,25);
     ctx.fillStyle='#c9971c';ctx.fillRect(1,31,116*Math.max(0,S.comboT/COMBO_T),2);ctx.restore();}
   if(S.aim==='rain')label(ctx,tr('Toca no mapa para lançar as flechas','Tap the map to drop the arrows'),W/2,TOP+(boss?54:28),15,true,'#9b2226');
-  if(S.coop)label(ctx,S.remote?tr('👥 Convidado · sala ','👥 Guest · room ')+(NET.code||''):tr('👥 Anfitrião · sala ','👥 Host · room ')+(NET.code||'')+(NET.partner?'':tr(' (sem parceiro)',' (no partner)')),W/2,H-22,11,true,'#2f4a73');
+  if(S.coop)label(ctx,S.remote?tr('Convidado · sala ','Guest · room ')+(NET.code||''):tr('Anfitrião · sala ','Host · room ')+(NET.code||'')+(NET.partner?'':tr(' (sem parceiro)',' (no partner)')),W/2,H-22,11,true,'#2f4a73');
   if(VIEW.z>1.01){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
     const cw=cv.width/dpr,ch=cv.height/dpr,ew=W+2*MX,eh=H+2*MY,vw=Math.min(cw<500?78:132,cw*0.24),vh=Math.min(vw*eh/ew,ch*(cw<500?0.2:0.3)),vw2=vh*ew/eh,x0=cw-vw2-12,y0=ch-vh-12;
     ctx.fillStyle='rgba(46,36,25,.35)';ctx.fillRect(x0+3,y0+4,vw2,vh);
@@ -1696,7 +1794,7 @@ let lastGold=-1,lastPanelTick=0,hudPrev=null;
 function hud(){
   if(!S)return;
   goldTick();menuBgCheck();
-  {const ch=$('cardsHud'),ic=S.cards.map(id=>(CARDS.find(c=>c.id===id)||{}).ic||'').join('');if(ch.textContent!==ic){ch.textContent=ic;ch.hidden=!ic;ch.title=S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?c.name+': '+c.desc:'';}).join('\n');if(ic)pop(ch,'bump');}}
+  {const ch=$('cardsHud'),ic_=S.cards.join();if(ch.dataset.k!==ic_){ch.dataset.k=ic_;ch.innerHTML=S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?ic(c.ic):'';}).join('');ch.hidden=!ic_;ch.title=S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?c.name+': '+c.desc:'';}).join('\n');if(ic_)pop(ch,'bump');}}
   const g=myGold(),cur={g,l:S.lives,w:S.wave,S};
   if(hudPrev&&hudPrev.S===S){// animações só dentro da mesma partida
     if(g>hudPrev.g)pop($('stGold'),'bump');
@@ -1704,17 +1802,17 @@ function hud(){
     if(S.wave!==hudPrev.w)pop($('stWave'),'bump');
     if(S.wave>hudPrev.w&&S.wave>0)waveBanner(S.wave);}
   hudPrev=cur;
-  setTxt('lives',String(S.lives));setTxt('wave',S.wave+(S.infinite?' ♾️':'/'+MAXW));setTxt('wx',WEATHER[S.weather].ic);
+  setTxt('lives',String(S.lives));setTxt('wave',S.wave+(S.infinite?' ∞':'/'+MAXW));if(last.wx!==S.weather){last.wx=S.weather;$('wx').innerHTML=ic(WEATHER[S.weather].ic);$('wx').parentNode.title=WEATHER[S.weather].name;}
   setW('mLives',S.lives/S.startLives);setW('mWave',S.infinite?1:S.wave/MAXW);
   const low=S.lives/S.startLives<=0.25;if($('stLives').classList.contains('low')!==low)$('stLives').classList.toggle('low',low);
   const g2=$('gold2w');if(g2.hidden===!!S.coop)g2.hidden=!S.coop;if(S.coop)setTxt('gold2',String(S.local?S.gold2:S.me===2?S.gold:S.gold2));
-  {const i1=S.local?'🔵':'💰',i2=S.local?'🔴':'👥',a=$('stGold').querySelector('.si'),b=g2.querySelector('.si');if(a.textContent!==i1)a.textContent=i1;if(b.textContent!==i2)b.textContent=i2;}
+  {const i1=S.local?'p1':'coin',i2=S.local?'p2':'duo',a=$('stGold').querySelector('.si'),b=g2.querySelector('.si');if(a.dataset.ic!==i1){a.dataset.ic=i1;a.innerHTML=ic(i1);}if(b.dataset.ic!==i2){b.dataset.ic=i2;b.innerHTML=ic(i2);}}
   const b=$('bWave');let lab,dis,fill=0;
-  if(!S.started||S.wave===0){lab=tr('⚔️ Chamar vaga','⚔️ Call wave');dis=S.over;}
+  if(!S.started||S.wave===0){lab=tr('Chamar vaga','Call wave');dis=S.over;}
   else if(S.spawning){lab=tr('Em combate…','Fighting…');dis=true;}
-  else if(S.nextT!=null){const s=Math.ceil(S.nextT);lab=`${tr('Próxima vaga','Next wave')} (${s}s) +${s}💰`;dis=S.over;fill=1-S.nextT/18;}
+  else if(S.nextT!=null){const s=Math.ceil(S.nextT);lab=`${tr('Próxima vaga','Next wave')} (${s}s) +${s}`+'\u00a4';dis=S.over;fill=1-S.nextT/18;}
   else{lab=tr('Última vaga…','Last wave…');dis=true;}
-  setTxt('bWaveT',lab);setW('bWaveF',fill);if(b.disabled!==dis)b.disabled=dis;
+  if(last.bWaveT!==lab){last.bWaveT=lab;$('bWaveT').innerHTML=(lab.endsWith('\u00a4')?lab.slice(0,-1)+' '+ic('coin'):(!S.started||S.wave===0)&&!S.over?ic('swords')+' '+lab:lab);}setW('bWaveF',fill);if(b.disabled!==dis)b.disabled=dis;
   const pulse=!dis&&(S.wave===0||(S.nextT!=null&&S.nextT<6));if(b.classList.contains('pulse')!==pulse)b.classList.toggle('pulse',pulse);
   document.querySelectorAll('.ab').forEach(el=>{const k=el.dataset.ab,cd=k==='hero'?S.cd.hero:S.cd[k],max=(k==='hero'?S.hero.D.sp.cd:ABIL[k].cd)*S.mods.cd;
     const pct=Math.round(Math.min(1,cd/max)*100)+'%';const i=el.lastChild;if(i.style.height!==pct)i.style.height=pct;
@@ -1734,7 +1832,7 @@ function refreshPanel(){
   p.querySelectorAll('[data-cost]').forEach(b=>{const d=g<+b.dataset.cost;if(b.disabled!==d){b.disabled=d;if(!d)pop(b,'afford');}});
   if(S.sel==='hero'){
     const h=S.hero,sp=h.D.sp,cd=Math.ceil(S.cd.hero),set=(k,v)=>{const e=p.querySelector(`[data-h="${k}"]`);if(e&&e.textContent!==v)e.textContent=v;};
-    set('hp','❤️ '+Math.max(0,Math.round(h.hp/h.max*100))+'%');set('k','⚔️ '+h.kills+' '+tr('derrotados','defeated'));
+    set('hp',Math.max(0,Math.round(h.hp/h.max*100))+'%');set('k',h.kills+' '+tr('derrotados','defeated'));
     set('st',h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her'));
     const st=p.querySelector('[data-h="st"]');if(st&&st.classList.contains('warn')!==h.dead)st.classList.toggle('warn',h.dead);
     set('sp',sp.name+(cd>0?' ('+cd+'s)':''));
@@ -1751,13 +1849,13 @@ function renderPanel(){
 
   if(S.sel==='hero'){
     const h=S.hero,sp=h.D.sp,cd=Math.ceil(S.cd.hero);
-    p.innerHTML=`<div class="ph"><b>${h.D.icon} ${h.D.name} · ${tr('nível','level')} ${h.lv}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
-      <div class="tinfo"><span data-h="hp">❤️ ${Math.max(0,Math.round(h.hp/h.max*100))}%</span><span data-h="k">⚔️ ${h.kills} ${tr('derrotados','defeated')}</span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
+    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
+      <div class="tinfo"><span>${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span><span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
       <div class="acts"><button class="main br" data-a="special" ${cd>0||h.dead?'disabled':''}><span data-h="sp">${sp.name}${cd>0?' ('+cd+'s)':''}</span><small>${sp.desc}</small></button></div>`;return;}
   const s=SLOTS[S.sel];
   if(!s.tower){
     p.innerHTML=`<div class="ph"><b>${s.name}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div><div class="grid">`+
-      Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${t.icon}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} 💰</span></button>`).join('')+`</div>`;
+      Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
     return;}
   const t=s.tower,T=TYPES[t.k],st=tstat(t);
   const extra=st.splash?` · ${tr('área','area')} ${Math.round(st.splash)}`:st.slow<1?` · ${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr(' · perfura',' · pierces'):'';
@@ -1766,15 +1864,15 @@ function renderPanel(){
   // o que muda com a melhoria (mesmas contas que o combate, via tstat)
   const delta=n=>{const a=[];const d=(l,x,y,f)=>{if(Math.abs(y-x)>0.01)a.push(`${l} ${f(x)}→${f(y)}`);};
     d(tr('Dano','Damage'),st.dmg,n.dmg,Math.round);d(tr('Alcance','Range'),st.range,n.range,Math.round);d(tr('Recarga','Reload'),st.rate,n.rate,v=>Math.round(v*100)/100+'s');
-    if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('🔥 arde','🔥 burns'));return a.join(' · ');};
+    if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('arde','burns'));return a.join(' · ');};
   let up='';
-  if(t.lv===1){const c=T.up[0];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} · ${c}💰<small>${delta(tstat({k:t.k,lv:2,br:0}))}</small></button>`;}
-  else if(t.lv===3){const c=T.up[2];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} ${T.br[t.br].name} · ${c}💰<small>${delta(tstat({k:t.k,lv:4,br:t.br}))}</small></button>`;}
-  else if(t.lv>=4){up=`<p class="hint" style="flex:1 1 100%">⭐ ${tr('Nível máximo','Max level')}</p>`;}
-  else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c}💰<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
-  p.innerHTML=`<div class="ph"><b>${T.icon} ${nm} · ${tr('nível','level')} ${t.lv}/4${S.coop?(S.local?' · '+((t.owner||1)===2?'🔴':'🔵'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
-    <div class="tinfo"><span>⚔️ ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>🎯 ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>⏱️ ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?tr('<span>🔥 arde</span>','<span>🔥 burns</span>'):''}${t.disT>0?tr('<span class="warn">⚠️ fora de combate</span>','<span class="warn">⚠️ out of action</span>'):''}</div>
-    <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)}💰</button>`:''}</div>`;
+  if(t.lv===1){const c=T.up[0];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:2,br:0}))}</small></button>`;}
+  else if(t.lv===3){const c=T.up[2];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} ${T.br[t.br].name} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:4,br:t.br}))}</small></button>`;}
+  else if(t.lv>=4){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}</p>`;}
+  else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
+  p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/4${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
+    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}</div>
+    <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
   const b=ev.target.closest('button');if(!b||b.disabled||!S)return;
@@ -1796,9 +1894,9 @@ document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
 }));
 $('bWave').addEventListener('click',()=>{audio();if(S)act({a:'wave'});});
 $('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed===1?2:S.speed===2?3:1;$('bSpeed').textContent='×'+S.speed;});
-$('bPause').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').textContent=S.paused?'▶':'⏸';});
-$('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').textContent=SND_IC[sndMode];audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
-$('bSound').textContent=SND_IC[sndMode];
+$('bPause').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
+$('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').innerHTML=ic(SND_IC[sndMode]);audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
+$('bSound').innerHTML=ic(SND_IC[sndMode]);
 $('bMenu').addEventListener('click',()=>{if(!S)return showMenu();pauseMenu();});
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&$('modal').hidden&&S){e.preventDefault();act({a:'wave'});}});
 
@@ -1848,7 +1946,7 @@ function coinFly(wx,wy){
   const sx=r.left+(wx-VIEW.ox)*scale*VIEW.z,sy=r.top+(wy-VIEW.oy)*scale*VIEW.z;
   if(sx<r.left||sx>r.right||sy<r.top||sy>r.bottom)return;
   const tx=t.left+t.width*0.3,ty=t.top+t.height/2,mx=(sx+tx)/2+(Math.random()-0.5)*80,my=Math.min(sy,ty)-60-Math.random()*50;
-  const c=document.createElement('span');c.className='coin';c.textContent='🪙';document.body.appendChild(c);coinLive++;
+  const c=document.createElement('span');c.className='coin';c.innerHTML=ic('coin');document.body.appendChild(c);coinLive++;
   const a=c.animate([{transform:`translate(${sx}px,${sy}px) scale(.5)`,opacity:0},{transform:`translate(${sx}px,${sy-14}px) scale(1)`,opacity:1,offset:.15},
     {transform:`translate(${mx}px,${my}px) scale(1.05)`,opacity:1,offset:.55},{transform:`translate(${tx}px,${ty}px) scale(.45)`,opacity:.7}],
     {duration:720+Math.random()*160,easing:'cubic-bezier(.45,.05,.55,.95)'});
@@ -1860,7 +1958,7 @@ function waveBanner(w){
   if(!S||RM())return;const st=$('stage');if(!st)return;
   const old=st.querySelector('.banner');if(old)old.remove();
   let boss=null;try{boss=waveDef(w).map(q=>FOES[q.t]).find(f=>f.boss)||null;}catch(e){}
-  const sub=boss?'⚠️ '+tr('Lenda','Legend')+': '+boss.name:(S.weather&&S.weather!=='sol'?WEATHER[S.weather].ic+' '+WEATHER[S.weather].name:(w%5===0?'👑 '+tr('Capitão Paco','Captain Paco'):''));
+  const sub=boss?ic('warn')+' '+tr('Lenda','Legend')+': '+boss.name:(S.weather&&S.weather!=='sol'?ic(WEATHER[S.weather].ic)+' '+WEATHER[S.weather].name:(w%5===0?ic('crown')+' '+tr('Capitão Paco','Captain Paco'):''));
   const b=document.createElement('div');b.className='banner'+(boss?' boss':'');
   b.innerHTML=`<div class="rib"><b>${tr('Vaga','Wave')} ${w}${S.infinite?'':' / '+MAXW}</b>${sub?`<small>${sub}</small>`:''}</div>`;
   st.appendChild(b);setTimeout(()=>b.remove(),2300);
@@ -2078,7 +2176,7 @@ const sideOf=s=>s.x<W/2?1:2;
 function startLocalCoop(lvl,di,hero){
   newGame(lvl||menuSel.lvl,di==null?menuSel.di:di,hero||menuSel.hero);
   S.coop=true;S.local=true;S.remote=false;S.me=1;S.gold2=S.gold;S.started=true;S.paused=false;
-  toast(tr('<b>Dois jogadores, um ecrã.</b> Jogador 1 🔵 à esquerda, Jogador 2 🔴 à direita. Cada um tem o seu ouro.','<b>Two players, one screen.</b> Player 1 🔵 on the left, Player 2 🔴 on the right. Each has their own gold.'));sfx('horn');
+  toast(tr(`<b>Dois jogadores, um ecrã.</b> Jogador 1 ${ic('p1')} à esquerda, Jogador 2 ${ic('p2')} à direita. Cada um tem o seu ouro.`,`<b>Two players, one screen.</b> Player 1 ${ic('p1')} on the left, Player 2 ${ic('p2')} on the right. Each has their own gold.`));sfx('horn');
 }
 function restartGame(){const c=S.campaign;if(S.local)return startLocalCoop(S.lvl,S.di,S.hero.id);newGame(S.lvl,S.di,S.hero.id);S.campaign=c;S.started=true;clearSave();}
 function netLeave(){try{if(NET.helloT)clearInterval(NET.helloT);if(NET.R)NET.R.leave();}catch(e){}NET={};}
@@ -2138,7 +2236,7 @@ function snapshot(){
   let p=S.proj.slice(0,40).map(q=>{if(q.k==='stone'){const u=q.t/q.T;return[0,r(q.sx+(q.tx-q.sx)*u),r(q.sy+(q.ty-q.sy)*u-Math.sin(Math.PI*u)*45),q.burn?1:0];}
     return[q.k==='arrow'?1:q.k==='bolt'?2:3,r(q.x),r(q.y),r((q.ang||0)*10)];});
   const h=S.hero;
-  const x=S.texts.filter(t=>!t.net).slice(0,6).map(t=>{t.net=1;return[t.s,r(t.x),r(t.y),t.T,t.big?1:0,t.sp?1:0];});
+  const x=S.texts.filter(t=>!t.net).slice(0,6).map(t=>{t.net=1;return[t.s,r(t.x),r(t.y),t.T,t.big?1:0,t.sp?1:0,t.ic||0];});
   const f=S.fx.filter(q=>!q.net).slice(0,8).map(q=>{q.net=1;return[q.k,r(q.x),r(q.y),r(q.r),q.T,q.c||0,r(q.x2||0),r(q.y2||0)];});
   const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?1:0]);
   const d={g:[S.gold,S.gold2],l:S.lives,w:S.wave,wx:S.weather,sp:S.spawning?1:0,nt:S.nextT==null?-1:Math.ceil(S.nextT),inf:S.infinite?1:0,co:S.cOpen?1:0,pa:S.paused?1:0,
@@ -2181,7 +2279,7 @@ function applySnap(d){
   NET.emap=nm;NET.snapT=performance.now();
   S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':'bread',x:v[1],y:v[2],ang:v[3]/10});
   if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{S.towers[i].ang=v[0]/10;S.towers[i].disT=v[1]?1:0;});
-  (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],t:0}));
+  (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],ic:ICONS[v[6]]?v[6]:undefined,t:0}));
   (d.f||[]).forEach(v=>{if(!['boom','ring','oil','rain','fire','tent'].includes(v[0]))return;S.fx.push({k:v[0],x:v[1],y:v[2],r:v[3],T:v[4],c:v[5]||undefined,x2:v[6],y2:v[7],t:0,hits:3});
     if(v[0]==='boom')sfx('boom');else if(v[0]==='oil')sfx('oil');else if(v[0]==='fire'||v[0]==='tent')sfx('roar');});
   (d.v||[]).forEach(v=>say(String(v[0]),null,false,VOX[v[1]]?v[1]:'pt'));
@@ -2228,7 +2326,7 @@ function showChapter(i){
 function showBoot(next){
   menuBgShow();
   const BL=[[tr('Alto Minho, ano de 1368','Alto Minho, year 1368')],[tr('A contar barcas no rio','Counting boats on the river'),'37'],[tr('A aquecer o azeite','Heating the oil'),'OK'],[tr('A afinar as bestas','Tuning the crossbows'),'OK'],[tr('A acordar a Padeira','Waking the Baker'),'OK'],[tr('Castela à vista!','Castile ahoy!'),null,'red']];
-  showModal(`<div class="boot"><p class="bh">📜 ${tr('Pregão da praça','Town crier')}</p>${BL.map(([a,b,c],i)=>`<p class="ln ${c||''}" style="animation-delay:${(i*0.3).toFixed(2)}s">› ${a}${b?'<span class="dots"></span><b>'+b+'</b>':''}</p>`).join('')}
+  showModal(`<div class="boot"><p class="bh">${tr('Pregão da praça','Town crier')}</p>${BL.map(([a,b,c],i)=>`<p class="ln ${c||''}" style="animation-delay:${(i*0.3).toFixed(2)}s">› ${a}${b?'<span class="dots"></span><b>'+b+'</b>':''}</p>`).join('')}
     <div class="bbar"><i></i></div><p class="small" style="text-align:center">${tr('Toca para saltar','Tap to skip')}</p></div>`,[]);
   let done=false;const go=()=>{if(done)return;done=true;clearTimeout(tm);if(!(S&&S.started))next();};
   const tm=setTimeout(go,2300);$('modal').addEventListener('pointerdown',go,{once:true});
@@ -2241,17 +2339,17 @@ function showMenu(){
   const it=[];
   if(inGame)it.push(['back',tr('▶ Voltar ao jogo','▶ Back to the game'),true]);
   if(sv&&LEVELS[sv.lvl]&&!(inGame&&S.coop))it.push(['cont',`▶ ${tr('Continuar','Continue')} · ${LEVELS[sv.lvl].name}, ${tr('vaga','wave')} ${sv.wave}`,!inGame]);
-  it.push(['campanha',tr('🏰 Campanha','🏰 Campaign'),!inGame&&!sv],['livre',tr('🗺️ Jogo livre','🗺️ Free play')],['coop',tr('👥 Cooperativo','👥 Co-op')]);
+  it.push(['campanha',ic('castle')+' '+tr('Campanha','Campaign'),!inGame&&!sv],['livre',ic('map')+' '+tr('Jogo livre','Free play')],['coop',ic('duo')+' '+tr('Cooperativo','Co-op')]);
   const threat=pick([tr('muitas','lots'),tr('demasiadas','too many'),tr('uma armada inteira','a whole armada'),tr('já se perdeu a conta','lost count'),tr('cheias de toalhas','full of towels')]);
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Defende as praças do Alto Minho das barcas de Castela.','Defend the fortresses of the Alto Minho from the boats of Castile.')}</p>
     <p class="status">${tr('Praças por defender','Fortresses to defend')}: ${LEVEL_ORDER.filter(k=>!LS.get('wins',{})[k]).length} · ${tr('Barcas no rio','Boats on the river')}: <b>${threat}</b></p>
     <div class="mlist">${it.map(([k,l,hot])=>`<button data-go="${k}"${hot?' class="main"':''}>${l}</button>`).join('')}
-      <div class="row"><button data-go="rec">${tr('🏆 Recordes','🏆 Leaderboard')}</button><button data-go="ach">${tr('🎖️ Conquistas','🎖️ Achievements')}</button></div>
-      <div class="row"><button data-go="opt">${tr('⚙️ Opções','⚙️ Options')}</button><button data-go="help">${tr('❓ Como jogar','❓ How to play')}</button></div>
-      <div class="row"><button data-go="lang">🌐 ${LANG==='en'?'Português':'English'}</button></div></div>
+      <div class="row"><button data-go="rec">${ic('trophy')} ${tr('Recordes','Leaderboard')}</button><button data-go="ach">${ic('medal')} ${tr('Conquistas','Achievements')}</button></div>
+      <div class="row"><button data-go="opt">${ic('gear')} ${tr('Opções','Options')}</button><button data-go="help">${ic('help')} ${tr('Como jogar','How to play')}</button></div>
+      <div class="row"><button data-go="lang">${ic('globe')} ${LANG==='en'?'Português':'English'}</button></div></div>
     </div>`,[]);
   $('mcard').querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{audio();const k=b.dataset.go;
-    if(k==='back'){closeModal();if(!S.remote){S.paused=false;$('bPause').textContent='⏸';}}
+    if(k==='back'){closeModal();if(!S.remote){S.paused=false;$('bPause').innerHTML=ic('pause');}}
     else if(k==='cont'){closeModal();netLeave();loadSave();}
     else if(k==='rec')showBoard(menuSel.lvl,showMenu);
     else if(k==='ach')showAch(showMenu);
@@ -2264,7 +2362,7 @@ function showSetup(){
   menuBgShow();
   const m=menuSel.mode,lv=LEVEL_ORDER.map(id=>`<button data-m="lvl" data-v="${id}" aria-pressed="${menuSel.lvl===id}">${LEVELS[id].name}<small>${bestTxt(id)}</small></button>`).join('');
   const prog=campProg();
-  const ch=CAMP.map((id,i)=>`<button data-m="chap" data-v="${i}" aria-pressed="${menuSel.chap===i}" ${i>prog?'disabled':''}>${i>prog?'🔒 ':i<prog?'✓ ':''}${CAMP_TXT[id][0].split(' · ')[0]}<small>${LEVELS[id].name}</small></button>`).join('');
+  const ch=CAMP.map((id,i)=>`<button data-m="chap" data-v="${i}" aria-pressed="${menuSel.chap===i}" ${i>prog?'disabled':''}>${i>prog?ic('lock')+' ':i<prog?ic('check')+' ':''}${CAMP_TXT[id][0].split(' · ')[0]}<small>${LEVELS[id].name}</small></button>`).join('');
   const df=DIFFS.map((d,i)=>`<button data-m="di" data-v="${i}" aria-pressed="${menuSel.di===i}">${d.name}<small>${d.desc}</small></button>`).join('');
   const hr=Object.entries(HEROES).map(([k,h])=>`<button data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}">${h.icon} ${h.short}<small>${h.sp.name}</small></button>`).join('');
   let body='';
@@ -2276,10 +2374,10 @@ function showSetup(){
   const btns=[];
   if(m==='campanha')btns.push({label:tr('Começar capítulo ▶','Start chapter ▶'),main:true,fn:()=>{saveSel();netLeave();showChapter(Math.min(menuSel.chap,prog));},keep:true});
   else if(m==='livre')btns.push({label:tr('Começar o cerco ▶','Start the siege ▶'),main:true,fn:()=>{saveSel();netLeave();clearSave();newGame(menuSel.lvl,menuSel.di,menuSel.hero);S.started=true;S.paused=false;}});
-  else{btns.push({label:tr('🌐 Criar sala ▶','🌐 Create room ▶'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
-    btns.push({label:tr('📱 Mesmo ecrã ▶','📱 Same screen ▶'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
+  else{btns.push({label:tr('Criar sala ▶','Create room ▶'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
+    btns.push({label:tr('Mesmo ecrã ▶','Same screen ▶'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
   btns.push({label:tr('← Voltar','← Back'),keep:true,fn:showMenu});
-  const title={campanha:[tr('🏰 Campanha','🏰 Campaign'),tr('Quatro capítulos, de Monção a Âncora, em 1368.','Four chapters, from Monção to Âncora, in 1368.')],livre:[tr('🗺️ Jogo livre','🗺️ Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[tr('👥 Cooperativo','👥 Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')]}[m];
+  const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Quatro capítulos, de Monção a Âncora, em 1368.','Four chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')]}[m];
   showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Heroína','Heroine')}</h3><div class="seg">${hr}</div>`,btns);
   const mc=$('mcard');
   mc.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{
@@ -2297,21 +2395,21 @@ function offerCards(){
     three=pool.slice(0,3);if(!three.length)return;S.offer=three.map(c=>c.id);sfx('horn');}
   if(S.coop)S.paused=true;
   showModal(`<h2>${tr('O povo vem ajudar','The townsfolk lend a hand')}</h2><p class="small">${tr(`Vaga ${S.wave} repelida. Escolhe uma bênção… ou arrisca um pacto.`,`Wave ${S.wave} repelled. Pick a blessing… or risk a pact.`)}</p>
-    <div class="cards">${three.map(c=>`<button class="bcard${c.k==='p'?' pacto':''}" data-c="${c.id}"><span class="ci">${c.ic}</span><em>${c.k==='p'?tr('Pacto','Pact'):tr('Bênção','Blessing')}</em><b>${c.name}</b><small>${c.desc}</small></button>`).join('')}</div>`,[]);
+    <div class="cards">${three.map(c=>`<button class="bcard${c.k==='p'?' pacto':''}" data-c="${c.id}"><span class="ci">${ic(c.ic)}</span><em>${c.k==='p'?tr('Pacto','Pact'):tr('Bênção','Blessing')}</em><b>${c.name}</b><small>${c.desc}</small></button>`).join('')}</div>`,[]);
   $('mcard').querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{audio();closeModal();act({a:'card',id:b.dataset.c});}));
 }
 function saveSel(){LS.set('lvl',menuSel.lvl);LS.set('di',menuSel.di);LS.set('hero',menuSel.hero);}
 function pauseMenu(){
   if(S.remote){showModal(tr(`<h2>Cooperativo</h2><p>Estás na sala ${(NET.code||'').toUpperCase()} como convidado. Só o anfitrião pode pausar.</p>`,`<h2>Co-op</h2><p>You are in room ${(NET.code||'').toUpperCase()} as a guest. Only the host can pause.</p>`),
-    [{label:tr('Voltar ao jogo','Back to the game'),main:true},{label:tr('Sair da sala','Leave room'),fn:()=>{netLeave();S.over=true;showMenu();},keep:true},{label:tr('⚙️ Opções','⚙️ Options'),keep:true,fn:()=>showOpts(pauseMenu)}]);return;}
+    [{label:tr('Voltar ao jogo','Back to the game'),main:true},{label:tr('Sair da sala','Leave room'),fn:()=>{netLeave();S.over=true;showMenu();},keep:true},{label:tr('Opções','Options'),keep:true,fn:()=>showOpts(pauseMenu)}]);return;}
   S.paused=true;
   showModal(`<h2>${tr('Em pausa','Paused')}</h2><p>${LV.full||tr('Cerco de ','Siege of ')+LV.name}, ${tr('vaga','wave')} ${S.wave}. ${tr('Os castelhanos esperam, a remar no mesmo sítio.','The Castilians wait, rowing on the spot.')}</p>${S.coop?'':tr('<p class="small">A partida é guardada automaticamente no fim de cada vaga.</p>','<p class="small">The game saves automatically at the end of each wave.</p>')}`,
-    [{label:tr('Continuar','Continue'),main:true,fn:()=>{S.paused=false;$('bPause').textContent='⏸';}},
+    [{label:tr('Continuar','Continue'),main:true,fn:()=>{S.paused=false;$('bPause').innerHTML=ic('pause');}},
      ...(S.coop&&!S.local?[{label:tr('Terminar sala','Close room'),keep:true,fn:()=>{netLeave();S.over=true;showMenu();}}]:[{label:tr('Recomeçar','Restart'),fn:restartGame}]),
      {label:tr('Menu principal','Main menu'),keep:true,fn:()=>showMenu()},
-     {label:tr('⚙️ Opções','⚙️ Options'),keep:true,fn:()=>showOpts(pauseMenu)},
-     {label:tr('🎖️ Conquistas','🎖️ Achievements'),keep:true,fn:()=>showAch(pauseMenu)},
-     {label:tr('❓ Como jogar','❓ How to play'),keep:true,fn:()=>showHelp(pauseMenu)}]);
+     {label:tr('Opções','Options'),keep:true,fn:()=>showOpts(pauseMenu)},
+     {label:tr('Conquistas','Achievements'),keep:true,fn:()=>showAch(pauseMenu)},
+     {label:tr('Como jogar','How to play'),keep:true,fn:()=>showHelp(pauseMenu)}]);
 }
 function showOpts(back){
   showModal(`<h2>${tr('Opções','Options')}</h2>
@@ -2329,20 +2427,20 @@ function showHelp(back){
   showModal(`<h2>Como jogar</h2>
     <p>Toca numa bandeira para pôr defensores. No nível 3 escolhes uma especialização. Em cada torre podes mudar o alvo preferido.</p>
     <p>A heroína bloqueia até três inimigos. Toca nela e depois no mapa para a mover. O poder especial está no painel dela.</p>
-    <p>🏹 Chuva de flechas numa zona à escolha. 🚪 Fechar portas trava todos os que estão em terra. 🔔 O sino dá ouro.</p>
+    <p>${ic('arrows')} Chuva de flechas numa zona à escolha. ${ic('gate')} Fechar portas trava todos os que estão em terra. ${ic('bell')} O sino dá ouro.</p>
     <p>Zoom: dois dedos no ecrã, a roda do rato ou os botões ＋ e －. Com zoom, arrasta o mapa com um dedo.</p>
-    <p>🏰 Cada inimigo que chega ao coração da praça (a igreja, o paiol ou a torre de menagem) tira vidas, e vê-se: as muralhas racham, a praça arde e a bandeira rasga-se.</p>
-    <p>⚔️ Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
-    <p>✝️ A cada 3 vagas o povo oferece ajuda: escolhe uma de três bênçãos ou pactos. Os pactos dão muito, mas cobram alguma coisa.</p>
+    <p>${ic('castle')} Cada inimigo que chega ao coração da praça (a igreja, o paiol ou a torre de menagem) tira vidas, e vê-se: as muralhas racham, a praça arde e a bandeira rasga-se.</p>
+    <p>${ic('swords')} Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
+    <p>${ic('cross')} A cada 3 vagas o povo oferece ajuda: escolhe uma de três bênçãos ou pactos. Os pactos dão muito, mas cobram alguma coisa.</p>
     <p>Nas vagas 10 e 20 aparece a lenda de cada praça: o Mercador das Toalhas em Valença, a Coca em Monção, o Polvo da Lagarteira em Âncora e o Cervo Gigante em Cerveira. A Coca voa e o Polvo e a Coca deixam torres fora de combate por uns segundos.</p>
     <p>Nadadores vêm pelo meio. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Na vaga 10 rebentam o postigo e passam a usar três caminhos.</p>
-    <p class="small">🌙 À noite as torres veem menos. 🌧️ Com chuva o azeite arrefece e nada arde. 🌫️ Com nevoeiro não se veem as barcas.</p>`,
+    <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
 function showAch(back){
   const n=ACH.filter(a=>achDone[a.id]).length;
   showModal(`<h2>${tr('Conquistas','Achievements')}</h2><p class="small">${tr(`${n} de ${ACH.length} desbloqueadas neste dispositivo.`,`${n} of ${ACH.length} unlocked on this device.`)}</p>`+
-    ACH.map(a=>`<div class="ach ${achDone[a.id]?'':'off'}"><span class="ai">${a.ic}</span><span><b>${a.name}</b><small>${a.desc}</small></span></div>`).join(''),
+    ACH.map(a=>`<div class="ach ${achDone[a.id]?'':'off'}"><span class="ai">${ic(a.ic)}</span><span><b>${a.name}</b><small>${a.desc}</small></span></div>`).join(''),
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
 async function showBoard(lvl,back){
@@ -2387,25 +2485,25 @@ const END_MSG={
   valenca:{
     win:[tr('As muralhas de Valença aguentaram outra vez. As barcas voltam para Tui a remar ao contrário e o Capitão Paco volta sozinho na última barca, a remar de mãos a abanar: nem uma toalha, nem um lençol, nem um atoalhado de oferta.','The walls of Valença held once again. The boats row back to Tui the wrong way round, and Captain Paco comes home alone in the last boat, empty-handed: not a towel, not a sheet, not even a free tea towel.'),
          tr('Os lojistas dentro das muralhas fazem descontos para celebrar, mas só para quem fala português. Da Coroada ao Baluarte do Faro, hoje à noite há bifanas e vinho verde por conta da câmara.','The shopkeepers inside the walls hold a celebration sale, but only for Portuguese speakers. From the Coroada to the Faro bastion, tonight the bifanas and vinho verde are on the town hall.')],
-    loseTitle:tr('Esvaziaram as lojas de toalhas 🧺','They emptied the towel shops 🧺'),
+    loseTitle:tr('Esvaziaram as lojas de toalhas','They emptied the towel shops'),
     lose:tr('Os castelhanos chegaram à Igreja Matriz na vaga {w} e saíram pela Porta da Coroada carregados de toalhas, lençóis e colchas. Em Tui já há uma feira de «atoalhados portugueses» a metade do preço. O Capitão Paco pediu o livro de reclamações só para gozar.','The Castilians reached the Igreja Matriz on wave {w} and marched out through the Porta da Coroada loaded with towels, sheets and bedspreads. Tui already has a “Portuguese linens” fair at half price. Captain Paco asked for the complaints book just to gloat.'),
     inf:tr('Valença ainda resistiu {x} vagas extra. Em Tui já não há barcas nem remadores; o Capitão Paco está a pensar vir a nado.','Valença held out for {x} extra waves. Tui has run out of boats and rowers; Captain Paco is thinking of swimming over.')},
   moncao:{
     win:[tr('Tal como Deu-la-Deu Martins em 1368, Monção fez os castelhanos desistir. Desta vez nem foi preciso atirar pão por cima das muralhas: bastaram as flechas.','Just like Deu-la-Deu Martins in 1368, Monção made the Castilians give up. This time there was no need to throw bread over the walls: arrows did the job.'),
          tr('As barcas voltam para Salvaterra e o Capitão Paco vai a jurar que em Monção sobra pão, sobram besteiros e, pelos vistos, sobra Alvarinho. A Praça Deu-la-Deu enche-se para brindar.','The boats head back to Salvaterra, and Captain Paco swears Monção has bread to spare, crossbowmen to spare and, apparently, Alvarinho to spare. The Praça Deu-la-Deu fills up for a toast.')],
-    loseTitle:tr('Levaram o Alvarinho todo 🍷','They took all the Alvarinho 🍷'),
+    loseTitle:tr('Levaram o Alvarinho todo','They took all the Alvarinho'),
     lose:tr('Os castelhanos entraram pela Porta do Sol na vaga {w} e foram direitos às adegas. Não sobrou uma garrafa de Alvarinho em Monção. Deu-la-Deu olha lá de cima e diz: «Eu com dois pães resolvia isto.»','The Castilians came in through the Porta do Sol on wave {w} and went straight for the wine cellars. Not one bottle of Alvarinho is left in Monção. Deu-la-Deu looks down and says: “I’d have sorted this with two loaves.”'),
     inf:tr('Monção aguentou mais {x} vagas. Em Salvaterra já se diz que quem vai cercar Monção volta de lá com fome.','Monção held for {x} more waves. In Salvaterra they now say whoever besieges Monção comes home hungry.')},
   ancora:{
     win:[tr('O Forte da Lagarteira não caiu. O mar leva as barcas castelhanas para longe, e os pescadores de Vila Praia de Âncora já estão a assar sardinhas na praia para celebrar.','The Forte da Lagarteira did not fall. The sea carries the Castilian boats far away, and the fishermen of Vila Praia de Âncora are already grilling sardines on the beach to celebrate.'),
          tr('Conta a lenda que a vila deve o nome a uma âncora atada ao pescoço de uma rainha traidora. Hoje a âncora fica para os castelhanos, que voltam para casa a nadar.','Legend says the town owes its name to an anchor tied around the neck of a treacherous queen. Today the anchor is for the Castilians, who swim home.')],
-    loseTitle:tr('Levaram o paiol e as redes 🎣','They took the powder and the nets 🎣'),
+    loseTitle:tr('Levaram o paiol e as redes','They took the powder and the nets'),
     lose:tr('Os castelhanos entraram na Lagarteira na vaga {w}, levaram a pólvora do paiol, as redes dos pescadores e as sardinhas que estavam na grelha. Agora ninguém sabe se a vila ainda se pode chamar Âncora sem a âncora.','The Castilians broke into the Lagarteira on wave {w} and took the gunpowder, the fishermen’s nets and the sardines off the grill. Now nobody knows if the town can still be called Âncora (“anchor”) without its anchor.'),
     inf:tr('A Lagarteira aguentou mais {x} vagas. O Atlântico já está farto de levar barcas castelhanas de volta.','The Lagarteira held for {x} more waves. The Atlantic is tired of carrying Castilian boats back home.')},
   cerveira:{
     win:[tr('O castelo de Cerveira resistiu, recinto a recinto. O Cervo lá no alto do monte até bate palmas, se um veado de ferro conseguisse bater palmas.','The castle of Cerveira held, enclosure by enclosure. Up on the hill the Stag would even applaud, if an iron deer could clap.'),
          tr('As barcas voltam para Goián e o Minho fica outra vez só para barqueiros e pescadores de lampreia. Na próxima Bienal de Arte já há uma instalação nova: «Barcas castelhanas abandonadas, técnica mista».','The boats head back to Goián and the Minho belongs once more to ferrymen and lamprey fishermen. The next Art Biennial already has a new installation: “Abandoned Castilian boats, mixed media”.')],
-    loseTitle:tr('Levaram o Cervo para Goián 🦌','They took the Stag to Goián 🦌'),
+    loseTitle:tr('Levaram o Cervo para Goián','They took the Stag to Goián'),
     lose:tr('Os castelhanos chegaram à torre de menagem na vaga {w}. Pior ainda: desceram o Cervo do monte e puseram-no numa rotunda em Goián. E nenhum barqueiro de Cerveira aceita ir buscá-lo.','The Castilians reached the keep on wave {w}. Worse still: they took the Stag down from the hill and put it on a roundabout in Goián. And no ferryman in Cerveira will go and fetch it.'),
     inf:tr('Cerveira aguentou mais {x} vagas. A Bienal já pensa fazer uma exposição só com os capacetes que ficaram no rio.','Cerveira held for {x} more waves. The Biennial is planning an exhibition of nothing but the helmets left in the river.')}
 };
@@ -2415,30 +2513,30 @@ function showEnd(win){
   const mm=Math.floor(st.time/60),ss=String(Math.floor(st.time%60)).padStart(2,'0');
   const stats=`<div class="stats-end">
     <span>${tr('Espanhóis despachados','Spaniards dispatched')}</span><span>${st.kills}</span>
-    <span>${tr('Toalhas salvas','Towels saved')}</span><span>${st.kills*2} 🧺</span>
-    <span>${tr('Ouro ganho','Gold earned')}</span><span>${st.gold} 💰</span>
+    <span>${tr('Toalhas salvas','Towels saved')}</span><span>${st.kills*2}</span>
+    <span>${tr('Ouro ganho','Gold earned')}</span><span>${st.gold} ${ic('coin')}</span>
     <span>${tr('Torre mais eficaz','Best tower')}</span><span>${best?TYPES[best.k].icon+' '+(best.lv>=3?TYPES[best.k].br[best.br].name:TYPES[best.k].name)+' ('+Math.round(best.dmgDone||0)+tr(' de dano)',' damage)'):tr('nenhuma, que vergonha','none, shame on you')}</span>
-    <span>${S.hero.D.short}</span><span>${S.hero.kills} ${tr('derrotados, nível','defeated, level')} ${S.hero.lv}</span>${S.coop?(S.local?tr('<span>Modo</span><span>Mesmo ecrã 📱</span>','<span>Mode</span><span>Same screen 📱</span>'):tr('<span>Modo</span><span>Cooperativo 👥</span>','<span>Mode</span><span>Co-op 👥</span>')):''}
+    <span>${S.hero.D.short}</span><span>${S.hero.kills} ${tr('derrotados, nível','defeated, level')} ${S.hero.lv}</span>${S.coop?(S.local?tr('<span>Modo</span><span>Mesmo ecrã</span>','<span>Mode</span><span>Same screen</span>'):tr('<span>Modo</span><span>Cooperativo</span>','<span>Mode</span><span>Co-op</span>')):''}
     <span>${tr('Maior matança','Best streak')}</span><span>${st.combo||0} ${tr('seguidos','in a row')}</span>
     ${S.cards.length?`<span>${tr('Bênçãos e pactos','Blessings & pacts')}</span><span>${S.cards.map(id=>(CARDS.find(c=>c.id===id)||{}).ic||'').join(' ')}</span>`:''}
     <span>${tr('Sino tocado','Bell rung')}</span><span>${st.bells} ${tr('vezes','times')}</span>
     <span>${tr('Tempo de cerco','Siege time')}</span><span>${mm}:${ss}</span></div>`;
   const M=END_MSG[S.lvl];
   if(win&&!S.infinite){
-    showModal(`<h2>${tr('Conseguiste! Fodeste os Espanhóis todos 🇵🇹','You did it! You kicked every Spaniard’s arse 🇵🇹')}</h2>${M.win.map(t=>'<p>'+t+'</p>').join('')}${stats}<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`,
+    showModal(`<h2>${tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse')}</h2>${M.win.map(t=>'<p>'+t+'</p>').join('')}${stats}<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`,
       S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
       [...(S.campaign!=null?[S.campaign<3?{label:tr('Próximo capítulo ▶','Next chapter ▶'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
-          :{label:tr('Epílogo ▶','Epilogue ▶'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre 🇵🇹</h2><p>','<h2>The Alto Minho is free 🇵🇹</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
-       {label:tr('Continuar em modo infinito ♾️','Keep going in endless mode ♾️'),main:S.campaign==null,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
+          :{label:tr('Epílogo ▶','Epilogue ▶'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
+       {label:tr('Continuar em modo infinito','Keep going in endless mode'),main:S.campaign==null,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
        {label:tr('Outra vez, que isto soube bem','Again, that was fun'),fn:restartGame},
        {label:'Menu',keep:true,fn:showMenu}]);
   }else{
-    const title=S.infinite?tr(`Aguentaste até à vaga ${S.wave} ♾️`,`You held out until wave ${S.wave} ♾️`):M.loseTitle;
+    const title=S.infinite?tr(`Aguentaste até à vaga ${S.wave}`,`You held out until wave ${S.wave}`):M.loseTitle;
     const txt=S.infinite?M.inf.replace('{x}',S.wave-MAXW):M.lose.replace('{w}',S.wave);
     showModal(`<h2>${title}</h2><p>${txt}</p>${stats}`,
       S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
       [{label:tr('Vingança!','Revenge!'),main:true,fn:restartGame},
-       {label:tr('🏆 Recordes','🏆 Leaderboard'),keep:true,fn:()=>showBoard(S.lvl,()=>showEnd(win))},
+       {label:tr('Recordes','Leaderboard'),keep:true,fn:()=>showBoard(S.lvl,()=>showEnd(win))},
        {label:'Menu',keep:true,fn:showMenu}]);
   }
 }
