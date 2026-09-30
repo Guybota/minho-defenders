@@ -413,7 +413,8 @@ body.send-open #zoomb{opacity:0;pointer-events:none}
 .vol{display:grid;grid-template-columns:5.5rem 1fr 3rem;align-items:center;gap:.6rem;font-size:.95rem}
 .vol b{font-weight:400;text-align:right;font-variant-numeric:tabular-nums;color:var(--soft)}
 .vol input{width:100%;accent-color:var(--red);min-height:28px}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* movimento reduzido: segue o sistema ou a opção Animações (classe rm posta em applyOpt) */
+html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition:none!important}
 </style>
 </head>
 <body>
@@ -1275,7 +1276,7 @@ function scoreTxt(sc){return tr('Vaga ','Wave ')+Math.floor(sc/10)+' · '+DIFFS[
 /* ================= Estado ================= */
 let S=null,EID=0,BZ=1;
 const VIEW={z:1,ox:0,oy:0};
-const OPT=Object.assign({big:false,cb:false},LS.get('opt',{}));
+const OPT=Object.assign({big:false,cb:false,anim:'auto'},LS.get('opt',{}));
 const CAMP=['moncao','melgaco','valenca','cerveira','ancora'];
 let menuSel={mode:LS.get('mode','livre'),lvl:LEVELS[LS.get('lvl','valenca')]?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:(k=>HEROES[k]&&!heroLocked(k)?k:'padeira')(LS.get('hero','padeira')),chap:0,dside:LS.get('dside',0)?1:0};
 function newGame(lvl,di,heroId){
@@ -3509,7 +3510,9 @@ document.addEventListener('keydown',e=>{if(e.code==='Space'&&$('modal').hidden&&
 
 /* ---- 08b-animacoes.js ---- */
 /* ================= Animações da interface (CSS + JavaScript) ================= */
-const RM=()=>!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+// animações: 'auto' segue o sistema (no Windows, «Mostrar animações» desligado conta como movimento reduzido); 'on' sempre; 'off' nunca
+const RM_Q=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):{matches:false};
+const RM=()=>OPT.anim==='off'||(OPT.anim!=='on'&&RM_Q.matches);
 const easeBack=t=>{const c=1.9;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
 
 // ondulação ao tocar em qualquer botão (vai para o início, para não mexer no lastChild dos poderes)
@@ -4347,6 +4350,8 @@ function showOpts(back){
     <h3>${tr('Idioma','Language')}</h3><div class="mlist"><div class="langs" role="group" aria-label="${tr('Língua','Language')}"><button data-l="pt" aria-pressed="${LANG==='pt'}">${ic('globe')} Português</button><button data-l="en" aria-pressed="${LANG==='en'}">${ic('globe')} English</button></div></div>
     <h3>${tr('Texto','Text')}</h3><div class="seg"><button data-o="big" data-v="0" aria-pressed="${!OPT.big}">${tr('Normal','Normal')}</button><button data-o="big" data-v="1" aria-pressed="${!!OPT.big}">${tr('Texto grande','Large text')}</button></div>
     <h3>${tr('Cores','Colours')}</h3><div class="seg"><button data-o="cb" data-v="0" aria-pressed="${!OPT.cb}">${tr('Normais','Standard')}</button><button data-o="cb" data-v="1" aria-pressed="${!!OPT.cb}">${tr('Para daltónicos','Colour-blind')}</button></div>
+    <h3>${tr('Animações','Animations')}</h3><div class="seg">${[['auto',tr('Automático','Automatic'),tr('Segue o sistema','Follows the system')],['on',tr('Sempre','Always'),tr('Mesmo com o sistema a pedir menos','Even if the system asks for less')],['off',tr('Reduzidas','Reduced'),tr('Bonecos parados','Still characters')]].map(([v,l,d])=>`<button data-an="${v}" aria-pressed="${OPT.anim===v}">${l}<small>${d}</small></button>`).join('')}</div>
+    ${OPT.anim==='auto'&&RM_Q.matches?`<p class="small">${ic('warn')} ${tr('O teu sistema pede movimento reduzido, por isso as animações estão paradas. Escolhe «Sempre» para as ver.','Your system asks for reduced motion, so animations are paused. Pick “Always” to see them.')}</p>`:''}
     <h3>${tr('Música','Music')}</h3><div class="seg"><button data-mu="1" aria-pressed="${MUS.on}">${tr('Ligada','On')}</button><button data-mu="0" aria-pressed="${!MUS.on}">${tr('Desligada','Off')}</button></div>
     <h3>${tr('Volume','Volume')}</h3><div class="vols">${[['master',tr('Geral','Master')],['music',tr('Música','Music')],['sfx',tr('Efeitos','Effects')],['voice',tr('Vozes','Voices')]].map(([k,l])=>
       `<label class="vol"><span>${l}</span><input type="range" min="0" max="100" step="5" data-vol="${k}" value="${Math.round(VOL[k]*100)}" aria-label="${l}"><b>${Math.round(VOL[k]*100)}%</b></label>`).join('')}</div>
@@ -4355,6 +4360,7 @@ function showOpts(back){
   $('mcard').querySelector('[data-go="back"]').addEventListener('click',()=>{audio();back();});
   $('mcard').querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.l)));
   $('mcard').querySelectorAll('[data-mu]').forEach(b=>b.addEventListener('click',()=>{MUS.on=b.dataset.mu==='1';LS.set('mus',MUS.on?1:0);musKick();if(MUS.on&&sndMode===0){sndMode=1;LS.set('snd',1);$('bSound').innerHTML=ic(SND_IC[1]);}musTick();showOpts(back);}));
+  $('mcard').querySelectorAll('[data-an]').forEach(b=>b.addEventListener('click',()=>{OPT.anim=b.dataset.an;LS.set('opt',OPT);applyOpt();showOpts(back);}));
   $('mcard').querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>{OPT[b.dataset.o]=b.dataset.v==='1';LS.set('opt',OPT);applyOpt();showOpts(back);}));
   $('mcard').querySelectorAll('[data-vol]').forEach(r=>{const k=r.dataset.vol;
     r.addEventListener('input',()=>{audio();VOL[k]=r.value/100;r.nextElementSibling.textContent=r.value+'%';LS.set('vol',VOL);applyVol();});
@@ -4362,7 +4368,8 @@ function showOpts(back){
     r.addEventListener('change',()=>{if(k==='sfx'||k==='master')sfx('coin');else if(k==='voice'&&sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});});
 }
 function setLang(l){if(l===LANG)return;LS.set('lang',l);if(S&&S.started&&!S.over&&!S.coop)saveGame();location.reload();}
-function applyOpt(){document.documentElement.classList.toggle('big',!!OPT.big);}
+function applyOpt(){document.documentElement.classList.toggle('big',!!OPT.big);document.documentElement.classList.toggle('rm',RM());}
+if(RM_Q.addEventListener)RM_Q.addEventListener('change',applyOpt);
 function showHelp(back){
   showModal(`<h2>Como jogar</h2>
     <p>Toca numa bandeira para pôr defensores. No nível 3 escolhes uma especialização. Em cada torre podes mudar o alvo preferido.</p>
@@ -4537,15 +4544,16 @@ function applyStaticLang(){
 applyStaticLang();
 new ResizeObserver(resize).observe($('stage'));
 applyOpt();
+// aviso (uma vez): o sistema está a pedir movimento reduzido e por isso os bonecos estão parados
+if(OPT.anim==='auto'&&RM_Q.matches&&!LS.get('rmTip',0)){LS.set('rmTip',1);setTimeout(()=>toast(ic('warn')+' '+tr('O teu sistema pede movimento reduzido, por isso as animações estão paradas. Em <b>Opções › Animações</b> escolhe «Sempre» para as ver.','Your system asks for reduced motion, so animations are paused. In <b>Options › Animations</b> pick “Always” to see them.')),2600);}
 newGame(menuSel.lvl in LEVELS?menuSel.lvl:'valenca',menuSel.di,menuSel.hero in HEROES?menuSel.hero:'padeira');
 resize();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>drawBG());
 let prev=performance.now(),shaking=false;
-const calm=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):{matches:false};
 // tremor, clarão e pancada no coração decaem em tempo real (continuam durante o congelamento de impacto)
 function juice(dt){
   S.shake=Math.max(0,S.shake-dt*24);S.flash=Math.max(0,S.flash-dt*1.3);S.heartHit=Math.max(0,S.heartHit-dt);
-  const a=calm.matches?0:Math.min(14,S.shake)*scale*VIEW.z*0.7;
+  const a=RM()?0:Math.min(14,S.shake)*scale*VIEW.z*0.7;
   if(a>0.25){cv.style.transform=`translate(${((Math.random()*2-1)*a).toFixed(1)}px,${((Math.random()*2-1)*a).toFixed(1)}px)`;shaking=true;}
   else if(shaking){cv.style.transform='';shaking=false;}
 }

@@ -21,7 +21,7 @@ O jogo também está alojado no GitHub Pages.
   - no canvas usa-se `drawIc(ctx,nome,x,y,tamanho)`;
   - nos textos flutuantes do canvas, `¤` é desenhado como moeda (nada de emojis, nem ▶ ou ✕ nos botões).
 - **Bonecos em estilo *chibi*:** cabeça grande e olhos expressivos. Os ajudantes são `oval`, `head`, `torso`, `legs`, `faceEyes`, `mustache` e `morion`.
-- **Movimento reduzido:** todas as animações respeitam `RM()`.
+- **Movimento reduzido:** todas as animações respeitam `RM()`. `RM()` segue `OPT.anim` (Opções › Animações: `auto` segue o sistema, `on` sempre, `off` nunca); no Windows com «Mostrar animações» desligado o sistema pede movimento reduzido e, em `auto`, os bonecos ficam parados. Os testes Playwright não apanham isto sem `reducedMotion:'reduce'`.
 - **Telemóvel e iPad:** sem zoom por toque duplo, e o menu com o mapa de fundo tem de caber no ecrã.
 - **Comentários:** no código são curtos e em português. O código é denso, no mesmo estilo que já lá está.
 
