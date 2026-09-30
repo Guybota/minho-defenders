@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Minho Defenders</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://cdn.jsdelivr.net/npm/sam-js@0.3.1/dist/samjs.min.js"></script>
@@ -30,6 +30,8 @@
 [hidden]{display:none!important}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 html,body{height:100%;margin:0}
+/* sem zoom do navegador por duplo toque (iPad/telemóvel): o jogo tem o seu próprio zoom no mapa */
+html,body,button,input,#modal,#panel{touch-action:manipulation;-webkit-text-size-adjust:100%}
 html.big{font-size:118%}
 
 /* ---------- Esqueleto: HUD em cima, mapa ao centro, poderes em baixo; painel desliza por cima do mapa ---------- */
@@ -1249,19 +1251,33 @@ function house(c,r,x,y){
   c.beginPath();c.moveTo(-w/2,0);c.lineTo(w/2,0);c.stroke();c.restore();return true;
 }
 /* ---- enfeites do campo: árvores, pinheiros, arbustos, vinhas e pedras, em traço de gravura ---- */
+// árvores de perfil, como nos mapas antigos: tronco, copa em lóbulos com contorno a tinta, sombra tracejada e brilho
+const LOBES=[[0,-11,4.6],[-4.5,-8.5,4],[4.5,-8.5,4],[-5,-4,3.6],[5,-4,3.8],[0,-5,4.4],[-1.5,-13.5,3]];
+function crown(c,x,y,k,L,fill){// contorno da união: primeiro os lóbulos com traço grosso, depois o recheio por cima
+  c.strokeStyle='#2e2a18';c.lineWidth=1.8;c.beginPath();L.forEach(([dx,dy,r])=>{c.moveTo(x+(dx+r)*k,y+dy*k);c.arc(x+dx*k,y+dy*k,r*k,0,Math.PI*2);});c.stroke();
+  c.fillStyle=fill;c.beginPath();L.forEach(([dx,dy,r])=>{c.moveTo(x+(dx+r)*k,y+dy*k);c.arc(x+dx*k,y+dy*k,r*k,0,Math.PI*2);});c.fill();}
 function tree(c,x,y,k,r){
-  c.fillStyle='rgba(70,55,30,.2)';c.beginPath();c.ellipse(x+3*k,y+5*k,9*k,4*k,0,0,Math.PI*2);c.fill();
-  c.strokeStyle='#3e4a26';c.lineWidth=0.9;
-  [[-4,1,6.5,'#6f7f45'],[4,0,7,'#7d8a4e'],[0,-5,6.5,'#8d9a5a']].forEach(([dx,dy,rr,col])=>{c.fillStyle=col;c.beginPath();c.arc(x+dx*k,y+dy*k,rr*k,0,Math.PI*2);c.fill();c.stroke();});
-  c.fillStyle='rgba(200,208,150,.7)';c.beginPath();c.arc(x-1.5*k,y-7*k,2*k,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(70,55,30,.22)';c.beginPath();c.ellipse(x+4*k,y+1*k,8*k,2.6*k,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#6e4b2a';c.strokeStyle='#2e2419';c.lineWidth=0.8;c.fillRect(x-1.1*k,y-5*k,2.2*k,6*k);c.strokeRect(x-1.1*k,y-5*k,2.2*k,6*k);
+  const light=r()<0.5;crown(c,x,y,k,LOBES,light?'#7d8a4e':'#6f7f45');
+  // sombra do lado direito/baixo, em tracejado de gravura
+  c.save();c.beginPath();LOBES.forEach(([dx,dy,rr])=>{c.moveTo(x+(dx+rr)*k,y+dy*k);c.arc(x+dx*k,y+dy*k,rr*k,0,Math.PI*2);});c.clip();
+  c.fillStyle='rgba(40,50,20,.28)';c.beginPath();c.arc(x+5*k,y-3*k,7*k,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(30,36,14,.55)';c.lineWidth=0.6;c.beginPath();for(let t=-2;t<9;t+=2.2){c.moveTo(x+t*k,y-1*k);c.lineTo(x+(t+5)*k,y-8*k);}c.stroke();
+  c.fillStyle='rgba(215,222,160,.75)';c.beginPath();c.arc(x-2.8*k,y-12*k,2*k,0,Math.PI*2);c.arc(x-5.5*k,y-8.5*k,1.3*k,0,Math.PI*2);c.fill();c.restore();
 }
 function pine(c,x,y,k){
-  c.fillStyle='rgba(70,55,30,.2)';c.beginPath();c.ellipse(x+3*k,y+5*k,7*k,3.5*k,0,0,Math.PI*2);c.fill();
-  c.fillStyle='#4f6a3a';c.strokeStyle='#2c3a1e';c.lineWidth=0.9;c.beginPath();
-  for(let i=0;i<14;i++){const a=i*Math.PI/7,rr=i%2?4*k:8.5*k;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}c.closePath();c.fill();c.stroke();
-  c.fillStyle='#6d8a4c';c.beginPath();c.arc(x-1*k,y-1*k,3*k,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(70,55,30,.22)';c.beginPath();c.ellipse(x+4*k,y+1*k,6.5*k,2.3*k,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#6e4b2a';c.strokeStyle='#2e2419';c.lineWidth=0.8;c.fillRect(x-1*k,y-4*k,2*k,5*k);c.strokeRect(x-1*k,y-4*k,2*k,5*k);
+  [[-3.5,7,5.2],[-8,6,4.2],[-12.5,4.6,3.6]].forEach(([ty,w,h])=>{// três andares de ramos
+    c.fillStyle='#4f6a3a';c.strokeStyle='#22301a';c.lineWidth=1;c.beginPath();c.moveTo(x-w*k,y+ty*k);c.lineTo(x,y+(ty-h*1.5)*k);c.lineTo(x+w*k,y+ty*k);c.quadraticCurveTo(x,y+(ty+1.4)*k,x-w*k,y+ty*k);c.fill();c.stroke();
+    c.strokeStyle='rgba(20,30,10,.55)';c.lineWidth=0.6;c.beginPath();for(let t=1;t<w-1;t+=1.8){c.moveTo(x+t*k,y+(ty+0.3)*k);c.lineTo(x+(t-1.2)*k,y+(ty-h*0.9+t*0.6)*k);}c.stroke();});
 }
-function bush(c,x,y,k){c.fillStyle='#8d9a5a';c.strokeStyle='#4e5a30';c.lineWidth=0.8;c.beginPath();c.arc(x,y,3.4*k,0,Math.PI*2);c.arc(x+3.5*k,y+1*k,2.8*k,0,Math.PI*2);c.fill();c.stroke();}
+function bush(c,x,y,k){
+  c.fillStyle='rgba(70,55,30,.2)';c.beginPath();c.ellipse(x+2*k,y+1*k,5.5*k,1.8*k,0,0,Math.PI*2);c.fill();
+  crown(c,x,y,k,[[-2.5,-2.5,2.8],[2,-2.2,2.6],[0,-4.4,2.6]],'#8d9a5a');
+  c.strokeStyle='rgba(30,36,14,.5)';c.lineWidth=0.5;c.beginPath();c.moveTo(x+1*k,y-0.5*k);c.lineTo(x+3*k,y-3*k);c.moveTo(x+2.5*k,y-0.5*k);c.lineTo(x+4*k,y-2.5*k);c.stroke();
+}
 function vines(c,x,y,a,w,h,r){
   c.save();c.translate(x,y);c.rotate(a);
   c.fillStyle='rgba(150,140,80,.28)';c.fillRect(-w/2,-h/2,w,h);c.strokeStyle='rgba(90,70,40,.55)';c.lineWidth=0.8;c.strokeRect(-w/2,-h/2,w,h);
@@ -2017,6 +2033,10 @@ document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
   else if(k==='rain'){if(S.cd.rain>0)return;S.aim=S.aim==='rain'?null:'rain';S.sel=null;renderPanel();}
   else act({a:'abil',k});
 }));
+// iOS ignora user-scalable=no: travar também os gestos de pinça e o duplo toque fora do mapa
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1&&e.target!==cv)e.preventDefault();},{passive:false});
 $('bWave').addEventListener('click',()=>{audio();if(S)act({a:'wave'});});
 $('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed===1?2:S.speed===2?3:1;$('bSpeed').textContent='×'+S.speed;});
 $('bPause').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
@@ -2161,7 +2181,12 @@ function menuSvg(V){
   const placed=[];
   const freeLand=(x,y,rad)=>x>230+rad&&x<V.x+V.w-40-rad&&y>V.y+40+rad&&y<V.y+V.h-40-rad&&dRiver(x,y)>45+rad&&TOWNS.every(t=>Math.hypot(t[0]-x,t[1]-y)>95+rad)&&!KEEP.some(b=>x>b[0]-rad&&x<b[2]+rad&&y>b[1]-rad&&y<b[3]+rad)
     &&placed.every(q=>Math.hypot(q[0]-x,q[1]-y)>q[2]+rad);
-  const tree=(x,y,k)=>`<g transform="translate(${x.toFixed(0)},${y.toFixed(0)}) scale(${k.toFixed(2)})"><ellipse cx="4" cy="7" rx="11" ry="5" fill="#5a4a2e" opacity=".18"/><circle cx="-5" cy="1" r="8" fill="#6f7f45" stroke="#3e4a26" stroke-width="1.4"/><circle cx="5" cy="-1" r="9" fill="#7d8a4e" stroke="#3e4a26" stroke-width="1.4"/><circle cx="0" cy="-7" r="8" fill="#8d9a5a" stroke="#3e4a26" stroke-width="1.4"/><circle cx="-2" cy="-9" r="2.6" fill="#b5be84" opacity=".8"/></g>`;
+  const LB=[[0,-11,4.6],[-4.5,-8.5,4],[4.5,-8.5,4],[-5,-4,3.6],[5,-4,3.8],[0,-5,4.4],[-1.5,-13.5,3]];
+  const lobes=(st)=>LB.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" ${st}/>`).join('');
+  const tree=(x,y,k)=>`<g transform="translate(${x.toFixed(0)},${y.toFixed(0)}) scale(${(k*1.6).toFixed(2)})"><ellipse cx="4" cy="1" rx="8" ry="2.6" fill="#5a4a2e" opacity=".2"/>
+    <rect x="-1.1" y="-5" width="2.2" height="6" fill="#6e4b2a" stroke="#2e2419" stroke-width=".7"/>${lobes('fill="none" stroke="#2e2a18" stroke-width="1.8"')}${lobes('fill="#7d8a4e"')}
+    <circle cx="5" cy="-3" r="6" fill="#28320f" opacity=".22"/><path d="M-1,-1 l5,-7 M1.2,-1 l5,-7 M3.4,-1 l4.4,-6" stroke="#1e2410" stroke-width=".6" opacity=".6"/>
+    <circle cx="-2.8" cy="-12" r="2" fill="#d7dea0" opacity=".75"/><circle cx="-5.5" cy="-8.5" r="1.3" fill="#d7dea0" opacity=".75"/></g>`;
   let groves='';const tries=Math.round(V.w*(Y1-Y0)/52000);
   for(let i=0;i<tries;i++){const gx=V.x+R()*V.w,gy=Y0+R()*(Y1-Y0);if(!freeLand(gx,gy,30))continue;const n=2+Math.floor(R()*5);
     for(let j=0;j<n;j++){const x=gx+(R()-0.5)*80,y=gy+(R()-0.5)*50,k=0.8+R()*0.6;if(freeLand(x,y,11*k)){placed.push([x,y,11*k]);groves+=tree(x,y,k);}}}
