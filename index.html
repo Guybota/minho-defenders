@@ -397,8 +397,6 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
 .sd .ai{grid-row:1/3;font-size:1.5rem;line-height:1}
 .sd .sn{font-size:.8rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd .sc{font-size:.72rem;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
-.sd em{position:absolute;top:2px;right:6px;font-style:normal;font-size:.72rem;font-weight:700;color:var(--red)}
-.sd i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(46,36,25,.35);pointer-events:none}
 .sd:disabled .ai,.sd.lock .ai{opacity:.45;filter:grayscale(1)}
 .sd.lock .sc{color:var(--red)}
 .sd.ready{animation:ready .6s ease-out}
@@ -933,10 +931,10 @@ const hpMult=w=>(1+0.12*(w-1)+0.008*(w-1)*(w-1))*S.diff.hp*S.mods.hp;
 /* ================= Duelo: tropas que se mandam para o outro lado do rio ================= */
 // t: inimigo; n: quantos; c: custo; eco: quanto sobe a renda; w: vaga a partir da qual se pode mandar; cd: recarga (s)
 const SENDS=[
-  {t:'peao',n:6,c:30,eco:1,w:1,cd:1.5},{t:'cav',n:4,c:45,eco:2,w:2,cd:2},{t:'nad',n:5,c:50,eco:2,w:3,cd:2},
-  {t:'arqc',n:4,c:60,eco:2,w:4,cd:3},{t:'esc',n:4,c:80,eco:3,w:5,cd:3},{t:'cont',n:2,c:90,eco:3,w:6,cd:5},
-  {t:'cura',n:2,c:100,eco:3,w:7,cd:5},{t:'ari',n:1,c:150,eco:5,w:8,cd:6},{t:'torre',n:1,c:160,eco:5,w:8,cd:6},
-  {t:'bomb',n:1,c:190,eco:6,w:10,cd:8},{t:'cap',n:1,c:420,eco:10,w:12,cd:15},{t:'boss',n:1,c:950,eco:0,w:15,cd:60}];
+  {t:'peao',n:6,c:30,eco:1,w:1},{t:'cav',n:4,c:45,eco:2,w:2},{t:'nad',n:5,c:50,eco:2,w:3},
+  {t:'arqc',n:4,c:60,eco:2,w:4},{t:'esc',n:4,c:80,eco:3,w:5},{t:'cont',n:2,c:90,eco:3,w:6},
+  {t:'cura',n:2,c:100,eco:3,w:7},{t:'ari',n:1,c:150,eco:5,w:8},{t:'torre',n:1,c:160,eco:5,w:8},
+  {t:'bomb',n:1,c:190,eco:6,w:10},{t:'cap',n:1,c:420,eco:10,w:12},{t:'boss',n:1,c:950,eco:0,w:15}];
 // renda: ouro que cai a cada ECO_T segundos (sobe com cada tropa mandada, até ECO_MAX)
 const ECO0=8,ECO_T=6,ECO_MAX=150;
 
@@ -1310,16 +1308,16 @@ function mkFoe(t,p,d){
   return e;
 }
 const PT_COL={peao:'#2f4a73',mini:'#3f5f8f',esc:'#2f4a73',arqc:'#3d5d86'};
-function spawn(t){
+function spawn(t,pp){
   const f=FOES[t];let p;
-  if(f.swim)p=2;else{const n=S.cOpen?3:2;p=S.side%n;S.side++;}
+  if(f.swim)p=2;else if(pp!=null)p=pp;else{const n=S.cOpen?3:2;p=S.side%n;S.side++;}
   const e=mkFoe(t,p,0);const q=posAt(PATHS[p],0);e.x=q.x;e.y=q.y;S.enemies.push(e);
   if(f.boss)announce(f);
 }
 function announce(f){S.texts.push({x:W/2,y:380,s:f.intro,t:0,T:3.2,big:true});sfx('roar');jolt(6);if(f.boss==='merc')say('¡Ofertas, ofertas!','es-ES',true,'paco');}
 /* ================= Barcos: cada um leva o que couber (FSZ) e os maiores só aparecem mais tarde ================= */
-function launchBoat(){
-  const w=Math.max(1,S.wave),n=S.cOpen?3:2,p=S.side%n;S.side++;
+function launchBoat(pp){
+  const w=Math.max(1,S.wave),n=S.cOpen?3:2,p=pp!=null?pp:S.side++%n;
   const first=FSZ[S.queue[0].t],av=BK.filter(k=>BOATS[k].from<=w);
   let x=Math.random()*av.reduce((a,k)=>a+BOATS[k].w(w),0),k=av[0];
   for(const kk of av){x-=BOATS[kk].w(w);if(x<=0){k=kk;break;}}
@@ -1328,7 +1326,8 @@ function launchBoat(){
   const B=BOATS[k],load=[];let used=0,gap=0;
   for(let i=0;i<S.queue.length&&i<14&&used<B.cap;){const q=S.queue[i],z=FSZ[q.t];
     if(z&&used+z<=B.cap){load.push(q.t);used+=z;gap+=q.gap;S.queue.splice(i,1);}else i++;}
-  const land=PATHS[p].seg[0].L,b={id:++EID,k,p,d:0,stop:Math.max(4,land-B.L/2+5),st:'go',al:0,uT:0,mv:true,x:0,y:0,a:0};
+  const land=PATHS[p].seg[0].L,b={id:++EID,k,p,d:0,stop:Math.max(4,land-B.L/2+5),st:'go',al:0,uT:0,mv:true,x:0,y:0,a:0,o:0,
+    lane:[0,1,-1,2,-2].find(l=>!S.boats.some(o=>o.p===p&&o.lane===l))||0};// faixa: com a margem ocupada, atraca ao lado
   const es=load.map(t=>{const e=mkFoe(t,p,0);e.ride=b.id;return e;});
   seatBoat(b,es);es.forEach(e=>{S.enemies.push(e);if(e.f.boss)announce(e.f);});
   S.boats.push(b);placeBoat(b);
@@ -1344,20 +1343,20 @@ function seatBoat(b,es){
   if(mn<lo)es.forEach(e=>{e.sx=top-(top-e.sx)*(top-lo)/(top-mn);});
 }
 function placeBoat(b){
-  const q=posAt(PATHS[b.p],b.d),ca=Math.cos(q.a),sa=Math.sin(q.a);b.x=q.x;b.y=q.y;b.a=q.a;
+  const q=posAt(PATHS[b.p],b.d),ca=Math.cos(q.a),sa=Math.sin(q.a);b.o=b.lane*34*Math.min(1,b.d/(b.stop*0.6+1));b.x=q.x-sa*b.o;b.y=q.y+ca*b.o;b.a=q.a;
   for(const e of S.enemies)if(e.ride===b.id){e.x=b.x+ca*e.sx-sa*e.sy;e.y=b.y+sa*e.sx+ca*e.sy;e.a=b.a;e.d=Math.max(0,b.d+e.sx);e.cur=b.mv?BOATS[b.k].spd:0;}
 }
 function updateBoats(dt){
   for(const b of S.boats){const B=BOATS[b.k],riders=S.enemies.filter(e=>e.ride===b.id&&!e.dead);b.mv=false;
     if(b.st==='go'){b.al=Math.min(1,b.al+dt*1.5);
       if(!riders.length)b.st='back';
-      // não encosta ao barco da frente no mesmo caminho
-      else if(!S.boats.some(o=>o!==b&&o.p===b.p&&o.st!=='back'&&o.d>b.d&&o.d-b.d<(BOATS[o.k].L+B.L)/2+6)){
+      // não encosta ao barco da frente na mesma faixa
+      else if(!S.boats.some(o=>o!==b&&o.p===b.p&&o.lane===b.lane&&o.st!=='back'&&o.d>b.d&&o.d-b.d<(BOATS[o.k].L+B.L)/2+6)){
         b.d=Math.min(b.stop,b.d+B.spd*dt*(S.weather==='chuva'?0.9:1));b.mv=true;
-        if(b.d>=b.stop){b.st='land';b.uT=0.25;S.fx.push({k:'ring',x:posAt(PATHS[b.p],b.stop+B.L/2).x,y:posAt(PATHS[b.p],b.stop+B.L/2).y,r:14,t:0,T:0.5,c:'240,248,250'});}}}
+        if(b.d>=b.stop){b.st='land';b.uT=0.25;S.fx.push({k:'ring',x:b.x+Math.cos(b.a)*B.L/2,y:b.y+Math.sin(b.a)*B.L/2,r:14,t:0,T:0.5,c:'240,248,250'});}}}
     else if(b.st==='land'){b.uT-=dt;
       if(b.uT<=0){const e=riders.sort((a,c)=>c.sx-a.sx)[0];
-        if(e){e.ride=0;e.d=PATHS[b.p].seg[0].L+1;e.off=(Math.random()-0.5)*10;b.uT=FSZ[e.t]>=4?0.6:0.28;}else b.st='back';}}
+        if(e){e.ride=0;e.d=PATHS[b.p].seg[0].L+1;e.off=b.o+(Math.random()-0.5)*10;b.uT=FSZ[e.t]>=4?0.6:0.28;}else b.st='back';}}
     else{b.al-=dt/1.6;b.d=Math.max(0,b.d-B.spd*0.5*dt);b.mv=true;}
     placeBoat(b);}
   S.boats=S.boats.filter(b=>b.al>0);
@@ -1664,6 +1663,7 @@ function update(dt){
       for(const o of S.enemies)if(!o.dead&&o.hp<o.max&&Math.hypot(o.x-e.x,o.y-e.y)<60){o.hp=Math.min(o.max,o.hp+o.max*0.06);any=true;}
       if(any)S.fx.push({k:'ring',x:e.x,y:e.y,r:55,t:0,T:0.6,c:'74,140,60'});}}
     if(e.ride)continue;
+    if(Math.abs(e.off)>8)e.off-=Math.sign(e.off)*25*dt;// quem desembarcou ao lado volta aos poucos à estrada
     const P=PATHS[e.p],p=posAt(P,e.d);e.a=p.a;e.x=p.x-Math.sin(p.a)*e.off;e.y=p.y+Math.cos(p.a)*e.off;
     if(e.d>=P.len){e.dead=true;S.fx.push({k:'ring',x:e.x,y:e.y,r:30,t:0,T:0.6});sfx('leak');
       if(e.f.steal){const g=Math.min(S.gold,20+S.wave*2);S.gold-=g;if(S.coop)S.gold2-=Math.min(S.gold2,g);S.texts.push({x:e.x,y:e.y-26,s:pick(Q.steal)+' −'+g+'¤',t:0,T:1.8,sp:true});}
@@ -4029,7 +4029,7 @@ function startDuel(o){
   for(const i of [1-o.me,o.me]){
     const L=duelLevel(i===o.me?o.mine:o.foe,i);
     newGame(L,o.di,i===o.me?o.hero:o.foeHero);
-    Object.assign(S,{lvl:L.id,dside:i,txOff:i?0:DOFF,infinite:true,started:true,paused:false,nextT:20,eco:ECO0,ecoT:ECO_T,sendQ:[],sendT:0,scd:{},
+    Object.assign(S,{lvl:L.id,dside:i,txOff:i?0:DOFF,infinite:true,started:true,paused:false,nextT:20,eco:ECO0,ecoT:ECO_T,sendQ:[],sendT:0,
       bot:i!==o.me&&!!o.bot,remote:i!==o.me&&!!o.net});
     S.stats.sent=0;DUEL.sides[i]={S,LV,PATHS,SLOTS};
   }
@@ -4059,10 +4059,9 @@ function duelTick(dt){
 // renda, recargas das tropas, tropas recebidas a desembarcar e o bot
 function duelSide(dt){
   if(S.wave>0){S.ecoT-=dt;if(S.ecoT<=0){S.ecoT+=ECO_T;addGold(1,S.eco);}}
-  for(const k in S.scd)if(S.scd[k]>0)S.scd[k]-=dt;
   if(S.sendQ.length){S.sendT-=dt;
     if(S.sendT<=0){const q=S.queue,it=S.sendQ[0];let g;S.queue=S.sendQ;
-      if(FSZ[it.t])g=launchBoat();else{S.queue.shift();spawn(it.t);g=it.gap;}
+      if(FSZ[it.t])g=launchBoat(2);else{S.queue.shift();spawn(it.t,2);g=it.gap;}
       S.sendQ=S.queue;S.queue=q;S.sendT=Math.min(1.2,g);}}
   if(S.bot)botThink(dt);
 }
@@ -4073,8 +4072,8 @@ function queueSend(t,n){
 }
 // manda tropas (corre no lado de quem manda)
 function sendTroop(i){
-  const D=SENDS[i];if(!D||!DUEL||DUEL.over||S.wave<D.w||(S.scd[i]||0)>0||!pay(1,D.c))return false;
-  const t=D.t==='boss'?BOSS[LV.id]:D.t;S.eco=Math.min(ECO_MAX,S.eco+D.eco);S.scd[i]=D.cd;S.stats.sent+=D.n;
+  const D=SENDS[i];if(!D||!DUEL||DUEL.over||S.wave<D.w||!pay(1,D.c))return false;
+  const t=D.t==='boss'?BOSS[LV.id]:D.t;S.eco=Math.min(ECO_MAX,S.eco+D.eco);S.stats.sent+=D.n;
   S.texts.push({x:W/2,y:580,s:tr('A caminho: ','On their way: ')+(D.n>1?D.n+' × ':'')+FOES[t].name+(D.eco?' · '+tr('renda','income')+' +'+D.eco:''),ic:E_IC[t],t:0,T:1.8});
   if(DUEL.net){if(NET.R)NET.R.emit('send',{t,n:D.n}).catch(()=>{});}
   else withSide(1-S.dside,()=>queueSend(t,D.n));
@@ -4103,7 +4102,7 @@ function botThink(dt){
   else if(ups.length){const u=ups[0];plan={c:u.c,go:()=>doAct(u.t.lv===2?{a:'br',i:u.t.si,b:Math.random()<0.5?0:1}:{a:'up',i:u.t.si},1)};}
   // mandar tropas: só com defesa montada e sem gastar o ouro do próximo plano; é mais atrevido nas dificuldades altas
   if(S.wave>=1&&S.towers.length>=3&&Math.random()<([0.2,0.32,0.45][S.di]||0.3)){const res=plan?plan.c*0.7:0;
-    const ok=SENDS.map((D,i)=>i).filter(i=>SENDS[i].w<=S.wave&&!(S.scd[i]>0)&&S.gold-SENDS[i].c>=res);
+    const ok=SENDS.map((D,i)=>i).filter(i=>SENDS[i].w<=S.wave&&S.gold-SENDS[i].c>=res);
     if(ok.length&&sendTroop(ok[Math.max(0,ok.length-1-Math.floor(Math.random()*3))]))return;}
   if(plan&&S.gold>=plan.c)plan.go();
 }
@@ -4137,7 +4136,7 @@ function duelUI(on){
   if(!on)return setSendOpen(false);
   const my=DUEL.sides[DUEL.me].LV.id;
   $('send').innerHTML=SENDS.map((D,i)=>{const t=D.t==='boss'?BOSS[my]:D.t;
-    return`<button class="sd" data-sd="${i}" title="${FOES[t].name}"><span class="ai">${ic(E_IC[t])}</span><span class="sn">${D.n>1?D.n+'× ':''}${FOES[t].name}</span><span class="sc">${D.c} ${ic('coin')}${D.eco?' · +'+D.eco:''}</span><em></em><i></i></button>`;}).reverse().join('');
+    return`<button class="sd" data-sd="${i}" title="${FOES[t].name}"><span class="ai">${ic(E_IC[t])}</span><span class="sn">${D.n>1?D.n+'× ':''}${FOES[t].name}</span><span class="sc">${D.c} ${ic('coin')}${D.eco?' · +'+D.eco:''}</span></button>`;}).reverse().join('');
 }
 function setSendOpen(o){$('send').classList.toggle('open',o);$('sendT').setAttribute('aria-expanded',String(o));document.body.classList.toggle('send-open',o);}
 $('sendT').addEventListener('click',()=>{audio();setSendOpen(!$('send').classList.contains('open'));});
@@ -4147,12 +4146,10 @@ $('send').addEventListener('click',e=>{const b=e.target.closest('.sd');if(!b||!D
 function duelHud(){
   const F=DUEL.sides[1-DUEL.me].S;setTxt('foeL',String(Math.max(0,F.lives)));setW('mFoe',F.lives/F.startLives);setTxt('eco','+'+S.eco+(S.eco>=ECO_MAX?' '+tr('máx','max'):''));
   let any=false;
-  $('send').querySelectorAll('.sd').forEach(b=>{const i=+b.dataset.sd,D=SENDS[i],lock=S.wave<D.w,cd=S.scd[i]||0,dis=!lock&&(S.gold<D.c||S.over);
+  $('send').querySelectorAll('.sd').forEach(b=>{const i=+b.dataset.sd,D=SENDS[i],lock=S.wave<D.w,dis=!lock&&(S.gold<D.c||S.over);
     if(b.classList.contains('lock')!==lock){b.classList.toggle('lock',lock);b.querySelector('.sc').innerHTML=lock?ic('lock')+' '+tr('vaga ','wave ')+D.w:D.c+' '+ic('coin')+(D.eco?' · +'+D.eco:'');}
     if(b.disabled!==dis)b.disabled=dis;
-    const pct=Math.round(Math.min(1,cd/D.cd)*100)+'%',ii=b.lastChild;if(ii.style.height!==pct)ii.style.height=pct;
-    const sec=cd>0?String(Math.ceil(cd)):'',em=b.querySelector('em');if(em.textContent!==sec)em.textContent=sec;
-    if(!lock&&!dis&&cd<=0)any=true;});
+    if(!lock&&!dis)any=true;});
   const d=$('sendT').querySelector('.dot'),rd=any&&!$('send').classList.contains('open');if(d.hidden===rd)d.hidden=!rd;
 }
 /* ---- duelo online: reutiliza a sala do cooperativo ---- */
