@@ -3067,6 +3067,7 @@ function radialHit(x,y){
 // seta dourada por cima das torres que já se podem melhorar
 function upgradeCost(t){const T=TYPES[t.k];return t.lv<5?T.up[t.lv-1]:null;}
 function drawUpgradeMarks(){
+  if(offSide())return;// no duelo não se vê o que o adversário pode melhorar
   const g=myGold(),k=Math.min(1.6,radK()*1.6),bob=Math.sin(S.t*5)*2.5;
   S.towers.forEach(t=>{const c=upgradeCost(t),gg=S.local?goldOf(t.owner||1):g;if(c==null||gg<c||(typeof S.sel==='number'&&SLOTS[S.sel].tower===t))return;
     const x=t.x+13,y=t.y-20+bob;
@@ -4577,7 +4578,9 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>drawBG());
 let prev=performance.now(),shaking=false;
 // tremor, clarão e pancada no coração decaem em tempo real (continuam durante o congelamento de impacto)
 function juice(dt){
-  S.shake=Math.max(0,S.shake-dt*24);S.flash=Math.max(0,S.flash-dt*1.3);S.heartHit=Math.max(0,S.heartHit-dt);
+  S.shake=Math.max(0,S.shake-dt*24);S.flash=Math.max(0,S.flash-dt*1.3);
+  // a pancada no coração decai nas duas praças do duelo (senão a do adversário ficava vermelha para sempre)
+  for(const d of DUEL?DUEL.sides:[{S}])d.S.heartHit=Math.max(0,d.S.heartHit-dt);
   const a=RM()?0:Math.min(14,S.shake)*scale*VIEW.z*0.7;
   if(a>0.25){cv.style.transform=`translate(${((Math.random()*2-1)*a).toFixed(1)}px,${((Math.random()*2-1)*a).toFixed(1)}px)`;shaking=true;}
   else if(shaking){cv.style.transform='';shaking=false;}
