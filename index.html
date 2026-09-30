@@ -2792,7 +2792,9 @@ function drawHero(){
   const h=S.hero;
   if(h.dead){label(ctx,tr('Volta em ','Back in ')+Math.ceil(h.respawn)+'s',LV.goal.x+26,LV.goal.y+14,11,true,'#9b2226');return;}
   if(S.sel==='hero'){ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.setLineDash([3,3]);ctx.beginPath();ctx.ellipse(h.x,h.y+11,15,6,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-    if(!h.D.melee){ctx.strokeStyle='rgba(155,34,38,.4)';ctx.beginPath();ctx.arc(h.x,h.y,h.D.range,0,Math.PI*2);ctx.stroke();}}
+    // alcance de todos os heróis (corpo a corpo incluído), com a melhoria de alcance
+    const R=h.D.range*(hUp(h,'range')?1.3:1);ctx.fillStyle=`rgba(${pal().rng},.10)`;ctx.strokeStyle=`rgba(${pal().rng},.75)`;ctx.lineWidth=1.6;ctx.setLineDash([5,4]);
+    ctx.lineDashOffset=RM()?0:-S.t*10;ctx.beginPath();ctx.arc(h.x,h.y,R,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;}
   if(h.tx!=null){ctx.strokeStyle='rgba(155,34,38,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(h.tx-5,h.ty-5);ctx.lineTo(h.tx+5,h.ty+5);ctx.moveTo(h.tx+5,h.ty-5);ctx.lineTo(h.tx-5,h.ty+5);ctx.stroke();}
   const rm=RM(),mv=h.tx!=null||(h._lx!=null&&Math.hypot(h.x-h._lx,h.y-h._ly)>0.05);h._lx=h.x;h._ly=h.y;
   const ph=S.t*13,bob=rm?0:mv?Math.abs(Math.sin(ph))*1.1:Math.sin(S.t*2.2)*0.3,fx=Math.cos(h.ang)<-0.05?-1:1,U=1.45;
@@ -2802,7 +2804,7 @@ function drawHero(){
   a.hot=hUp(h,'spBurn');a.lv=h.lv;
   c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';
   if(h.D.boss){c.restore();const e=h._fe||(h._fe={id:3,hero:1,f:FOES[h.D.boss]});
-    Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4.5:0});drawBoss(e);}
+    Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4.5:0,atk:a.atk,sp:a.sp});drawBoss(e);}
   else{if(h.id==='padeira')drawPadeira(c,a);else drawDeu(c,a);
   c.restore();}
   const w=26,y0=h.y-31;ctx.fillStyle='#2e2419';ctx.fillRect(h.x-w/2-1,y0,w+2,7);ctx.fillStyle=pal().g;ctx.fillRect(h.x-w/2,y0+1,w*Math.max(0,h.hp/h.max),3);
@@ -2821,28 +2823,50 @@ function worldT(c){const k=scale*dpr*VIEW.z;c.setTransform(k,0,0,k,-VIEW.ox*k,-V
 function drawBoss(e){
   const b=e.f.boss,c=ctx,u=e.r/8,rm=RM(),moving=!rm&&!(e.cur===0||e.stunT>0||e.blocked),t=rm?0:S.t,ph=t*8+e.id;
   const fx=Math.cos(e.a)<-0.15?-1:1,blink=!rm&&((t*0.6+e.id*0.3)%3.5)<0.09,mood=e.stunT>0?2:1;
+  const pt=e.hero&&!(DUEL&&S.dside===1);// lenda a defender Portugal: troca as cores de Castela pelas portuguesas
   c.save();c.translate(e.x,e.y);c.scale(u,u);c.lineJoin='round';c.lineCap='round';
-  if(b==='merc'){// Mercador das Toalhas: gordo, de chapéu, com uma pilha de toalhas às costas e uma a abanar na mão
-    const bob=moving?Math.abs(Math.sin(ph))*0.8:Math.sin(t*2)*0.25;
+  if(b==='merc'){// Mercador das Toalhas: gordo, de chapéu, com uma pilha de toalhas às costas e uma bandeira-toalha na mão
+    const atk=e.atk>=0?e.atk:-1,sp=e.sp>=0?e.sp:-1,open=e.bcd>3.2||sp>=0,busy=moving||atk>=0||sp>=0;
+    const cyc=rm?9:(t*0.4+e.id*0.23)%3.2,toss=!busy&&cyc<1,q=toss?cyc:0;// em repouso atira uma moeda ao ar
+    const bob=moving?Math.abs(Math.sin(ph))*0.8:Math.sin(t*2)*0.25,br=busy||rm?1:1+Math.sin(t*2.4)*0.045;
     c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.4,8,1.9,0,0,Math.PI*2);c.fill();
     c.translate(0,-bob);c.scale(fx,1);
     const TC=['#e9dcc0','#9b2226','#2f4a73','#e8c24a','#6f9a3a','#f2ead4','#b8302a'];
-    for(let i=0;i<7;i++){const sw=Math.sin(t*3+e.id)*0.16*i*(moving?1.4:0.6),y=3.2-i*2.3;
+    for(let i=0;i<7;i++){const sw=Math.sin(t*3+e.id)*0.16*i*(moving?1.4:0.6)+(atk>=0?Math.sin(atk*Math.PI)*0.25*i:0),y=3.2-i*2.3;
       c.fillStyle=TC[i];c.strokeStyle=INK;c.lineWidth=0.6;c.fillRect(-10+sw,y-2,8,2.1);c.strokeRect(-10+sw,y-2,8,2.1);
       c.strokeStyle='rgba(255,255,255,.55)';c.lineWidth=0.4;c.beginPath();c.moveTo(-9.5+sw,y-1);c.lineTo(-2.5+sw,y-1);c.stroke();
       c.strokeStyle=INK;c.lineWidth=0.35;c.beginPath();for(let k=0;k<3;k++){c.moveTo(-10+sw,y-1.6+k*0.6);c.lineTo(-10.8+sw,y-1.6+k*0.6);}c.stroke();}
     c.strokeStyle='#6e4b2a';c.lineWidth=0.9;c.beginPath();c.moveTo(2.5,-2.5);c.quadraticCurveTo(-3,-1,-8,4);c.stroke();// correia
     legs(c,ph,moving,'#3a2616');
-    oval(c,0,2.2,5.8,5,'#8a2a22',1);c.fillStyle='#e8c24a';[0.2,2.4,4.6].forEach(y=>{c.beginPath();c.arc(0.8,y,0.55,0,Math.PI*2);c.fill();});
+    c.save();c.translate(0,7);c.scale(1,br);c.translate(0,-7);// barriga a respirar
+    oval(c,0,2.2,5.8,5,'#8a2a22',1);c.fillStyle='#e8c24a';[0.2,2.4,4.6].forEach(y=>{c.beginPath();c.arc(0.8,y,0.55,0,Math.PI*2);c.fill();});c.restore();
     c.fillStyle='#f2ead4';c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.moveTo(-3.8,-1.8);c.lineTo(-1.8,-2.6);c.lineTo(2.2,5.6);c.lineTo(0.3,6.2);c.closePath();c.fill();c.stroke();// toalha ao ombro
     c.strokeStyle='#2f4a73';c.lineWidth=0.5;c.beginPath();c.moveTo(-2.6,-1.4);c.lineTo(1.4,5.8);c.stroke();
-    head(c,-4.6);faceEyes(c,0.6,-5,blink?0:mood,blink);mustache(c,0.6,-3,true);
-    const open=e.bcd>3.2;if(open){oval(c,0.8,-1.9,1,0.8,'#6b1f1f',0.4);}
-    c.fillStyle='#2e2419';c.beginPath();c.ellipse(0,-8,6.4,1.3,0,0,Math.PI*2);c.fill();c.fillRect(-3.2,-11.4,6.4,3.4);c.fillStyle='#9b2226';c.fillRect(-3.2,-9.2,6.4,0.9);// chapéu
-    c.save();c.translate(5.4,1.6);c.rotate(0.35+Math.sin(t*(open?14:4))*(open?0.45:0.18));// braço com uma toalha a abanar
+    head(c,-4.6);faceEyes(c,0.6,-5,blink?0:toss&&q>0.3?3:mood,blink);mustache(c,0.6,-3,true);
+    if(open){oval(c,0.8,-1.9,1,0.8,'#6b1f1f',0.4);}
+    c.save();const hj=sp>=0?-Math.sin(sp*Math.PI)*2.4:0;c.translate(0,hj);c.rotate(moving?Math.sin(ph)*0.06:sp>=0?Math.sin(sp*Math.PI*3)*0.2:0);// chapéu (salta no especial)
+    c.fillStyle='#2e2419';c.beginPath();c.ellipse(0,-8,6.4,1.3,0,0,Math.PI*2);c.fill();c.fillRect(-3.2,-11.4,6.4,3.4);c.fillStyle='#9b2226';c.fillRect(-3.2,-9.2,6.4,0.9);c.restore();
+    // braço: bandeira a abanar; no golpe recua e estala a toalha; no especial gira-a por cima da cabeça
+    let rot=0.35+Math.sin(t*(open?14:4))*(open?0.45:0.18);
+    if(sp>=0)rot=0.35-sp*Math.PI*4;
+    else if(atk>=0)rot=atk<0.35?0.35-atk/0.35*1.55:atk<0.6?-1.2+(atk-0.35)/0.25*3.2:2-(atk-0.6)/0.4*1.65;
+    else if(toss)rot=-0.25+Math.sin(Math.min(1,q*5)*Math.PI)*0.35;
+    c.save();c.translate(5.4,1.6);c.rotate(rot);
     c.strokeStyle=INK;c.lineWidth=2.4;c.beginPath();c.moveTo(0,0);c.lineTo(0,-4.5);c.stroke();c.strokeStyle='#8a2a22';c.lineWidth=1.6;c.stroke();oval(c,0,-5,1.1,1.1,SKIN,0.5);
-    const wv=Math.sin(t*9)*1.2;c.fillStyle='#e8c24a';c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.moveTo(0,-5.5);c.quadraticCurveTo(3,-6.5+wv,6,-5.5+wv);c.lineTo(6,-2.5+wv);c.quadraticCurveTo(3,-3.5+wv,0,-3);c.closePath();c.fill();c.stroke();
-    c.fillStyle='#9b2226';c.fillRect(2.2,-5.6+wv*0.5,1,2.6);c.restore();
+    const amp=atk>=0?2.4:1.2,wv=Math.sin(t*(atk>=0?18:9))*amp;
+    c.save();c.beginPath();c.moveTo(0,-5.5);c.quadraticCurveTo(3,-6.5+wv,6,-5.5+wv);c.lineTo(6,-2.5+wv);c.quadraticCurveTo(3,-3.5+wv,0,-3);c.closePath();c.clip();
+    if(pt){c.fillStyle='#9b2226';c.fillRect(-1,-9,9,9);c.fillStyle='#2f6b3a';c.fillRect(-1,-9,3.4,9);// Portugal: verde e vermelho, com a esfera
+      c.fillStyle='#e8c24a';c.beginPath();c.arc(2.4,-4.4+wv*0.4,0.8,0,Math.PI*2);c.fill();}
+    else{c.fillStyle='#b8302a';c.fillRect(-1,-9,9,9);c.fillStyle='#e8c24a';c.fillRect(-1,-5.4+wv*0.25,9,1.6);c.fillRect(-1,-5.9+wv*0.55,9,1.6);}// Castela: vermelho e amarelo
+    c.restore();c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.moveTo(0,-5.5);c.quadraticCurveTo(3,-6.5+wv,6,-5.5+wv);c.lineTo(6,-2.5+wv);c.quadraticCurveTo(3,-3.5+wv,0,-3);c.closePath();c.stroke();
+    c.restore();
+    if(atk>0.38&&atk<0.7){c.strokeStyle='rgba(255,255,255,.85)';c.lineWidth=0.8;c.beginPath();c.arc(5.4,1.6,11,-1.6,0.6);c.stroke();// estalo
+      c.fillStyle='#fff';[[14,-3],[15.5,0],[13.5,2.5]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,0.5,0,Math.PI*2);c.fill();});}
+    if(toss){const h=Math.sin(q*Math.PI)*11,w=Math.abs(Math.cos(t*22))*1.1+0.15;// moeda no ar
+      c.fillStyle='#e8c24a';c.strokeStyle='#7a5a10';c.lineWidth=0.4;c.beginPath();c.ellipse(6.6,-4.5-h,w,1.1,0,0,Math.PI*2);c.fill();c.stroke();}
+    if(sp>=0){for(let i=0;i<5;i++){const a0=i*1.26+sp*5,d=4+sp*13;// toalhas a voar à volta
+      c.save();c.translate(Math.cos(a0)*d,-3+Math.sin(a0)*d*0.6);c.rotate(a0*2);c.globalAlpha=1-sp;c.fillStyle=TC[(i+1)%7];c.strokeStyle=INK;c.lineWidth=0.4;
+      c.fillRect(-2.5,-1,5,2);c.strokeRect(-2.5,-1,5,2);c.restore();}c.globalAlpha=1;}
   }else if(b==='coca'){// a Coca: dragão que voa a bater as asas, com cauda aos esses e bafo de fogo
     const fly=Math.sin(t*4+e.id)*1.2,flap=rm?0:Math.sin(t*9);
     c.fillStyle='rgba(46,36,25,.2)';c.beginPath();c.ellipse(0,10,8+flap*0.8,1.8,0,0,Math.PI*2);c.fill();
@@ -2888,9 +2912,10 @@ function drawBoss(e){
     const sway=moving?Math.sin(ph)*0.8:0,bob=moving?Math.abs(Math.sin(ph))*0.8:Math.sin(t*2)*0.25,mad=e.bcd>4;
     c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.8,7,1.8,0,0,Math.PI*2);c.fill();
     c.translate(0,-bob);c.scale(fx,1);
-    heroFeet(c,ph,moving,8.6);heroSkirt(c,'#9b2226',sway,8.6,'#e8c24a');
-    c.strokeStyle='rgba(232,194,74,.8)';c.lineWidth=0.8;c.beginPath();c.moveTo(-5+sway*0.5,5);c.quadraticCurveTo(sway*0.4,6,5.2+sway*0.5,5);c.stroke();// faixa amarela de Castela
-    oval(c,0,0,4.6,3.6,'#e8c24a',0.9);c.fillStyle='#9b2226';c.fillRect(-4.3,-0.5,8.6,1.4);
+    const Y=pt?'#3d6b3a':'#e8c24a';// de volta a casa: o amarelo de Castela passa a verde
+    heroFeet(c,ph,moving,8.6);heroSkirt(c,'#9b2226',sway,8.6,Y);
+    c.strokeStyle=pt?'rgba(61,107,58,.9)':'rgba(232,194,74,.8)';c.lineWidth=0.8;c.beginPath();c.moveTo(-5+sway*0.5,5);c.quadraticCurveTo(sway*0.4,6,5.2+sway*0.5,5);c.stroke();// faixa amarela de Castela
+    oval(c,0,0,4.6,3.6,Y,0.9);c.fillStyle='#9b2226';c.fillRect(-4.3,-0.5,8.6,1.4);
     oval(c,-4.6,1.8,1.5,2.3,SKIN,0.7);
     oval(c,-3.6,-7.2,1.9,1.9,'#1e1812',0.6);// carrapito
     head(c,-4.6);c.fillStyle='#1e1812';c.beginPath();c.arc(0,-5.9,3.9,Math.PI*1.08,-0.08);c.fill();// cabelo apanhado
