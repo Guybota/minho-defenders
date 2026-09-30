@@ -1526,6 +1526,8 @@ function applyWork(k,load){
   if(k==='muralha'){S.gates.forEach(G=>{G.max=GATE_HP*1.6;if(!load){G.hp=G.max;G.broken=false;}});if(!load)S.towers.forEach(t=>{if(!t.broken)t.hp=towerMax(t);});}
   if(k==='recon'&&!load)S.lives=Math.min(S.startLives,S.lives+5);
 }
+function stunTowers(x,y){let n=0;for(const t of S.towers)if(!t.broken&&Math.hypot(t.x-x,t.y-y)<=62+14){t.disT=Math.max(t.disT||0,4);t.disK='rain';n++;}
+  if(n){S.texts.push({x,y:y-40,s:tr('Torres atordoadas!','Towers stunned!'),ic:'arrows',t:0,T:1.8,sp:true});NET.twDirty=true;}}
 function repairGates(){S.gates.forEach((G,i)=>{const g=LV.gates[i];if(G.broken||G.hp<G.max){chips(g.x,g.y,6,'#c9971c',0.6);S.fx.push({k:'ring',x:g.x,y:g.y,r:24,t:0,T:0.6,c:'201,151,28'});}
   G.broken=false;G.hp=G.max;});}
 function useAbility(k,x,y,who){
@@ -1534,6 +1536,8 @@ function useAbility(k,x,y,who){
   if(k==='rain'){
     if(S.cd.rain>0||x==null)return;
     S.cd.rain=ABIL.rain.cd*S.mods.cd;S.fx.push({k:'rain',x,y,r:62,t:0,T:1.3,hits:0});sfx('arrow');
+    // duelo: flechas atiradas para a praça do adversário atordoam-lhe as torres durante 4 s
+    if(DUEL&&sideAt(x,y)===1-S.dside){if(DUEL.net){if(NET.R)NET.R.emit('rstun',{x,y}).catch(()=>{});}else withSide(1-S.dside,()=>stunTowers(x,y));}
   }else if(k==='gate'){
     if(S.cd.gate>0)return;S.cd.gate=ABIL.gate.cd*S.mods.cd;
     for(const e of S.enemies)if(!inRiver(e.x,e.y))e.stunT=Math.max(e.stunT,e.f.boss?1.5:4);
@@ -2498,7 +2502,7 @@ function drawTowerBase(t){
   else{towerPlatform(ctx,t.lv,towerCol(t.k));ctx.save();ctx.scale(1.18,1.18);drawTowerUnit(ctx,t);ctx.restore();}
   ctx.restore();
   if(t.disT>0){ctx.fillStyle='rgba(40,35,30,.55)';ctx.beginPath();ctx.arc(t.x,t.y,15,0,Math.PI*2);ctx.fill();
-    drawIc(ctx,t.disK==='polvo'?'octopus':'flame',t.x,t.y,16);}
+    drawIc(ctx,t.disK==='polvo'?'octopus':t.disK==='rain'?'arrows':'flame',t.x,t.y,16);}
   if(S.local){ctx.strokeStyle=(t.owner||1)===2?'#9b2226':'#2f4a73';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(t.x,t.y,17,0,Math.PI*2);ctx.stroke();}
   else if(S.coop&&(t.owner||1)!==S.me){ctx.strokeStyle='#2f4a73';ctx.lineWidth=2;ctx.setLineDash([2,2]);ctx.beginPath();ctx.arc(t.x,t.y,17,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   if(t.lv>=5&&!RM()){const a=0.35+0.25*Math.sin(S.t*3+t.si);ctx.strokeStyle=`rgba(232,194,74,${a})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(t.x,t.y+2,22,0,Math.PI*2);ctx.stroke();}
@@ -4052,7 +4056,7 @@ function snapshot(){
   const h=S.hero;
   const x=S.texts.filter(t=>!t.net).slice(0,6).map(t=>{t.net=1;return[t.s,r(t.x),r(t.y),t.T,t.big?1:0,t.sp?1:0,t.ic||0];});
   const f=S.fx.filter(q=>!q.net).slice(0,8).map(q=>{q.net=1;return[q.k,r(q.x),r(q.y),r(q.r),q.T,q.c||0,r(q.x2||0),r(q.y2||0)];});
-  const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?1:0,t.broken?-1:r((t.hp==null?1:t.hp/towerMax(t))*100),t.fixD?r((1-t.fixT/t.fixD)*100):0,t.fixT>0?1:0]);
+  const ta=S.towers.map(t=>[r((t.ang||0)*10),t.disT>0?(t.disK==='rain'?2:1):0,t.broken?-1:r((t.hp==null?1:t.hp/towerMax(t))*100),t.fixD?r((1-t.fixT/t.fixD)*100):0,t.fixT>0?1:0]);
   const d={g:[S.gold,S.gold2],l:S.lives,w:S.wave,wx:S.weather,sp:S.spawning?1:0,nt:S.nextT==null?-1:Math.ceil(S.nextT),inf:S.infinite?1:0,co:S.cOpen?1:0,pa:S.paused?1:0,
     cd:[S.cd.rain,S.cd.gate,S.cd.bell,S.cd.hero].map(v=>Math.ceil(v)),h:[r(h.x),r(h.y),r(h.hp/h.max*100),h.dead?1:0,h.lv,h.kills,Math.ceil(h.respawn),r(h.ang*10),h.swing>0?1:0,r(heroXpF(h)*100),h.ups.join('')],
     n:S.towers.length,e,bt,p:p.concat(ep),x,f,ta,v:S.voiceQ.splice(0,2),cb:[S.combo,Math.ceil(S.comboT*10)],gt:S.gates.map(G=>G.broken?-1:Math.round(G.hp/G.max*100)),wk:S.works};
@@ -4099,7 +4103,7 @@ function applySnap(d){
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/100;o.al=al/10;o.mv=!!mv;return o;});
   NH.emap=nm;NH.snapT=performance.now();
   S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:v[0]===4?{k:'eshell',x:v[1],y:v[2]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':v[0]===5?'fireball':'bread',x:v[1],y:v[2],ang:v[3]/10});
-  if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{const t=S.towers[i];t.ang=v[0]/10;t.disT=v[1]?1:0;if(v[2]==null)return;const was=t.broken;
+  if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{const t=S.towers[i];t.ang=v[0]/10;t.disT=v[1]?1:0;if(v[1])t.disK=v[1]===2?'rain':t.disK==='rain'?null:t.disK;if(v[2]==null)return;const was=t.broken;
     t.broken=v[2]<0;const hp=t.broken?0:v[2]/100*towerMax(t);if(t.hp!=null&&hp<t.hp-0.5)t.hitT=0.2;t.hp=hp;t.fixD=v[4]?100:0;t.fixT=v[4]?100-v[3]:0;
     if(was!==t.broken&&typeof S.sel==='number'&&SLOTS[S.sel].tower===t)renderPanel();});
   (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],ic:ICONS[v[6]]?v[6]:undefined,t:0}));
@@ -4267,6 +4271,7 @@ function duelWire(R){
   R.on('st',m=>{if(ok(m))withSide(1-DUEL.me,()=>applySnap(m.data));});
   R.on('tw',m=>{if(ok(m))withSide(1-DUEL.me,()=>applyTw(m.data));});
   R.on('send',m=>{const d=m.data||{};if(ok(m)&&FOES[d.t]&&d.n>0&&d.n<=12)withSide(DUEL.me,()=>queueSend(d.t,d.n|0));});
+  R.on('rstun',m=>{const d=m.data||{};if(ok(m)&&isFinite(d.x)&&isFinite(d.y))withSide(DUEL.me,()=>stunTowers(+d.x,+d.y));});
   R.on('dend',m=>{if(ok(m))duelLose(1-DUEL.me);});
   R.onPeers(ch=>{if(NET.partner&&ch.left.some(p=>p.peer===NET.partner)){
     if(DUEL&&DUEL.net&&!DUEL.over){DUEL.forfeit=true;duelLose(1-DUEL.me);}else if(!DUEL)toast(tr('O adversário saiu da sala.','Your opponent left the room.'));}});
