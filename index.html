@@ -1767,14 +1767,7 @@ function draw(){
   worldT(ctx);
   if(!S)return;
   const P=pal();
-  SLOTS.forEach((s,i)=>{
-    if(s.tower)return;const sel=S.sel===i;
-    ctx.setLineDash([3,3]);ctx.lineDashOffset=sel?-S.t*14:0;ctx.strokeStyle=sel?'#9b2226':S.local?(sideOf(s)===1?'rgba(47,74,115,.95)':'rgba(155,34,38,.95)'):'rgba(46,36,25,.75)';ctx.lineWidth=sel?2.5:1.5;
-    ctx.fillStyle=sel?'rgba(155,34,38,.18)':'rgba(233,220,188,.6)';
-    ctx.beginPath();ctx.arc(s.x,s.y,12,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;
-    ctx.fillStyle='#2e2419';ctx.fillRect(s.x-0.8,s.y-7,1.6,12);
-    drawFlag(s.x,s.y,i*0.7);
-  });
+  {const cheap=Math.min(...Object.values(TYPES).map(T=>T.cost));SLOTS.forEach((s,i)=>{if(!s.tower)drawSlot(s,i,(S.local?goldOf(sideOf(s)):myGold())>=cheap);});}
   if(typeof S.sel==='number'&&SLOTS[S.sel].tower){const t=SLOTS[S.sel].tower,R=tstat(t).range;
     ctx.fillStyle=`rgba(${P.rng},.10)`;ctx.strokeStyle=`rgba(${P.rng},.75)`;ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(t.x,t.y,R,0,Math.PI*2);ctx.fill();ctx.setLineDash([6,6]);ctx.lineDashOffset=-S.t*10;ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;}
@@ -1960,7 +1953,7 @@ function onTap(x,y){
   if(radialHit(x,y))return;
   const h=S.hero;
   if(!h.dead&&Math.hypot(h.x-x,h.y-y)<18){S.sel='hero';renderPanel();return;}
-  let bi=null,bd=24;SLOTS.forEach((s,i)=>{const d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;bi=i;}});
+  let bi=null,bd=26;SLOTS.forEach((s,i)=>{const d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;bi=i;}});
   if(bi!=null){if(S.sel!==bi){S.selT=performance.now();S.radArm=null;}S.sel=bi;if(S.local)S.me=sideOf(SLOTS[bi]);renderPanel();return;}
   if(S.sel==='hero'&&!h.dead){
     if(inRiver(x,y)||(LV.southRiver&&y>790))S.texts.push({x,y:y+20,s:tr('Não sei nadar!','I can’t swim!'),t:0,T:1.2,sp:true});
@@ -2190,6 +2183,38 @@ function drawTowerFx(t){
       for(let i=0;i<8;i++){const a=i*Math.PI/4+u*1.5,r=10+u*34,x=t.x+Math.cos(a)*r,y=t.y+Math.sin(a)*r,s=3*(1-u)+1;
         ctx.beginPath();ctx.moveTo(x,y-s*1.6);ctx.lineTo(x+s*0.5,y);ctx.lineTo(x,y+s*1.6);ctx.lineTo(x-s*0.5,y);ctx.closePath();ctx.fill();}}
     else t.upAt=0;}
+}
+// lugar para construir: plataforma de pedra com anel a rodar e bandeira; brilha a dourado quando há ouro para uma torre
+function drawSlot(s,i,can){
+  const rm=RM(),t=rm?0:S.t,sel=S.sel===i,ph=i*0.9,x=s.x,y=s.y;
+  const pulse=rm?0:Math.sin(t*3+ph),R=15+(sel?1.5+pulse*0.6:0);
+  const side=S.local?(sideOf(s)===1?'47,74,115':'155,34,38'):null;
+  ctx.save();
+  // sombra e brilho
+  ctx.fillStyle='rgba(46,36,25,.22)';ctx.beginPath();ctx.ellipse(x+2,y+3,R+1,R*0.72,0,0,Math.PI*2);ctx.fill();
+  if(can&&!sel){const a=0.22+0.14*pulse,g=ctx.createRadialGradient(x,y,R*0.6,x,y,R+9);g.addColorStop(0,`rgba(232,194,74,${a})`);g.addColorStop(1,'rgba(232,194,74,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,R+9,0,Math.PI*2);ctx.fill();}
+  // plataforma: anel de pedras e chão de terra batida
+  ctx.fillStyle='#cdbb92';ctx.strokeStyle='#4e3f2a';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();ctx.stroke();
+  const n=11;for(let k=0;k<n;k++){const a0=k/n*Math.PI*2+0.08,a1=(k+1)/n*Math.PI*2-0.08;
+    ctx.strokeStyle=k%3===0?'#a39478':k%3===1?'#b9ab8c':'#8d7f66';ctx.lineWidth=3.6;ctx.beginPath();ctx.arc(x,y,R-2.6,a0,a1);ctx.stroke();}
+  ctx.fillStyle=sel?'#f3dcc4':'#e6d6ae';ctx.beginPath();ctx.arc(x,y,R-5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(78,63,42,.55)';ctx.lineWidth=0.8;ctx.stroke();
+  // anel tracejado a rodar (dourado se dá para construir, vermelho se escolhido, cor do jogador no mesmo ecrã)
+  ctx.save();ctx.translate(x,y);ctx.rotate(t*(sel?1.6:0.5)+ph);
+  ctx.setLineDash([2.6,2.8]);ctx.lineWidth=sel?2:1.4;
+  ctx.strokeStyle=sel?'#9b2226':side?`rgba(${side},.95)`:can?'#b8860b':'rgba(46,36,25,.55)';
+  ctx.beginPath();ctx.arc(0,0,R-8,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  // escolhido: anel exterior com quatro marcas a rodar ao contrário
+  if(sel){ctx.save();ctx.translate(x,y);ctx.rotate(-t*1.2);ctx.strokeStyle='#9b2226';ctx.lineWidth=2.2;
+    for(let k=0;k<4;k++){ctx.beginPath();ctx.arc(0,0,R+4,k*Math.PI/2+0.25,k*Math.PI/2+1.2);ctx.stroke();}ctx.restore();}
+  // bandeira espetada, um pouco maior, a ondular
+  const bob=rm?0:Math.sin(t*2.2+ph)*0.6;
+  ctx.translate(x,y-2+bob);ctx.scale(1.35,1.35);
+  ctx.fillStyle='rgba(46,36,25,.35)';ctx.beginPath();ctx.ellipse(0.4,5,2.2,0.9,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#2e2419';ctx.fillRect(-0.7,-8,1.4,13);ctx.fillStyle='#c9971c';ctx.beginPath();ctx.arc(0,-8.3,1.1,0,Math.PI*2);ctx.fill();
+  drawFlag(0,0,i*0.7);
+  ctx.restore();
 }
 function drawFlag(x,y,seed){
   const tm=RM()?0:S.t*6+seed,w=(k)=>Math.sin(tm+k*1.3)*1.1;
