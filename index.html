@@ -3396,8 +3396,8 @@ function doAct(a,who){
     case'build':{const T=TYPES[a.k];if(!s||s.tower||!T||!pay(who,T.cost))return;S.built.add(a.k);
       s.tower={k:a.k,lv:1,br:0,cd:0,spent:T.cost,x:s.x,y:s.y,ang:-Math.PI/2,pri:'primeiro',dmgDone:0,owner:who,si:a.i,deaths:0};s.tower.hp=towerMax(s.tower);S.towers.push(s.tower);sfx('coin');built(s);
       if(Math.random()<0.6){const q=pick(Q.build);S.texts.push({x:s.x,y:s.y-26,s:q,t:0,T:1.6,sp:true});say(q,'pt-PT');}break;}
-    case'up':{const t=s&&s.tower;if(!t||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);break;}
-    case'br':{const t=s&&s.tower;if(!t||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
+    case'up':{const t=s&&s.tower;if(!t||t.broken||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);break;}
+    case'br':{const t=s&&s.tower;if(!t||t.broken||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
     case'fix':{const t=s&&s.tower;if(!t||!t.broken||t.fixT>0||!pay(who,fixCost(t)))return;t.fixD=t.fixT=fixDur(t);sfx('coin');chips(t.x,t.y,6,'#c9971c',0.6);
       S.texts.push({x:t.x,y:t.y-28,s:tr('Mãos à obra!','Get to work!'),ic:'hammer',t:0,T:1.3});if(S.sel===a.i)renderPanel();break;}
     case'pri':{const t=s&&s.tower;if(!t)return;const ks=Object.keys(PRI);t.pri=ks[(ks.indexOf(t.pri)+1)%ks.length];break;}
@@ -3540,8 +3540,10 @@ function renderPanel(){
   const delta=n=>{const a=[];const d=(l,x,y,f)=>{if(Math.abs(y-x)>0.01)a.push(`${l} ${f(x)}→${f(y)}`);};
     d(tr('Dano','Damage'),st.dmg,n.dmg,Math.round);d(tr('Alcance','Range'),st.range,n.range,Math.round);d(tr('Recarga','Reload'),st.rate,n.rate,v=>Math.round(v*100)/100+'s');
     if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('arde','burns'));return a.join(' · ');};
+  // destruída: só se repara; as melhorias voltam depois da reparação
   let up='';
-  if(t.lv===1){const c=T.up[0];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:2,br:0}))}</small></button>`;}
+  if(t.broken)up=`<p class="hint" style="flex:1 1 100%">${ic('hammer')} ${tr('Repara a torre antes de a melhorar','Repair the tower before upgrading it')}</p>`;
+  else if(t.lv===1){const c=T.up[0];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:2,br:0}))}</small></button>`;}
   else if(t.lv===3){const c=T.up[2];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} ${T.br[t.br].name} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:4,br:t.br}))}</small></button>`;}
   else if(t.lv===4){const c=T.up[3];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${ic('star')} ${tr('Nível 5','Level 5')} · ${c} ${ic('coin')}<small>${T.L5[t.br]}. ${delta(tstat({k:t.k,lv:5,br:t.br}))}</small></button>`;}
   else if(t.lv>=5){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}: ${T.L5[t.br]}</p>`;}
@@ -3581,7 +3583,7 @@ document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 document.addEventListener('touchmove',e=>{if(e.touches.length>1&&e.target!==cv)e.preventDefault();},{passive:false});
 $('bWave').addEventListener('click',()=>{audio();if(S)act({a:'wave'});});
-$('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote||(DUEL&&DUEL.net))return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed===1?2:S.speed===2?3:1;$('bSpeed').textContent='×'+S.speed;});
+$('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote||(DUEL&&DUEL.net))return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed>=5?1:S.speed+1;$('bSpeed').textContent='×'+S.speed;});
 $('bPause').addEventListener('click',()=>{if(!S)return;if(DUEL&&DUEL.net)return toast(tr('No duelo online não há pausa.','There is no pause in an online duel.'));if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
 $('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').innerHTML=ic(SND_IC[sndMode]);audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
 $('bSound').innerHTML=ic(SND_IC[sndMode]);
@@ -4187,7 +4189,7 @@ function botThink(dt){
   }
   if(!S.bScore)S.bScore=SLOTS.map(s=>{let n=0;PATHS.forEach(P=>{for(let d=P.seg[0].L;d<P.len;d+=12){const q=posAt(P,d);if(Math.hypot(q.x-s.x,q.y-s.y)<125)n++;}});return n;});
   const free=SLOTS.map((s,i)=>i).filter(i=>!SLOTS[i].tower).sort((a,b)=>S.bScore[b]-S.bScore[a]);
-  const want=3+Math.floor(S.wave*0.6),ups=S.towers.filter(t=>t.lv<5).map(t=>({t,c:TYPES[t.k].up[t.lv-1]})).sort((a,b)=>a.c-b.c);
+  const want=3+Math.floor(S.wave*0.6),ups=S.towers.filter(t=>t.lv<5&&!t.broken).map(t=>({t,c:TYPES[t.k].up[t.lv-1]})).sort((a,b)=>a.c-b.c);
   const build=()=>{const k=S.towers.length?pickW({arq:3,bes:2.5,tra:2,cal:1.6}):'arq';return{c:TYPES[k].cost,go:()=>doAct({a:'build',i:free[0],k},1)};};
   let plan=null;const ruin=S.towers.find(t=>t.broken&&!(t.fixT>0));
   if(ruin)plan={c:fixCost(ruin),go:()=>doAct({a:'fix',i:ruin.si},1)};
