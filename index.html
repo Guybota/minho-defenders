@@ -198,6 +198,9 @@ th{color:var(--soft)}
 .mlist>button:not(.main):hover{border-left-color:var(--red)}
 .mlist>button:nth-child(2){animation-delay:.03s}.mlist>button:nth-child(3){animation-delay:.06s}.mlist>button:nth-child(4){animation-delay:.09s}.mlist>button:nth-child(5){animation-delay:.12s}
 .menu .ptip{margin:.6rem 0 0;text-align:center}
+.menu.endm .etitle{font-size:1.3rem;margin:.5rem 0 .3rem;line-height:1.2}.menu.endm .etitle.win{color:#2f6b3a}.menu.endm .etitle.lose{color:var(--red)}
+.menu.endm .stats-end{margin:.6rem 0 .8rem;padding:.5rem .6rem;border:1px solid color-mix(in srgb,var(--line) 60%,transparent);border-radius:8px;background:color-mix(in srgb,var(--bg) 45%,transparent)}
+.menu.endm>p{margin:.3rem 0}
 .menu.opts h3{margin:.7rem 0 .3rem}.menu.opts>.mlist:last-child{margin-top:.8rem}
 .mlist .row{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
 .mlist .row button{min-height:44px}
@@ -335,7 +338,7 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 #bWave{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);
   min-width:min(16rem,64vw);min-height:50px;border-radius:999px;font-size:1.05rem;box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 0 0 2px rgba(251,241,220,.35)}
 #bWave:not(:disabled):active{transform:translateX(-50%) translateY(1px) scale(.97)}
-#bWave:disabled{background:var(--glass);opacity:.92}
+#bWave:disabled{background:var(--glass);opacity:0;pointer-events:none}/* durante a vaga o botão sai do caminho */
 #abil{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .6rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 72px);top:auto;transform:none;
   flex-direction:column-reverse;align-items:center;gap:.5rem;padding:0;border:0;background:none;box-shadow:none;transition:opacity .25s;pointer-events:none}
 #abil .ab{transition:opacity .22s ease,transform .28s cubic-bezier(.2,1.3,.4,1),border-color .15s,background-color .15s}
@@ -1758,7 +1761,7 @@ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.i
 function polyPath(c,p){c.beginPath();c.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)c.lineTo(p[i][0],p[i][1]);c.closePath();}
 function label(c,s,x,y,size,italic,col){
   c.font=(italic?'italic ':'')+size+"px 'IM Fell English',Georgia,serif";c.textAlign='center';c.textBaseline='middle';
-  c.lineWidth=4;c.lineJoin='round';c.strokeStyle='rgba(233,220,188,.9)';c.strokeText(s,x,y);c.fillStyle=col||'#2e2419';c.fillText(s,x,y);
+  c.lineWidth=5;c.lineJoin='round';c.strokeStyle='rgba(236,224,194,.95)';c.strokeText(s,x,y);c.fillStyle=col||'#2e2419';c.fillText(s,x,y);
 }
 // ocupação do fundo: caixas já usadas por casas, árvores e vinhas (nada se sobrepõe)
 let OCC=[];
@@ -1858,7 +1861,7 @@ function decoOK(x,y,rad,labs){
 }
 function drawDeco(c,X0,X1,Y0,Y1){
   const r=rng(311+LV.id.length*41),lab=(s,x,y,z)=>{const w=s.length*z*0.3+8;return[x-w,y-z,x+w,y+z];};
-  const labs=[...LV.labels.map(([s,x,y,z])=>lab(s,x,y,z)),...LV.desemb.map(([x,y])=>lab('Desembarque',x,y,11)),lab('Rio Minho',300,120,22),
+  const labs=[...LV.labels.map(([s,x,y,z])=>lab(s,x,y,z)),...LV.desemb.map(([x,y])=>lab('Desembarque',x,y,11)),lab('Rio Minho',150,120,22),
     ...(LV.across?[lab(LV.across,130,18,15)]:[]),...(LV.south.label?[lab(LV.south.label,LV.southRiver?300:200,LV.southRiver?790:885,13)]:[]),
     ...LV.marks.filter(m=>m.label).map(m=>lab(m.label,m.x,m.y+m.h/2+9,11))];
   const put=(x,y,rad)=>{if(!decoOK(x,y,rad,labs))return false;OCC.push([x-rad,y-rad,x+rad,y+rad]);return true;};
@@ -1974,10 +1977,10 @@ function drawBG(){
   if(MX>1||MY>1){
     const area=(X1-X0)*(Y1-Y0)-W*H;
     for(let i=0;i<area/400;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(Y1-Y0);if(x>0&&x<W&&y>0&&y<H)continue;c.fillStyle=`rgba(120,95,60,${r2()*0.06})`;c.fillRect(x,y,r2()*3+1,r2()*3+1);}
-    c.fillStyle='rgba(125,138,78,.2)';
+    c.fillStyle='rgba(125,138,78,.14)';
     for(let i=0;i<area/9000;i++){const x=X0+r2()*(X1-X0),y=Math.max(230,Y0)+r2()*(Y1-Math.max(230,Y0));if(x>-20&&x<W+20)continue;c.beginPath();c.ellipse(x,y,40+r2()*70,20+r2()*40,r2()*3,0,Math.PI*2);c.fill();}
   }
-  c.fillStyle='rgba(125,138,78,.2)';
+  c.fillStyle='rgba(125,138,78,.14)';
   for(let i=0;i<(DUEL?30:16);i++){c.beginPath();c.ellipse(r()*W,DUEL?r()*H:230+r()*660,40+r()*70,20+r()*40,r()*3,0,Math.PI*2);c.fill();}
   if(!DUEL&&!LV.sea)for(let i=0;i<40;i++){const x=220+r()*360,y=14+r()*14;if(y<riverTop(x)-2)house(c,r,x,y,0.6);}
   if(!DUEL&&!LV.sea&&(MX>1||MY>1))for(let i=0;i<(MX*40+MY*(W+2*MX))/300;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(28-Y0);if(x>220&&x<W&&y>0)continue;if(y>riverTop(x)-4)continue;house(c,r2,x,y,0.6);}
@@ -1985,7 +1988,7 @@ function drawBG(){
   if(DUEL)return drawBGDuel(c,r,r2,X0,X1,Y0,Y1);
   c.beginPath();c.moveTo(xa,riverTop(xa));for(let x=xa;x<=xb;x+=10)c.lineTo(x,riverTop(x));
   for(let x=xb;x>=xa;x-=10)c.lineTo(x,riverBot(x));c.closePath();
-  c.fillStyle=LV.sea?'#7b98a6':'#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();
+  c.fillStyle=LV.sea?'#7294a6':'#84a2b0';c.fill();c.strokeStyle='#3b5763';c.lineWidth=2.2;c.stroke();
   if(LV.sea){c.fillStyle='#7b98a6';c.fillRect(X0,Y0,X1-X0,riverTop(0)+8-Y0);}
   drawSandbars(c,r);
   c.strokeStyle='rgba(47,74,82,.35)';c.lineWidth=1;
@@ -1996,13 +1999,18 @@ function drawBG(){
   PATHS.forEach((P,i)=>{if(i===2)c.strokeStyle='rgba(42,111,138,.8)';c.beginPath();c.moveTo(P.pts[0][0],P.pts[0][1]);c.lineTo(P.pts[1][0],P.pts[1][1]);c.stroke();});c.setLineDash([]);
   drawLand(c,r,r2,X0,X1,Y0,Y1);
   if(LV.across)label(c,LV.across,130,18,15,true);
-  label(c,LV.sea?tr('Oceano Atlântico','Atlantic Ocean'):tr('Rio Minho','River Minho'),300,120,22,true,'#2f4a52');
+  label(c,LV.sea?tr('Oceano Atlântico','Atlantic Ocean'):tr('Rio Minho','River Minho'),150,120,22,true,'#2f4a52');
   if(LV.sea){for(let i=0;i<46;i++){const x=r()*W,y=riverBot(x)-4+r()*30;if(dPath(x,y)<16)continue;c.fillStyle='#9a958a';c.strokeStyle='#4e4a40';c.lineWidth=0.8;
     c.beginPath();c.ellipse(x,y,4+r()*8,3+r()*4,r()*3,0,Math.PI*2);c.fill();c.stroke();}}
   drawLandLabels(c);
   drawCompass(c,540,845);
+  bgFocus(c,X0,X1,Y0,Y1);
   c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
 }
+// foco: os cantos escurecem um pouco para o olho ir para o centro do mapa
+function bgFocus(c,X0,X1,Y0,Y1){
+  const R=Math.hypot(X1-X0,Y1-Y0)/2,g=c.createRadialGradient(W/2,H*0.55,R*0.45,W/2,H*0.55,R);g.addColorStop(0,'rgba(70,48,22,0)');g.addColorStop(1,'rgba(70,48,22,.2)');
+  c.fillStyle=g;c.fillRect(X0,Y0,X1-X0,Y1-Y0);}
 // duelo: rio partilhado ao meio e a terra de cada lado, cada uma com o seu nível
 function drawBGDuel(c,r,r2,X0,X1,Y0,Y1){
   const xa=Math.floor(X0/10)*10,xb=Math.ceil(X1/10)*10;
@@ -2044,7 +2052,7 @@ function drawLand(c,r,r2,X0,X1,Y0,Y1){
   const so=LV.south;
   if(LV.fields)drawFields(c,r,LV.fields);
   for(let i=0;i<(so.all?700:240);i++){const x=40+r()*520,y=so.y0+r()*(so.y1-so.y0);if(houseOK(x,y,false))house(c,r,x,y);}
-  if(!DUEL&&(MX>1||MY>1)){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/400;
+  if(!DUEL&&(MX>1||MY>1)){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/900;
     for(let i=0;i<n;i++){const x=X0+r2()*(X1-X0),y=ya+r2()*(Y1-ya);if(x>-6&&x<W+6&&y<H+6)continue;if(LV.southRiver&&y>782)continue;if(y<riverBot(x)+10)continue;house(c,r2,x,y);}}
   if(so.road){const R=LV.road||[[310,640],[322,780],[335,900]];c.strokeStyle='#b9a47a';c.lineWidth=8;c.lineCap='round';c.beginPath();R.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
   c.lineJoin='miter';c.miterLimit=2.2;polyPath(c,LV.wall);
@@ -2068,13 +2076,13 @@ function drawLand(c,r,r2,X0,X1,Y0,Y1){
   // troço do contorno entre d0 e d1 (a contar do desembarque)
   const landPart=(P,d0,d1)=>{const b=P.seg[1]?P.seg[1].s:P.seg[0].s,q=posAt(P,b+d0);c.beginPath();c.moveTo(q.x,q.y);
     for(const sg of P.seg.slice(1)){if(sg.s>b+d1)break;if(sg.s+sg.L>b+d0&&sg.s+sg.L<b+d1)c.lineTo(sg.b[0],sg.b[1]);}const r=posAt(P,b+d1);c.lineTo(r.x,r.y);};
-  c.lineCap='butt';PATHS.forEach(P=>{landFrom(P,44);c.strokeStyle='#5a4630';c.lineWidth=27;c.stroke();
+  c.lineCap='butt';PATHS.forEach(P=>{landFrom(P,44);c.strokeStyle='#3f2f1f';c.lineWidth=28;c.stroke();
     // o contorno aparece aos poucos entre 8 e 44
     for(let k=0;k<9;k++){landPart(P,8+k*4,12.5+k*4);c.strokeStyle=`rgba(90,70,48,${((k+1)/10).toFixed(2)})`;c.stroke();}});c.lineCap='round';
-  PATHS.forEach((P,i)=>{land(P);c.strokeStyle=i===2&&!S.cOpen?'#d6c29a':'#c9b184';c.lineWidth=23;c.stroke();
-    land(P);c.strokeStyle='rgba(236,222,186,.35)';c.lineWidth=9;c.stroke();});
+  PATHS.forEach((P,i)=>{land(P);c.strokeStyle=i===2&&!S.cOpen?'#d4bf94':'#c29f68';c.lineWidth=23;c.stroke();
+    land(P);c.strokeStyle='rgba(236,216,170,.3)';c.lineWidth=9;c.stroke();});
   // ponta junto ao rio esbatida para o chão
-  PATHS.forEach((P,i)=>{const q=P.pts[1],col=i===2&&!S.cOpen?'214,194,154':'201,177,132',g=c.createRadialGradient(q[0],q[1],4,q[0],q[1],20);
+  PATHS.forEach((P,i)=>{const q=P.pts[1],col=i===2&&!S.cOpen?'212,191,148':'194,159,104',g=c.createRadialGradient(q[0],q[1],4,q[0],q[1],20);
     g.addColorStop(0,`rgba(${col},.95)`);g.addColorStop(0.55,`rgba(${col},.55)`);g.addColorStop(1,`rgba(${col},0)`);c.fillStyle=g;c.beginPath();c.arc(q[0],q[1],20,0,Math.PI*2);c.fill();});
   // terra batida: manchas e pedrinhas ao longo do caminho
   {const rd=rng(77+LV.id.length);PATHS.forEach(P=>{for(let d=P.seg[0].L;d<P.len;d+=5){const q=posAt(P,d),o=(rd()-0.5)*18,x=q.x-Math.sin(q.a)*o,y=q.y+Math.cos(q.a)*o;
@@ -2114,9 +2122,10 @@ function faceEyes(c,x,y,mood,blink){
 function mustache(c,x,y,big){c.fillStyle='#3a2616';c.beginPath();const w=big?3.6:2.4;
   c.moveTo(x,y-0.3);c.quadraticCurveTo(x-w*0.6,y-0.9,x-w,y+0.2);c.quadraticCurveTo(x-w*0.5,y+0.1,x,y+0.6);
   c.quadraticCurveTo(x+w*0.5,y+0.1,x+w,y+0.2);c.quadraticCurveTo(x+w*0.6,y-0.9,x,y-0.3);c.fill();}
-function legs(c,ph,moving,col){const s=moving?Math.sin(ph)*1.4:0;c.fillStyle=col||'#3a2e24';c.strokeStyle=INK;c.lineWidth=0.6;
-  [[-1.8,s],[1.8,-s]].forEach(([x,o])=>{c.beginPath();c.rect(x-0.9,4.5+Math.max(0,-o)*0.3,1.8,3.2-Math.max(0,o)*0.4);c.fill();c.stroke();
-    oval(c,x+0.5,7.8-Math.max(0,o)*0.4,1.3,0.7,'#2e2419',0);});}
+function legs(c,ph,moving,col){const sn=moving?Math.sin(ph):0,cs=moving?Math.cos(ph):0;
+  [[-1.8,1],[1.8,-1]].forEach(([x,k])=>{const lift=Math.max(0,cs*k)*0.7;c.save();c.translate(x,4.4-lift);c.rotate(-sn*k*0.42);
+    c.fillStyle=col||'#3a2e24';c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.rect(-0.9,0,1.8,3.3);c.fill();c.stroke();
+    oval(c,0.5,3.4,1.3,0.7,'#2e2419',0);c.restore();});}
 function torso(c,col,trim){oval(c,0,1.8,4.6,4.2,col,1);if(trim){c.fillStyle=trim;c.fillRect(-4.2,2.6,8.4,1.1);c.strokeStyle=INK;c.lineWidth=0.5;c.strokeRect(-4.2,2.6,8.4,1.1);}}
 function head(c,y){oval(c,0,y,3.9,3.7,SKIN,1);c.fillStyle='rgba(200,110,80,.35)';c.beginPath();c.arc(-2.3,y+1.3,0.8,0,Math.PI*2);c.arc(2.6,y+1.3,0.8,0,Math.PI*2);c.fill();}
 function morion(c,y,col,crest){// capacete espanhol com crista e aba virada
@@ -2732,7 +2741,10 @@ function drawGates(){
 function heroSkirt(c,col,sway,len,hem){c.fillStyle=col;c.strokeStyle=INK;c.lineWidth=0.9;c.beginPath();c.moveTo(-3.8,0.8);c.lineTo(3.8,0.8);
   c.quadraticCurveTo(5.4,4,6.3+sway,len);c.quadraticCurveTo(0+sway*0.6,len+1.4,-6.3+sway,len);c.quadraticCurveTo(-5.4,4,-3.8,0.8);c.closePath();c.fill();c.stroke();
   if(hem){c.strokeStyle=hem;c.lineWidth=0.9;c.beginPath();c.moveTo(-5.9+sway,len-0.9);c.quadraticCurveTo(sway*0.6,len+0.4,5.9+sway,len-0.9);c.stroke();}}
-function heroFeet(c,ph,mv,len){const o=mv?Math.sin(ph)*1.3:0;[[-2,o],[2,-o]].forEach(([x,d])=>oval(c,x+d,len+0.6-Math.max(0,d)*0.3,1.5,0.8,'#3a2616',0.5));}
+function heroFeet(c,ph,mv,len){const sn=mv?Math.sin(ph):0,cs=mv?Math.cos(ph):0;
+  [[-1.8,1],[1.8,-1]].forEach(([x,k])=>{const fx=x+sn*k*1.8,lift=Math.max(0,cs*k)*1.3,fy=len+0.6-lift;// o pé que avança levanta-se
+    c.strokeStyle=INK;c.lineWidth=1.7;c.beginPath();c.moveTo(x*0.7,len-2.2);c.lineTo(fx,fy-0.4);c.stroke();c.strokeStyle='#efe3c6';c.lineWidth=0.9;c.stroke();
+    oval(c,fx+0.4,fy,1.6,0.85,'#3a2616',0.5);});}
 function heroMouth(c,open){if(open){oval(c,0.9,-2.5,0.9,0.75,'#6b1f1f',0.4);}else{c.strokeStyle=INK;c.lineWidth=0.55;c.beginPath();c.arc(0.9,-3,0.9,0.35,Math.PI-0.35);c.stroke();}}
 function drawPadeira(c,a){
   const sway=a.mv?Math.sin(a.ph)*0.8:0,fury=a.atk>=0||a.sp>=0;
@@ -2809,7 +2821,7 @@ function drawHero(){
   c.save();c.translate(h.x,h.y);c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,9*U*0.95,7*U,2*U,0,0,Math.PI*2);c.fill();
   if(h.lv>=6){c.strokeStyle=`rgba(232,194,74,${h.lv>=HERO_MAX?0.9:0.55})`;c.lineWidth=1.4;c.beginPath();c.ellipse(0,9*U*0.95,9*U,2.8*U,0,0,Math.PI*2);c.stroke();}
   a.hot=hUp(h,'spBurn');a.lv=h.lv;
-  c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';if(a.mv&&!h.D.boss)c.rotate(0.07);// inclina-se para a frente a andar
+  c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';if(a.mv&&!h.D.boss){const st=Math.abs(Math.cos(ph));c.rotate(0.07+Math.sin(ph)*0.05);c.translate(0,8);c.scale(1+st*0.04,1-st*0.05);c.translate(0,-8);}// inclina-se, ginga e assenta o peso a cada passo
   if(a.mv&&!h.D.fly&&h.id!=='cervo'&&Math.random()<0.14)S.parts.push({k:'smoke',x:h.x-fx*5,y:h.y+12,vx:-fx*10,vy:-6,r:1.4+Math.random()*1.4,t:0,T:0.5});// pó dos passos
   if(h.D.boss){c.restore();const e=h._fe||(h._fe={id:3,hero:1,f:FOES[h.D.boss]});
     Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4.5:0,atk:a.atk,sp:a.sp});drawBoss(e);}
@@ -3599,9 +3611,9 @@ function drawSlot(s,i,can){
   if(can&&!sel){const a=0.22+0.14*pulse,g=ctx.createRadialGradient(x,y,R*0.6,x,y,R+9);g.addColorStop(0,`rgba(232,194,74,${a})`);g.addColorStop(1,'rgba(232,194,74,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,R+9,0,Math.PI*2);ctx.fill();}
   // plataforma: anel de pedras e chão de terra batida
-  ctx.fillStyle='#cdbb92';ctx.strokeStyle='#4e3f2a';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#c6b287';ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();ctx.stroke();
   const n=11;for(let k=0;k<n;k++){const a0=k/n*Math.PI*2+0.08,a1=(k+1)/n*Math.PI*2-0.08;
-    ctx.strokeStyle=k%3===0?'#a39478':k%3===1?'#b9ab8c':'#8d7f66';ctx.lineWidth=3.6;ctx.beginPath();ctx.arc(x,y,R-2.6,a0,a1);ctx.stroke();}
+    ctx.strokeStyle=k%3===0?'#9a8a6c':k%3===1?'#b3a282':'#7f7058';ctx.lineWidth=3.6;ctx.beginPath();ctx.arc(x,y,R-2.6,a0,a1);ctx.stroke();}
   ctx.fillStyle=sel?'#f3dcc4':'#e6d6ae';ctx.beginPath();ctx.arc(x,y,R-5,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='rgba(78,63,42,.55)';ctx.lineWidth=0.8;ctx.stroke();
   // anel tracejado a rodar (dourado se dá para construir, vermelho se escolhido, cor do jogador no mesmo ecrã)
@@ -4466,24 +4478,35 @@ function showEnd(win){
     ${S.cards.length?`<span>${tr('Bênçãos e pactos','Blessings & pacts')}</span><span>${S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?ic(c.ic):'';}).join(' ')}</span>`:''}
     <span>${tr('Sino tocado','Bell rung')}</span><span>${st.bells} ${tr('vezes','times')}</span>
     <span>${tr('Tempo de cerco','Siege time')}</span><span>${mm}:${ss}</span></div>`;
-  const M=END_MSG[S.lvl];
+  const M=END_MSG[S.lvl],coopNet=S.coop&&!S.local,where=LV.full||tr('Cerco de ','Siege of ')+LV.name;
+  let tag,title,body,it;
   if(win&&!S.infinite){
-    showModal(`<h2>${tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse')}</h2>${M.win.map(t=>'<p>'+t+'</p>').join('')}${stats}<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`,
-      S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
-      [...(S.campaign!=null?[S.campaign<CAMP.length-1?{label:tr('Próximo capítulo','Next chapter'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
-          :{label:tr('Epílogo','Epilogue'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
-       {label:tr('Continuar em modo infinito','Keep going in endless mode'),main:S.campaign==null,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
-       {label:tr('Outra vez, que isto soube bem','Again, that was fun'),fn:restartGame},
-       {label:'Menu',keep:true,fn:showMenu}]);
+    tag=tr('Vitória','Victory');title=tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse');
+    body=M.win.map(t=>'<p>'+t+'</p>').join('')+stats+`<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`;
+    it=coopNet?[{l:ic('map')+' Menu',main:1,fn:()=>{netLeave();showMenu();}}]:[
+      ...(S.campaign!=null?[S.campaign<CAMP.length-1?{l:ic('castle')+' '+tr('Próximo capítulo','Next chapter'),main:1,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
+          :{l:ic('scroll')+' '+tr('Epílogo','Epilogue'),main:1,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
+      {l:ic('infinite')+' '+tr('Continuar em modo infinito','Keep going in endless mode'),main:S.campaign==null,close:1,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
+      {l:ic('hourglass')+' '+tr('Outra vez','Again'),close:1,fn:restartGame},
+      {l:ic('trophy')+' '+tr('Recordes','Leaderboard'),fn:()=>showBoard(S.lvl,()=>showEnd(win))},
+      {l:ic('map')+' Menu',fn:showMenu}];
   }else{
-    const title=S.infinite?tr(`Aguentaste até à vaga ${S.wave}`,`You held out until wave ${S.wave}`):M.loseTitle;
-    const txt=S.infinite?M.inf.replace('{x}',S.wave-MAXW):M.lose.replace('{w}',S.wave);
-    showModal(`<h2>${title}</h2><p>${txt}</p>${stats}`,
-      S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
-      [{label:tr('Vingança!','Revenge!'),main:true,fn:restartGame},
-       {label:tr('Recordes','Leaderboard'),keep:true,fn:()=>showBoard(S.lvl,()=>showEnd(win))},
-       {label:'Menu',keep:true,fn:showMenu}]);
+    tag=S.infinite?tr('Fim do cerco','Siege over'):tr('Derrota','Defeat');
+    title=S.infinite?tr(`Aguentaste até à vaga ${S.wave}`,`You held out until wave ${S.wave}`):M.loseTitle;
+    body=`<p>${S.infinite?M.inf.replace('{x}',S.wave-MAXW):M.lose.replace('{w}',S.wave)}</p>${stats}`;
+    it=coopNet?[{l:ic('map')+' Menu',main:1,fn:()=>{netLeave();showMenu();}}]:[
+      {l:ic('swords')+' '+tr('Vingança!','Revenge!'),main:1,close:1,fn:restartGame},
+      {l:ic('trophy')+' '+tr('Recordes','Leaderboard'),fn:()=>showBoard(S.lvl,()=>showEnd(win))},
+      {l:ic('map')+' Menu',fn:showMenu}];
   }
+  // mesmo cartão do menu principal e da pausa, por cima do mapa desfocado
+  document.body.classList.add('inpause');
+  const big=it.filter(x=>x.main),small=it.filter(x=>!x.main),rows=[];for(let k=0;k<small.length;k+=2)rows.push(small.slice(k,k+2));
+  const btn=x=>`<button data-e="${it.indexOf(x)}"${x.main?' class="main"':''}>${x.l}</button>`;
+  showModal(`<div class="menu endm"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tag} · ${where}</p>
+    <h3 class="etitle ${win&&!S.infinite?'win':'lose'}">${title}</h3>${body}
+    <div class="mlist">${big.map(btn).join('')}${rows.map(r=>r.length>1?`<div class="row">${r.map(btn).join('')}</div>`:btn(r[0])).join('')}</div></div>`,[]);
+  $('mcard').querySelectorAll('[data-e]').forEach(b=>b.addEventListener('click',()=>{audio();const x=it[+b.dataset.e];if(x.close)closeModal();x.fn();}));
 }
 
 /* ---- 11-ciclo.js ---- */
