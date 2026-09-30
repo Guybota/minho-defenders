@@ -19,7 +19,7 @@ O jogo também está alojado no GitHub Pages.
 - **Sem emojis na interface.** Os ícones são SVG no mapa `ICONS`:
   - em HTML usa-se `ic('nome')`;
   - no canvas usa-se `drawIc(ctx,nome,x,y,tamanho)`;
-  - nos textos flutuantes do canvas, `💰` é convertido em moeda.
+  - nos textos flutuantes do canvas, `¤` é desenhado como moeda (nada de emojis, nem ▶ ou ✕ nos botões).
 - **Bonecos em estilo *chibi*:** cabeça grande e olhos expressivos. Os ajudantes são `oval`, `head`, `torso`, `legs`, `faceEyes`, `mustache` e `morion`.
 - **Movimento reduzido:** todas as animações respeitam `RM()`.
 - **Telemóvel e iPad:** sem zoom por toque duplo, e o menu com o mapa de fundo tem de caber no ecrã.

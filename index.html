@@ -199,6 +199,10 @@ th{color:var(--soft)}
 .mlist>button:nth-child(2){animation-delay:.03s}.mlist>button:nth-child(3){animation-delay:.06s}.mlist>button:nth-child(4){animation-delay:.09s}.mlist>button:nth-child(5){animation-delay:.12s}
 .mlist .row{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
 .mlist .row button{min-height:44px}
+/* língua: seletor segmentado a toda a largura, com a atual realçada */
+.mlist .langs{display:grid;grid-template-columns:1fr 1fr;margin-top:.1rem}
+.mlist .langs button{min-height:38px;font-size:.92rem;border-radius:0;box-shadow:0 2px 0 var(--shadow)}
+.mlist .langs button:first-child{border-radius:999px 0 0 999px}.mlist .langs button:last-child{border-radius:0 999px 999px 0;border-left:0}
 .version{font-size:.75rem;color:var(--soft);margin-top:.8rem;text-align:center}
 
 /* ecrã de arranque: o pregão da praça */
@@ -428,7 +432,7 @@ body.send-open #zoomb{opacity:0;pointer-events:none}
   </div>
 </header>
 <div id="stage"><canvas id="c"></canvas>
-  <div id="zoomb"><button data-z="in" aria-label="Aproximar">＋</button><button data-z="out" aria-label="Afastar">－</button><button data-z="reset" aria-label="Ver mapa inteiro">⤢</button></div>
+  <div id="zoomb"><button data-z="in" aria-label="Aproximar" data-ic="zin"></button><button data-z="out" aria-label="Afastar" data-ic="zout"></button><button data-z="reset" aria-label="Ver mapa inteiro" data-ic="fit"></button></div>
   <div id="panel" aria-live="polite"></div></div>
 <button id="abilT" aria-label="Poderes" aria-expanded="false" aria-controls="abil"><span class="ai" data-ic="powers"></span><b class="dot" hidden></b></button>
 <nav id="abil" aria-label="Poderes">
@@ -533,6 +537,7 @@ const ICONS=(()=>{
     fish:s('M2.5 12c3.5-5 11-6 15.5-.1C13.5 17.9 6 17 2.5 12z','#8fa3a8')+s('M18 11.9l3.5-3.5v7z','#8fa3a8')+`<circle cx="6.5" cy="11" r="1" fill="${K}"/>`+s('M9.5 9.5c1 1.5 1 3.5 0 5',null,.9),
     helmet:s('M2.5 14.5c3-1 5-1.2 9.5-1.2s6.5.2 9.5 1.2c-2 2-4.5 2.5-9.5 2.5s-7.5-.5-9.5-2.5z',ST)+s('M6.5 13.5c0-5 2.5-8 5.5-8s5.5 3 5.5 8',ST)+s('M12 5.5V2.8',null,1.8)+s('M12 5.5c0 2.5 0 5 0 7.8',null,.8),
     castleflag:'',
+    close:s('M6 6l12 12M18 6L6 18',null,2.4),zin:s('M12 5v14M5 12h14',null,2.4),zout:s('M5 12h14',null,2.4),fit:s('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',null,2),
     flagx:s('M5 2.5v19',null,1.8)+s('M5.5 3.5h7v10h-7z',P,1)+f('M8.3 5.5h1.4v6H8.3zM6.3 7.8h5.4v1.4H6.3z','#2f4a9e')+s('M12.5 3.5h7l-1.6 5 1.6 5h-7z',R,1)+f('M12.5 7.2h6.3l-.4 1.3.4 1.3h-6.3z',GL)+s('M3 21.5h5',null,1.6),
     foe:s('M3.5 21V10h3v2h2.2v-2h2.1v2h2.4v-2h2.1v2h2.2v-2h3v11z','#b5563a')+s('M9.8 21v-3.6a2.2 2.2 0 0 1 4.4 0V21',K)+s('M12 10V3.2l4.2 1.5L12 6.2',GL)+s('M5 15h2M17 15h2',null,1.1),
     dragon:s('M3 17c2-1 4-1 6 0 1-4 4-6.5 8-6.5l1.5-3 1 3.2 2.5.8-2.5 1.8c-2 .5-3.5 2-4 4.2-1 3.5-4 5-7.5 4.5-2.5-.4-4-2-5-4z',GR)+s('M9.5 12.5L6 4.5l7 5',GD)+`<circle cx="18" cy="11.8" r=".8" fill="${K}"/>`+s('M4 21l1.5-2.5M8 21.8l.5-2.5',null,1.2),
@@ -552,7 +557,7 @@ const ICONS=(()=>{
 })();
 const icSvg=(n,ink)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${(ICONS[n]||'').replace(/"K"/g,'"'+ink+'"')}</svg>`;
 // os ícones só de tinta (pausa, som, menu…) seguem a cor do texto; os outros são «autocolantes» com contorno fixo
-const IC_MONO=new Set(['pause','play','snd0','snd1','snd2','menu','fog','infinite']);
+const IC_MONO=new Set(['pause','play','snd0','snd1','snd2','menu','fog','infinite','close','zin','zout','fit']);
 function ic(n,cls){return icSvg(n,IC_MONO.has(n)?'currentColor':'#2e2419').replace('<svg ','<svg class="ico'+(cls?' '+cls:'')+'" aria-hidden="true" focusable="false" ');}
 const IC_IMG={};
 function icImg(n){let im=IC_IMG[n];if(!im){im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icSvg(n,'#2e2419'));IC_IMG[n]=im;}return im;}
@@ -1089,7 +1094,7 @@ function samBuffer(text,who){
     const en=!ph&&LANG==='en'&&(who==='pt'||who==='her');
     if((ph||en)&&typeof window.SamJs==='function'){
       const sam=new window.SamJs(Object.assign({phonetic:!!ph},SAMV[who]));
-      const raw=ph?sam.buf32(ph.replace(/!/g,'.'),true):sam.buf32(text.replace(/[«»“”—🧺👀🍞💰🇵🇹…]/g,'').replace(/’/g,"'").replace(/!/g,'.'),false);
+      const raw=ph?sam.buf32(ph.replace(/!/g,'.'),true):sam.buf32(text.replace(/[«»“”—¤…]/g,'').replace(/’/g,"'").replace(/!/g,'.'),false);
       if(raw&&raw.length){
         let mean=0;for(let i=0;i<raw.length;i++)mean+=raw[i];mean/=raw.length;
         let pk=0;for(let i=0;i<raw.length;i++)pk=Math.max(pk,Math.abs(raw[i]-mean));
@@ -1330,7 +1335,7 @@ const myGold=()=>S.me===2?S.gold2:S.gold;
 function startWave(early,who){
   if(S.spawning||S.over)return;
   if(!S.infinite&&S.wave>=MAXW)return;
-  if(early&&S.nextT!=null){const b=Math.ceil(S.nextT);if(S.local)addGold('all',Math.ceil(b/2));else addGold(who||1,b);S.texts.push({x:W/2,y:490,s:tr('Chamada cedo: +','Called early: +')+b+' 💰',t:0,T:1.6});}
+  if(early&&S.nextT!=null){const b=Math.ceil(S.nextT);if(S.local)addGold('all',Math.ceil(b/2));else addGold(who||1,b);S.texts.push({x:W/2,y:490,s:tr('Chamada cedo: +','Called early: +')+b+' ¤',t:0,T:1.6});}
   S.nextT=null;S.wave++;S.queue=waveDef(S.wave);S.spawning=true;S.spawnT=0;S.started=true;
   S.weather=S.wave<=2?'sol':pick(['sol','sol','sol','noite','noite','chuva','chuva','nevoeiro','nevoeiro']);
   S.texts.push({x:W/2,y:430,s:S.wave%10===0?tr('Cuidado: vem aí uma lenda!','Watch out: a legend is coming!'):S.wave%5===0?pick(Q.cap):pick(Q.wave),t:0,T:2.4,big:true});
@@ -1394,7 +1399,7 @@ function kill(e,src){
   chips(e.x,e.y,e.r>10?7:4,e.col,e.r>10?1.2:0.8);
   if(e.t==='ari'||e.t==='torre')jolt(3);
   if(src==='hero'){S.hero.kills++;heroXP(e.gold*1.5+2);if(S.hero.kills>=100)unlock('padeira');
-    if(S.hero.id==='merc'){const x=Math.max(1,Math.round(gold*(hUp(S.hero,'gold')?1:0.5)));addGold(owner,x);S.texts.push({x:e.x,y:e.y-22,s:'+'+x+' 💰',t:0,T:0.9});}}
+    if(S.hero.id==='merc'){const x=Math.max(1,Math.round(gold*(hUp(S.hero,'gold')?1:0.5)));addGold(owner,x);S.texts.push({x:e.x,y:e.y-22,s:'+'+x+' ¤',t:0,T:0.9});}}
   else if(!S.hero.dead&&Math.hypot(e.x-S.hero.x,e.y-S.hero.y)<110)heroXP(e.gold*0.5);
   if(e.t==='mini'){S.stats.minis++;if(S.stats.minis>=50)unlock('sardinha');}
   if(e.t==='cont'){S.stats.cont++;if(S.stats.cont>=25)unlock('fiscal');}
@@ -1403,7 +1408,7 @@ function kill(e,src){
     S.texts.push({x:e.x,y:e.y-34,s:e.f.death,t:0,T:3,sp:true});smoke(e.x,e.y,18);sfx('boom');
     jolt(12);S.stop=0.22;S.flash=Math.max(S.flash,0.3);S.flashC='255,236,190';chips(e.x,e.y,22,e.col,1.8);
     S.fx.push({k:'boom',x:e.x,y:e.y,r:55,t:0,T:0.7});
-    if(e.t==='merc'){addGold('both',150);S.texts.push({x:e.x,y:e.y+22,s:tr('Liquidação total! +150 💰','Clearance sale! +150 💰'),t:0,T:2.2});}
+    if(e.t==='merc'){addGold('both',150);S.texts.push({x:e.x,y:e.y+22,s:tr('Liquidação total! +150 ¤','Clearance sale! +150 ¤'),t:0,T:2.2});}
   }
   else if(e.t==='cap'){S.texts.push({x:e.x,y:e.y-28,s:tr('«¡Volveré!» — Capitão Paco','«¡Volveré!» — Captain Paco'),t:0,T:2.2,sp:true});jolt(6);S.stop=0.1;say('¡Volveré!','es-ES',true,'paco');unlock('paco');}
   else if(Math.random()<0.14&&e.t!=='mini'){const q=pick(e.pt?Q.dieP:Q.die);S.texts.push({x:e.x,y:e.y-24,s:q,t:0,T:1.4,sp:true});say(q,e.pt?'pt-PT':'es-ES');}
@@ -1455,7 +1460,7 @@ function useAbility(k,x,y,who){
   }else if(k==='bell'){
     if(S.cd.bell>0)return;S.cd.bell=ABIL.bell.cd*S.mods.cd;const g=25+5*S.wave;if(S.local)addGold('all',Math.ceil(g/2));else addGold(who||1,g);S.stats.bells++;
     const m=LV.marks[0];S.fx.push({k:'ring',x:m.x,y:m.y,r:60,t:0,T:1.2,c:'201,151,28'});
-    S.texts.push({x:m.x,y:m.y-40,s:tr('Dlim-dlão! +','Ding-dong! +')+g+' 💰',t:0,T:1.8});sfx('bell');if(S.stats.bells>=10)unlock('sino');
+    S.texts.push({x:m.x,y:m.y-40,s:tr('Dlim-dlão! +','Ding-dong! +')+g+' ¤',t:0,T:1.8});sfx('bell');if(S.stats.bells>=10)unlock('sino');
   }
 }
 function heroXP(n){
@@ -1481,7 +1486,7 @@ function heroSpecial(){
   }else{
     const R=hUp(h,'spBig')?140:90,xt=hUp(h,'spBig')?1.5:0;let n=0;
     for(const e of S.enemies)if(!e.dead&&!inRiver(e.x,e.y)&&Math.hypot(e.x-h.x,e.y-h.y)<R){n++;hurt(e,(20+h.lv*4)*hm,true,'hero');e.stunT=Math.max(e.stunT,(e.f.boss?1.2:3.5)+xt);e.eat=true;}
-    if(hUp(h,'spGold')){h.hp=Math.min(h.max,h.hp+h.max*0.35);if(n){addGold('both',3*n);S.texts.push({x:h.x,y:h.y+22,s:'+'+3*n+' 💰',t:0,T:1.6});}}
+    if(hUp(h,'spGold')){h.hp=Math.min(h.max,h.hp+h.max*0.35);if(n){addGold('both',3*n);S.texts.push({x:h.x,y:h.y+22,s:'+'+3*n+' ¤',t:0,T:1.6});}}
     if(R>90)S.fx.push({k:'ring',x:h.x,y:h.y,r:R,t:0,T:0.8,c:'201,151,28'});
     for(let i=0;i<(R>90?24:14);i++)S.parts.push({k:'bread',x:h.x,y:h.y,vx:(Math.random()-0.5)*160,vy:-80-Math.random()*60,t:0,T:0.9});
     S.texts.push({x:h.x,y:h.y-30,s:tr('Tomem lá pão, que a gente tem de sobra!','Have some bread, we’ve got plenty!'),t:0,T:2,sp:true});say(tr('Tomem lá pão, que a gente tem de sobra!','Have some bread, we’ve got plenty!'),'pt-PT',true,'her');
@@ -1498,7 +1503,7 @@ function bossSpecial(h){
   S.cd.hero=heroSpCd(h);h.spT=0.7;
   if(h.id==='merc'){const R=big?170:110,es=near(R);let n=0;
     es.forEach(e=>{e.stunT=Math.max(e.stunT,e.f.boss?1:3);n++;});
-    const g=n*(hUp(h,'gold')?4:2);if(g){addGold('both',g);S.texts.push({x:h.x,y:h.y+24,s:'+'+g+' 💰',t:0,T:1.6});}
+    const g=n*(hUp(h,'gold')?4:2);if(g){addGold('both',g);S.texts.push({x:h.x,y:h.y+24,s:'+'+g+' ¤',t:0,T:1.6});}
     S.fx.push({k:'ring',x:h.x,y:h.y,r:R,t:0,T:0.9,c:'201,151,28'});sfx('coin');jolt(2);
     S.texts.push({x:h.x,y:h.y-30,s:'¡Ofertas, ofertas! '+tr('Tudo a metade do preço!','Everything half price!'),t:0,T:2,sp:true});say('¡Ofertas, ofertas!','es-ES',true,'paco');}
   else if(h.id==='coca'){const R=big?150:105,es=near(R);
@@ -1515,7 +1520,7 @@ function bossSpecial(h){
     const es=near(150).sort((a,b)=>b.hp-a.hp).slice(0,big?2:1);
     es.forEach((e,i)=>{if(i===0&&!e.ride&&!inRiver(e.x,e.y)){smoke(h.x,h.y,5);h.x=e.x-12;h.y=e.y+4;h.tx=null;h.ang=0;}
       hurt(e,(e.f.boss?e.max*0.12:250+h.lv*30)*hm,true,'hero');S.fx.push({k:'boom',x:e.x,y:e.y,r:26,t:0,T:0.45});chips(e.x,e.y,8,'#9b2226',1);
-      if(e.dead){addGold('both',20);h.hp=Math.min(h.max,h.hp+h.max*0.5);S.texts.push({x:e.x,y:e.y-20,s:tr('Despachado! +20 💰','Dispatched! +20 💰'),t:0,T:1.6});}
+      if(e.dead){addGold('both',20);h.hp=Math.min(h.max,h.hp+h.max*0.5);S.texts.push({x:e.x,y:e.y-20,s:tr('Despachado! +20 ¤','Dispatched! +20 ¤'),t:0,T:1.6});}
       else e.stunT=Math.max(e.stunT,2);});
     sfx('smash');jolt(5);S.texts.push({x:h.x,y:h.y-30,s:tr('Anda cá, que eu mostro-te o que é Melgaço!','Come here and I’ll show you what Melgaço is!'),t:0,T:1.8,sp:true});
     say(tr('Anda cá, que eu mostro-te o que é Melgaço!','Come here and I’ll show you what Melgaço is!'),'pt-PT',true,'her');}
@@ -1604,7 +1609,7 @@ function update(dt){
     if(e.ride)continue;
     const P=PATHS[e.p],p=posAt(P,e.d);e.a=p.a;e.x=p.x-Math.sin(p.a)*e.off;e.y=p.y+Math.cos(p.a)*e.off;
     if(e.d>=P.len){e.dead=true;S.fx.push({k:'ring',x:e.x,y:e.y,r:30,t:0,T:0.6});sfx('leak');
-      if(e.f.steal){const g=Math.min(S.gold,20+S.wave*2);S.gold-=g;if(S.coop)S.gold2-=Math.min(S.gold2,g);S.texts.push({x:e.x,y:e.y-26,s:pick(Q.steal)+' −'+g+'💰',t:0,T:1.8,sp:true});}
+      if(e.f.steal){const g=Math.min(S.gold,20+S.wave*2);S.gold-=g;if(S.coop)S.gold2-=Math.min(S.gold2,g);S.texts.push({x:e.x,y:e.y-26,s:pick(Q.steal)+' −'+g+'¤',t:0,T:1.8,sp:true});}
       else{S.lives-=e.leak;hitHeart(e.leak);if(Math.random()<0.5)S.texts.push({x:e.x,y:e.y-26,s:pick(LV.leak&&Math.random()<0.5?LV.leak:Q.leak),t:0,T:1.6,sp:true});}}
   }
   if(S.lives<=0&&!S.over){S.lives=0;endGame(false);return;}
@@ -1661,7 +1666,7 @@ function update(dt){
   if(S.born.length){for(const c of S.born){const q=posAt(PATHS[c.p],c.d);c.a=q.a;c.x=q.x;c.y=q.y;S.enemies.push(c);}S.born=[];}
   if(!S.spawning&&!S.enemies.length&&S.pendingBonus>0){
     addGold('all',S.pendingBonus);if(!S.hero.dead)heroXP(8+S.wave);
-    S.texts.push({x:W/2,y:470,s:tr('Vaga repelida! +','Wave repelled! +')+S.pendingBonus+' 💰',t:0,T:2.2,big:true});S.pendingBonus=0;sfx('coin');saveGame();
+    S.texts.push({x:W/2,y:470,s:tr('Vaga repelida! +','Wave repelled! +')+S.pendingBonus+' ¤',t:0,T:2.2,big:true});S.pendingBonus=0;sfx('coin');saveGame();
     if(S.wave%3===0&&(S.infinite||S.wave<MAXW)){if(S.bot)botCard();else offerCards();}}
   if(!S.infinite&&S.wave>=MAXW&&!S.spawning&&!S.enemies.length&&!S.over){endGame(true);return;}
   ageVisuals(dt);
@@ -2450,7 +2455,7 @@ function drawHeart(){
       ctx.fillStyle='rgba(250,200,70,.9)';ctx.beginPath();ctx.moveTo(x-s*0.5,y);ctx.quadraticCurveTo(x,y-s*1.5*f,x+s*0.5,y);ctx.fill();};
     fl(-w/2+7,-h/2+2,4);if(st>=3){fl(w/2-6,-h/2+3,5);fl(3,h/2-3,4);fl(-tw/2+2,-h/2-th+2,3.5);}}
   ctx.restore();
-  // anel de perigo na última fase (as vidas em número estão no topo, junto a 🏰)
+  // anel de perigo na última fase (as vidas em número estão no topo, junto ao castelo)
   if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-4,w*0.9+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
 }
 // Igreja Matriz em alçado, como nos mapas antigos: campanário com sino, nave de telha com janelas em arco e abside.
@@ -2694,7 +2699,7 @@ function drawDeu(c,a){
 }
 function drawHero(){
   const h=S.hero;
-  if(h.dead){label(ctx,'↻ '+Math.ceil(h.respawn)+'s',LV.goal.x+26,LV.goal.y+14,11,true,'#9b2226');return;}
+  if(h.dead){label(ctx,tr('Volta em ','Back in ')+Math.ceil(h.respawn)+'s',LV.goal.x+26,LV.goal.y+14,11,true,'#9b2226');return;}
   if(S.sel==='hero'){ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.setLineDash([3,3]);ctx.beginPath();ctx.ellipse(h.x,h.y+11,15,6,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
     if(!h.D.melee){ctx.strokeStyle='rgba(155,34,38,.4)';ctx.beginPath();ctx.arc(h.x,h.y,h.D.range,0,Math.PI*2);ctx.stroke();}}
   if(h.tx!=null){ctx.strokeStyle='rgba(155,34,38,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(h.tx-5,h.ty-5);ctx.lineTo(h.tx+5,h.ty+5);ctx.moveTo(h.tx+5,h.ty-5);ctx.lineTo(h.tx-5,h.ty+5);ctx.stroke();}
@@ -3052,13 +3057,13 @@ function drawTexts(){
   const fs=FS();
   const foe=offSide();
   for(const x0 of S.texts){if(foe&&x0.x===W/2)continue;const off=DUEL&&x0.x===W/2?(S.txOff||0):0,x=off?Object.assign({},x0,{y:x0.y+off}):x0,p=x.t/x.T;ctx.globalAlpha=Math.max(0,1-p*p);
-    if(x.sp){ctx.font=`italic ${Math.round(12*fs)}px 'IM Fell English',Georgia,serif`;const w=ctx.measureText(x.s.replace(/\s*💰/g,'')).width+12+(x.s.includes('💰')?14*fs:0),hh=19*fs,bx=Math.max(14,Math.min(W-14-w,x.x-w/2)),by=x.y-p*10-10;
-      const cn=x.s.includes('💰'),ts=cn?x.s.replace(/\s*💰/g,''):x.s;
+    if(x.sp){ctx.font=`italic ${Math.round(12*fs)}px 'IM Fell English',Georgia,serif`;const w=ctx.measureText(x.s.replace(/\s*¤/g,'')).width+12+(x.s.includes('¤')?14*fs:0),hh=19*fs,bx=Math.max(14,Math.min(W-14-w,x.x-w/2)),by=x.y-p*10-10;
+      const cn=x.s.includes('¤'),ts=cn?x.s.replace(/\s*¤/g,''):x.s;
     ctx.fillStyle='#fbf3df';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.rect(bx,by,w,hh);ctx.fill();ctx.stroke();
       ctx.beginPath();ctx.moveTo(x.x-4,by+hh);ctx.lineTo(x.x,by+hh+6);ctx.lineTo(x.x+4,by+hh);ctx.fill();
       ctx.fillStyle='#2e2419';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(ts,bx+6,by+hh/2+0.5);
       if(cn)drawIc(ctx,'coin',bx+w-6-6*fs,by+hh/2,13*fs);ctx.globalAlpha=1;continue;}
-    const sz=Math.round((x.big?22:13)*fs),iw=sz*1.15,y=x.y-p*20,cn=x.s.includes('💰'),ts=cn?x.s.replace(/\s*💰/g,''):x.s;
+    const sz=Math.round((x.big?22:13)*fs),iw=sz*1.15,y=x.y-p*20,cn=x.s.includes('¤'),ts=cn?x.s.replace(/\s*¤/g,''):x.s;
     ctx.font=`${sz}px 'IM Fell English',Georgia,serif`;ctx.textAlign='left';ctx.textBaseline='middle';
     const tw=ctx.measureText(ts).width;let cx=x.x-(tw+(x.ic?iw+4:0)+(cn?iw+3:0))/2;
     if(x.ic&&ICONS[x.ic]){drawIc(ctx,x.ic,cx+iw/2,y,iw);cx+=iw+4;}
@@ -3260,14 +3265,14 @@ function renderPanel(){
     const got=(h.ups||[]).map((b,i)=>h.D.ups[i]&&h.D.ups[i][b]?`<span title="${h.D.ups[i][b].desc}">${ic('star')} ${h.D.ups[i][b].name}</span>`:'').join('');
     const choose=pend>0&&h.D.ups[ti]?`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Melhoria do nível','Level')} ${HERO_TIERS[ti]}${tr(': escolhe uma',' upgrade: pick one')}</p>`+
       h.D.ups[ti].map((U,b)=>`<button class="main br" data-a="hup" data-b="${b}">${U.name}<small>${U.desc}</small></button>`).join(''):'';
-    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}/${HERO_MAX}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
+    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}/${HERO_MAX}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
       <div class="tinfo"><span>${ic('star')} <span data-h="xp">${heroXpTxt(h)}</span></span>${got}</div>${h.D.pass?`<p class="hint">${h.D.pass}</p>`:''}
       ${choose?`<div class="acts">${choose}</div>`:''}
       <div class="tinfo"><span>${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span><span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
       <div class="acts"><button class="main br" data-a="special" ${cd>0||h.dead||S.wave<1?'disabled':''}><span data-h="sp">${sp.name}${cd>0?' ('+cd+'s)':''}</span><small>${sp.desc}</small></button></div>`;return;}
   const s=SLOTS[S.sel];
   if(!s.tower){
-    p.innerHTML=`<div class="ph"><b>${s.name}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div><div class="grid">`+
+    p.innerHTML=`<div class="ph"><b>${s.name}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div><div class="grid">`+
       Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
     return;}
   const t=s.tower,T=TYPES[t.k],st=tstat(t);
@@ -3283,7 +3288,7 @@ function renderPanel(){
   else if(t.lv===3){const c=T.up[2];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} ${T.br[t.br].name} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:4,br:t.br}))}</small></button>`;}
   else if(t.lv>=4){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}</p>`;}
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
-  p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/4${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">✕</button></div>
+  p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/4${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
     <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}</div>
     <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
@@ -3935,7 +3940,7 @@ function showDuelEnd(win){
   const stats=`<div class="stats-end"><span>${tr('Vagas aguentadas','Waves held')}</span><span>${M.S.wave}</span><span>${tr('Inimigos despachados','Enemies dispatched')}</span><span>${st.kills}</span>
     <span>${tr('Tropas mandadas','Troops sent')}</span><span>${st.sent||0}</span><span>${tr('Renda final','Final income')}</span><span>+${M.S.eco}</span><span>${tr('Tempo','Time')}</span><span>${mm}:${ss}</span></div>`;
   const btns=DUEL.net?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]
-    :[{label:tr('Desforra ▶','Rematch ▶'),main:true,fn:()=>{defeatFx(false);startDuel(DUEL.opts);}},{label:'Menu',keep:true,fn:()=>{defeatFx(false);showMenu();}}];
+    :[{label:tr('Desforra','Rematch'),main:true,fn:()=>{defeatFx(false);startDuel(DUEL.opts);}},{label:'Menu',keep:true,fn:()=>{defeatFx(false);showMenu();}}];
   showModal(`<h2>${title}</h2><p>${fill(msg)}</p>${stats}`,btns);
 }
 /* ---- interface: estado do adversário, renda e o botão das tropas no canto inferior direito ---- */
@@ -4052,8 +4057,8 @@ function showMenu(){
   if(S&&S.started&&!S.over&&!S.remote)S.paused=true;
   const sv=LS.get('save',null),inGame=S&&S.started&&!S.over;
   const it=[];
-  if(inGame)it.push(['back',tr('▶ Voltar ao jogo','▶ Back to the game'),true]);
-  if(sv&&LEVELS[sv.lvl]&&!(inGame&&S.coop))it.push(['cont',`▶ ${tr('Continuar','Continue')} · ${LEVELS[sv.lvl].name}, ${tr('vaga','wave')} ${sv.wave}`,!inGame]);
+  if(inGame)it.push(['back',ic('play')+' '+tr('Voltar ao jogo','Back to the game'),true]);
+  if(sv&&LEVELS[sv.lvl]&&!(inGame&&S.coop))it.push(['cont',`${ic('play')} ${tr('Continuar','Continue')} · ${LEVELS[sv.lvl].name}, ${tr('vaga','wave')} ${sv.wave}`,!inGame]);
   it.push(['campanha',ic('castle')+' '+tr('Campanha','Campaign'),!inGame&&!sv],['livre',ic('map')+' '+tr('Jogo livre','Free play')],['coop',ic('duo')+' '+tr('Cooperativo','Co-op')],['duelo',ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel')]);
   const threat=pick([tr('muitas','lots'),tr('demasiadas','too many'),tr('uma armada inteira','a whole armada'),tr('já se perdeu a conta','lost count'),tr('cheias de toalhas','full of towels')]);
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Defende as praças do Alto Minho das barcas de Castela.','Defend the fortresses of the Alto Minho from the boats of Castile.')}</p>
@@ -4061,7 +4066,7 @@ function showMenu(){
     <div class="mlist">${it.map(([k,l,hot])=>`<button data-go="${k}"${hot?' class="main"':''}>${l}</button>`).join('')}
       <div class="row"><button data-go="rec">${ic('trophy')} ${tr('Recordes','Leaderboard')}</button><button data-go="ach">${ic('medal')} ${tr('Conquistas','Achievements')}</button></div>
       <div class="row"><button data-go="opt">${ic('gear')} ${tr('Opções','Options')}</button><button data-go="help">${ic('help')} ${tr('Como jogar','How to play')}</button></div>
-      <div class="row"><button data-go="lang">${ic('globe')} ${LANG==='en'?'Português':'English'}</button></div></div>
+      <div class="langs" role="group" aria-label="${tr('Língua','Language')}"><button data-go="lang-pt" aria-pressed="${LANG==='pt'}">${ic('globe')} Português</button><button data-go="lang-en" aria-pressed="${LANG==='en'}">${ic('globe')} English</button></div></div>
     </div>`,[]);
   $('mcard').querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{audio();const k=b.dataset.go;
     if(k==='back'){closeModal();if(!S.remote){S.paused=false;$('bPause').innerHTML=ic('pause');}}
@@ -4070,7 +4075,7 @@ function showMenu(){
     else if(k==='ach')showAch(showMenu);
     else if(k==='opt')showOpts(showMenu);
     else if(k==='help')showHelp(showMenu);
-    else if(k==='lang')setLang(LANG==='en'?'pt':'en');
+    else if(k.startsWith('lang-'))setLang(k.slice(5));
     else{menuSel.mode=k;LS.set('mode',k);showSetup();}}));
 }
 function showSetup(){
@@ -4093,13 +4098,13 @@ function showSetup(){
     <p class="small">${tr('Um cria a sala e passa o código; o outro entra com esse código no mesmo link do jogo. Cada um tem o seu ouro e as suas torres; as vidas e a heroína são de ambos.','One player creates a room and shares the code; the other joins with that code on the same game link. Each has their own gold and towers; lives and the heroine are shared.')} ${tr('Ou joguem os dois no mesmo aparelho: o Jogador 1 defende a metade esquerda do mapa e o Jogador 2 a direita.','Or both play on the same device: Player 1 defends the left half of the map and Player 2 the right.')}</p>
     <div class="coopbox"><input id="cCode" maxlength="4" placeholder="${tr('Código','Code')}" autocomplete="off" aria-label="${tr('Código da sala','Room code')}"><button id="cJoin">${tr('Entrar na sala','Join room')}</button></div>`;
   const btns=[];
-  if(m==='campanha')btns.push({label:tr('Começar capítulo ▶','Start chapter ▶'),main:true,fn:()=>{saveSel();netLeave();showChapter(Math.min(menuSel.chap,prog));},keep:true});
-  else if(m==='livre')btns.push({label:tr('Começar o cerco ▶','Start the siege ▶'),main:true,fn:()=>{saveSel();netLeave();clearSave();newGame(menuSel.lvl,menuSel.di,menuSel.hero);S.started=true;S.paused=false;}});
-  else if(m==='duelo'){btns.push({label:tr('Contra o bot ▶','Against the bot ▶'),main:true,fn:()=>{saveSel();netLeave();startBotDuel();}});
-    btns.push({label:tr('Criar sala ▶','Create room ▶'),keep:true,fn:()=>{saveSel();hostDuel();}});}
-  else{btns.push({label:tr('Criar sala ▶','Create room ▶'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
-    btns.push({label:tr('Mesmo ecrã ▶','Same screen ▶'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
-  btns.push({label:tr('← Voltar','← Back'),keep:true,fn:showMenu});
+  if(m==='campanha')btns.push({label:tr('Começar capítulo','Start chapter'),main:true,fn:()=>{saveSel();netLeave();showChapter(Math.min(menuSel.chap,prog));},keep:true});
+  else if(m==='livre')btns.push({label:tr('Começar o cerco','Start the siege'),main:true,fn:()=>{saveSel();netLeave();clearSave();newGame(menuSel.lvl,menuSel.di,menuSel.hero);S.started=true;S.paused=false;}});
+  else if(m==='duelo'){btns.push({label:tr('Contra o bot','Against the bot'),main:true,fn:()=>{saveSel();netLeave();startBotDuel();}});
+    btns.push({label:tr('Criar sala','Create room'),keep:true,fn:()=>{saveSel();hostDuel();}});}
+  else{btns.push({label:tr('Criar sala','Create room'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
+    btns.push({label:tr('Mesmo ecrã','Same screen'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
+  btns.push({label:tr('Voltar','Back'),keep:true,fn:showMenu});
   const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Cinco capítulos, de Monção a Âncora, em 1368.','Five chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')],
     duelo:[ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel'),tr('Portugal contra Castela, com o Minho pelo meio.','Portugal against Castile, with the Minho in between.')]}[m];
   showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Herói','Hero')}</h3><div class="seg">${hr}</div>`,btns);
@@ -4165,14 +4170,14 @@ function showHelp(back){
     <p>${ic('star')} A heroína ganha experiência a derrotar inimigos e sobe até ao nível 10. Nos níveis 3, 6 e 9 escolhes uma de duas melhorias no painel dela.</p>
     <p>${ic('arrows')} Chuva de flechas numa zona à escolha. ${ic('gate')} Fechar portas trava todos os que estão em terra e reconstrói as portas. Os poderes só se usam depois de começar a primeira vaga.</p>
     <p>As portas das muralhas travam os inimigos, mas eles arrombam-nas: os aríetes num instante. Uma porta arrombada fica aberta até a mandares reconstruir. ${ic('bell')} O sino dá ouro.</p>
-    <p>Zoom: dois dedos no ecrã, a roda do rato ou os botões ＋ e －. Com zoom, arrasta o mapa com um dedo.</p>
+    <p>Zoom: dois dedos no ecrã, a roda do rato ou os botões ${ic('zin')} e ${ic('zout')}. Com zoom, arrasta o mapa com um dedo.</p>
     <p>${ic('castle')} Cada inimigo que chega ao coração da praça (a igreja, o paiol ou a torre de menagem) tira vidas, e vê-se: as muralhas racham, a praça arde e a bandeira rasga-se.</p>
     <p>${ic('swords')} Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
     <p>${ic('cross')} A cada 3 vagas o povo oferece ajuda: escolhe uma de três bênçãos ou pactos. Os pactos dão muito, mas cobram alguma coisa.</p>
     <p>Nas vagas 10 e 20 aparece a lenda de cada praça: o Mercador das Toalhas em Valença, a Coca em Monção, o Polvo da Lagarteira em Âncora e o Cervo Gigante em Cerveira. A Coca voa e o Polvo e a Coca deixam torres fora de combate por uns segundos.</p>
     <p>Os castelhanos atravessam o rio de barco: batéis pequenos, barcas, galeotas e, mais tarde, naus enormes. Cada barco leva vários inimigos, e os maiores ocupam mais lugares (um cavaleiro vale dois peões, um aríete ou uma torre de cerco enchem uma barca). Quanto mais avanças, maiores são os barcos.</p>
     <p>Nadadores vêm pelo meio e esbarram no postigo, que também tem porta. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Archeiros e bombardas param longe e atacam as portas à distância: as bombardas são lentas mas arrombam uma porta em poucos tiros. Na vaga 10 rebentam o postigo e passam a usar três caminhos; podes voltar a fechá-lo com Fechar portas.</p>
-    <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão ⤢ alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The ⤢ button switches between your fortress and the whole map.')}</p>
+    <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão '+ic('fit')+' alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The '+ic('fit')+' button switches between your fortress and the whole map.')}</p>
     <p>${ic('crown')} ${tr('Ganha um mapa pela primeira vez e a lenda desse mapa muda de lado: o Mercador das Toalhas (Valença), a Coca (Monção), o Polvo da Lagarteira (Âncora), o Cervo Gigante (Cerveira) e a Arrenegada (Melgaço) passam a poder ser escolhidos como heróis, cada um com o seu especial e as suas melhorias. A Coca voa por cima do rio, o Polvo nada e segura nadadores, o Cervo carrega contra o inimigo mais adiantado, o Mercador faz mais ouro e a Arrenegada desafia o inimigo mais forte.','Win a map for the first time and its legend switches sides: the Towel Merchant (Valença), the Coca (Monção), the Lagarteira Octopus (Âncora), the Giant Stag (Cerveira) and the Arrenegada (Melgaço) can then be picked as heroes, each with its own special and upgrades. The Coca flies over the river, the Octopus swims and holds swimmers, the Stag charges the most advanced enemy, the Merchant makes more gold and the Arrenegada duels the strongest enemy.')}</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
@@ -4274,8 +4279,8 @@ function showEnd(win){
   if(win&&!S.infinite){
     showModal(`<h2>${tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse')}</h2>${M.win.map(t=>'<p>'+t+'</p>').join('')}${stats}<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`,
       S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
-      [...(S.campaign!=null?[S.campaign<CAMP.length-1?{label:tr('Próximo capítulo ▶','Next chapter ▶'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
-          :{label:tr('Epílogo ▶','Epilogue ▶'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
+      [...(S.campaign!=null?[S.campaign<CAMP.length-1?{label:tr('Próximo capítulo','Next chapter'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
+          :{label:tr('Epílogo','Epilogue'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
        {label:tr('Continuar em modo infinito','Keep going in endless mode'),main:S.campaign==null,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
        {label:tr('Outra vez, que isto soube bem','Again, that was fun'),fn:restartGame},
        {label:'Menu',keep:true,fn:showMenu}]);
