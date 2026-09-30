@@ -931,6 +931,8 @@ function waveDef(w){
   return q;
 }
 const hpMult=w=>(1+0.12*(w-1)+0.008*(w-1)*(w-1))*S.diff.hp*S.mods.hp;
+// a partir da vaga 15 os inimigos sobem um nível a cada 2 vagas: +15% de vida e +12% de dano por nível
+const foeLv=w=>w>=15?Math.floor((w-15)/2)+1:0,edm=e=>1+0.12*(e.lvl||0);
 
 /* ================= Duelo: tropas que se mandam para o outro lado do rio ================= */
 // t: inimigo; n: quantos; c: custo; eco: quanto sobe a renda; w: vaga a partir da qual se pode mandar; cd: recarga (s)
@@ -1306,6 +1308,7 @@ function mkFoe(t,p,d){
   const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:sp,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
     d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:sp,blocked:false};
   // elites: a partir da vaga 15 alguns vêm com mais vida, mais armadura e o dobro do ouro (contorno dourado)
+  const L=foeLv(S.wave);if(L){e.lvl=L;e.hp=e.max=e.max*(1+0.15*L);}
   if(S.wave>=15&&!f.boss&&t!=='mini'&&Math.random()<Math.min(0.45,(S.wave-14)*0.05)){e.elite=1;e.hp=e.max=e.max*1.8;e.armor+=2;e.gold*=2;}
   if(t==='pereg')e.hidden=1;
   // no duelo, quem ataca a praça do lado de Castela são portugueses: fardas azuis
@@ -1382,6 +1385,7 @@ function startWave(early,who){
   S.nextT=null;S.wave++;S.queue=waveDef(S.wave);S.spawning=true;S.spawnT=0;S.started=true;
   S.weather=S.wave<=2?'sol':pick(['sol','sol','sol','noite','noite','chuva','chuva','nevoeiro','nevoeiro']);
   S.texts.push({x:W/2,y:430,s:S.wave%10===0?tr('Cuidado: vem aí uma lenda!','Watch out: a legend is coming!'):S.wave%5===0?pick(Q.cap):pick(Q.wave),t:0,T:2.4,big:true});
+  if(S.wave>=15&&(S.wave-15)%2===0)S.texts.push({x:W/2,y:494,s:tr('Os castelhanos sobem ao nível ','The Castilians rise to level ')+foeLv(S.wave)+'!',ic:'crown',t:0,T:2.8});
   if(S.weather!=='sol')S.texts.push({x:W/2,y:462,s:Q.weather[S.weather],ic:WEATHER[S.weather].ic,t:0,T:2.8});
   sfx('drum');
   if(S.wave===10&&!S.cOpen){S.cOpen=true;drawBG();
@@ -1491,7 +1495,7 @@ function rangedHold(e,dt){
     if(q.d-e.d>R.range)break;
     e.rcd=(e.rcd==null?0.5:e.rcd)-dt;e.aim=q.i;e.aimT=null;
     if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const g=LV.gates[q.i],d=Math.hypot(g.x-e.x,g.y-e.y);
-      S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:g.x+(Math.random()-0.5)*6,ty:g.y+(Math.random()-0.5)*6,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg,gi:q.i});
+      S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:g.x+(Math.random()-0.5)*6,ty:g.y+(Math.random()-0.5)*6,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg*edm(e),gi:q.i});
       if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
     return true;}
   // sem porta ao alcance: atacam a torre de pé mais próxima
@@ -1500,7 +1504,7 @@ function rangedHold(e,dt){
   e.aimT=tw;if(!tw){e.aim=null;return false;}
   e.aim=-1;e.rcd=(e.rcd==null?0.5:e.rcd)-dt;
   if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const d=Math.hypot(tw.x-e.x,tw.y-e.y);
-    S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:tw.x+(Math.random()-0.5)*8,ty:tw.y-4+(Math.random()-0.5)*8,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg,ti:tw.si});
+    S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:tw.x+(Math.random()-0.5)*8,ty:tw.y-4+(Math.random()-0.5)*8,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg*edm(e),ti:tw.si});
     if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
   return true;
 }
@@ -1514,7 +1518,7 @@ function updateEproj(dt){
 }
 const GATE_HP=450;
 // força com que cada inimigo arromba uma porta (por segundo)
-const gateDps=e=>(e.t==='ari'?55:e.f.boss?40:e.t==='cap'?25:e.t==='torre'?14:e.t==='esc'?8:e.t==='mini'?3:5)*S.diff.dmg;
+const gateDps=e=>(e.t==='ari'?55:e.f.boss?40:e.t==='cap'?25:e.t==='torre'?14:e.t==='esc'?8:e.t==='mini'?3:5)*S.diff.dmg*edm(e);
 function breakGate(i){const G=S.gates[i],g=LV.gates[i];G.broken=true;G.hp=0;
   S.fx.push({k:'boom',x:g.x,y:g.y,r:30,t:0,T:0.6});smoke(g.x,g.y,10);chips(g.x,g.y,14,'#7a5230',1.3);sfx('smash');jolt(5);
   S.texts.push({x:g.x,y:g.y-26,s:tr('Arrombaram a porta!','They broke the gate!'),t:0,T:2,big:true});}
@@ -1621,7 +1625,7 @@ function updateHero(dt){
   for(const e of S.enemies)e.blocked=false;
   if(h.tx==null&&!h.D.fly){for(const e of S.enemies)if(!e.dead&&!e.f.fly&&!e.ride&&!e.under&&(h.D.water||!inRiver(e.x,e.y))&&Math.hypot(e.x-h.x,e.y-h.y)<(e.f.boss?24:16))blk.push(e);
     blk.sort((a,b)=>b.d-a.d);blk=blk.slice(0,(h.D.blk||3)+(hUp(h,'block')?2:0));blk.forEach(e=>e.blocked=true);}
-  if(blk.length){h.quiet=0;let dps=0;blk.forEach(e=>dps+=(e.f.boss?45:e.t==='cap'?30:(e.t==='ari'||e.t==='torre')?12:5));h.hp-=dps*dt*S.diff.dmg;}
+  if(blk.length){h.quiet=0;let dps=0;blk.forEach(e=>dps+=(e.f.boss?45:e.t==='cap'?30:(e.t==='ari'||e.t==='torre')?12:5)*edm(e));h.hp-=dps*dt*S.diff.dmg;}
   else{h.quiet+=dt;if(h.quiet>2)h.hp=Math.min(h.max,h.hp+(hUp(h,'hp')?20:10)*dt);}
   if(h.hp<=0){h.dead=true;h.respawn=hUp(h,'spFast')?6:12;S.enemies.forEach(e=>e.blocked=false);S.texts.push({x:h.x,y:h.y-26,s:pick(Q.heroDie),t:0,T:2,sp:true});return;}
   h.cd-=dt;h.swing=Math.max(0,h.swing-dt);h.spT=Math.max(0,(h.spT||0)-dt);
@@ -2534,6 +2538,8 @@ function drawFoe(e){
   if(e.eat&&e.stunT>0)drawIc(ctx,'bread',e.x+8,top+2,12);
   else if(e.stunT>0){ctx.fillStyle='#e8c24a';for(let k=0;k<3;k++){const a=S.t*6+k*2.1;ctx.beginPath();ctx.arc(e.x+Math.cos(a)*5,top+3+Math.sin(a)*1.6,1.2,0,Math.PI*2);ctx.fill();}}
   if(e.elite)drawIc(ctx,'crown',e.x,top-8,9);
+  if(e.lvl){const lx=e.x-e.r-9;ctx.fillStyle='#e8c24a';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.arc(lx,top,4.6,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#2e2419';ctx.font='bold 7px Georgia,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e.lvl,lx,top+0.5);ctx.textBaseline='alphabetic';}
   if(e.slowT>0){ctx.strokeStyle='rgba(255,140,40,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(e.x,e.y,e.r+4,0,Math.PI*2);ctx.stroke();}
   if(e.burnT>0){ctx.fillStyle=`rgba(230,110,30,${0.5+0.3*Math.sin(S.t*20)})`;ctx.beginPath();ctx.arc(e.x+3,e.y-e.r,2.5,0,Math.PI*2);ctx.fill();}
   if(e.hp<e.max){const w=e.r*2+6;ctx.fillStyle='#2e2419';ctx.fillRect(e.x-w/2-1,top-3,w+2,5);
@@ -4037,7 +4043,7 @@ function coopUnavailable(msg){
 }
 function snapshot(){
   const r=v=>Math.round(v);
-  const e=S.enemies.slice(0,90).map(x=>[x.id,ET.indexOf(x.t),r(x.x),r(x.y),r(x.a*10),r(x.hp/x.max*100),(x.slowT>0?1:0)|(x.stunT>0?2:0)|(x.eat?4:0)|(x.burnT>0?8:0)|(x.ride?16:0)|(x.under?32:0)|(x.hidden?64:0)|(x.elite?128:0)]);
+  const e=S.enemies.slice(0,90).map(x=>[x.id,ET.indexOf(x.t),r(x.x),r(x.y),r(x.a*10),r(x.hp/x.max*100),(x.slowT>0?1:0)|(x.stunT>0?2:0)|(x.eat?4:0)|(x.burnT>0?8:0)|(x.ride?16:0)|(x.under?32:0)|(x.hidden?64:0)|(x.elite?128:0)|((x.lvl||0)<<8)]);
   const bt=S.boats.slice(0,12).map(b=>[b.id,BK.indexOf(b.k),r(b.x),r(b.y),r(b.a*100),r(Math.min(1,b.al)*10),b.mv?1:0]);
   const ep=S.eproj.slice(0,12).map(q=>{const u=Math.min(1,q.t/q.T),x=r(q.sx+(q.tx-q.sx)*u),y=r(q.sy+(q.ty-q.sy)*u);
     return q.k==='shell'?[4,x,r(y-Math.sin(Math.PI*u)*55),0]:[1,x,y,r(Math.atan2(q.ty-q.sy,q.tx-q.sx)*10)];});
@@ -4087,7 +4093,7 @@ function applySnap(d){
   const nm=new Map(),NH=DUEL?S:NET;if(!NH.emap)NH.emap=new Map();
   S.enemies=(d.e||[]).map(v=>{const[id,ti,x,y,a,hp,fl]=v;const t=ET[ti];if(!FOES[t])return null;let o=NH.emap.get(id);
     if(!o){const f=FOES[t];o={id,t,f,r:f.r,col:f.col,max:1,x,y,px:x,py:y,off:0};if(DUEL&&LV.side===1){o.pt=1;if(PT_COL[t])o.col=PT_COL[t];}}
-    o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/10;o.hp=hp/100;o.max=1;o.slowT=fl&1?1:0;o.stunT=fl&2?1:0;o.eat=!!(fl&4);o.burnT=fl&8?1:0;o.ride=fl&16?1:0;o.under=fl&32?1:0;o.hidden=fl&64?1:0;o.elite=fl&128?1:0;nm.set(id,o);return o;}).filter(Boolean);
+    o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/10;o.hp=hp/100;o.max=1;o.slowT=fl&1?1:0;o.stunT=fl&2?1:0;o.eat=!!(fl&4);o.burnT=fl&8?1:0;o.ride=fl&16?1:0;o.under=fl&32?1:0;o.hidden=fl&64?1:0;o.elite=fl&128?1:0;o.lvl=fl>>8;nm.set(id,o);return o;}).filter(Boolean);
   const ob=new Map(S.boats.map(b=>[b.id,b]));
   S.boats=(d.bt||[]).filter(v=>Array.isArray(v)&&BOATS[BK[v[1]]]).map(([id,k,x,y,a,al,mv])=>{const o=ob.get(id)||{id,k:BK[k],x,y,px:x,py:y};
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/100;o.al=al/10;o.mv=!!mv;return o;});
