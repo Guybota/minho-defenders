@@ -1614,6 +1614,14 @@ function drawMark(c,m){
   c.fillStyle='#d7c7a2';c.strokeStyle='#2e2419';c.lineWidth=1.4;
   if(m.keep){c.fillStyle='#b9ab8c';c.fillRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);c.strokeRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);
     for(let i=0;i<4;i++){c.fillStyle='#8d7f66';c.fillRect(m.x-m.w/2+i*m.w/4+1,m.y-m.h/2-4,m.w/8,4);}return;}
+  if(!m.label&&!m.tower){// quartel comprido: telhado de duas águas com cumeeira e chaminés
+    const x0=m.x-m.w/2,y0=m.y-m.h/2,vert=m.h>m.w;c.fillStyle='rgba(46,36,25,.25)';c.fillRect(x0+2,y0+2,m.w,m.h);
+    c.fillStyle='#b5563a';c.fillRect(x0,y0,m.w,m.h);c.strokeRect(x0,y0,m.w,m.h);
+    c.fillStyle='#8a3a22';if(vert)c.fillRect(m.x,y0,m.w/2,m.h);else c.fillRect(x0,m.y,m.w,m.h/2);
+    c.strokeStyle='rgba(60,20,10,.45)';c.lineWidth=0.6;c.beginPath();
+    if(vert)for(let y=y0+2.5;y<y0+m.h;y+=2.5){c.moveTo(x0,y);c.lineTo(x0+m.w,y);}else for(let x=x0+2.5;x<x0+m.w;x+=2.5){c.moveTo(x,y0);c.lineTo(x,y0+m.h);}c.stroke();
+    c.strokeStyle='#2e2419';c.lineWidth=1.4;c.beginPath();if(vert){c.moveTo(m.x,y0);c.lineTo(m.x,y0+m.h);}else{c.moveTo(x0,m.y);c.lineTo(x0+m.w,m.y);}c.stroke();
+    c.fillStyle='#9a917c';[0.25,0.75].forEach(f=>{const cx=vert?m.x+1:x0+m.w*f,cy=vert?y0+m.h*f:m.y+1;c.fillRect(cx-1.6,cy-1.6,3.2,3.2);c.lineWidth=0.8;c.strokeRect(cx-1.6,cy-1.6,3.2,3.2);});return;}
   c.fillRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);c.strokeRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);
   if(m.tower){c.fillRect(m.x-6,m.y-m.h/2-14,12,14);c.strokeRect(m.x-6,m.y-m.h/2-14,12,14);}
   if(!m.tower&&!m.label)return;
@@ -2156,6 +2164,8 @@ function drawHeart(){
   const g=LV.heart;if(!g)return;const m=g.m;
   const st=S.lives<=0?4:heartStage(),hit=S.heartHit/0.45;
   if(/Igreja/.test(m.label||''))return drawChurch(g,st,hit);
+  if(m.keep)return drawKeep(g,st,hit);
+  if(m.label===tr('Paiol','Powder store'))return drawPaiol(g,st,hit);
   const w=Math.max(26,m.w*1.2),h=Math.max(22,m.h*1.25),tw=12,th=14;
   ctx.save();ctx.translate(g.x+(hit>0?Math.sin(S.t*95)*2.5*hit:0),g.y);
   ctx.fillStyle='rgba(46,36,25,.28)';ctx.fillRect(-w/2+3,-h/2+3,w,h);
@@ -2255,6 +2265,98 @@ function drawChurch(g,st,hit){
     if(st<3){ctx.fillStyle='#2f4a9e';const cx=px+fw/2,cy=py-PH+fh/2+wv(fw/2);ctx.fillRect(cx-1.1,cy-3.8,2.2,7.6);ctx.fillRect(cx-3.8,cy-1.1,7.6,2.2);}}
   // fogo
   if(st>=2){flame(0,-7,3.5);flame(-4,6,3);if(st>=3){flame(8,-6,4.5);flame(-15,tTop+1,3.5);flame(17,-2,3);}}
+  ctx.restore();
+  if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-6,32+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
+}
+// bandeira portuguesa (branca com as quinas azuis) que se rasga na última fase; usada pela torre e pelo paiol
+function heartFlag(px,py,PH,st,big){const ink='#2e2419';ctx.strokeStyle=ink;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-PH);ctx.stroke();
+  const fw=st>=3?(big?12:10):(big?19:15),fh=st>=3?8:(big?12:10),wv=k=>Math.sin(S.t*6-k*0.45)*2*(k/fw);
+  ctx.beginPath();ctx.moveTo(px,py-PH);for(let k=0;k<=fw;k+=2)ctx.lineTo(px+k,py-PH+wv(k));
+  for(let k=fw;k>=0;k-=2)ctx.lineTo(px+k,py-PH+fh+wv(k)-(st>=3&&k>=fw-2?4:0));ctx.closePath();
+  ctx.fillStyle=st>=3?'#cfc6b0':'#f4efe2';ctx.fill();ctx.stroke();
+  if(st<3){ctx.fillStyle='#2f4a9e';const cx=px+fw/2,cy=py-PH+fh/2+wv(fw/2);ctx.fillRect(cx-1.1,cy-3.6,2.2,7.2);ctx.fillRect(cx-3.6,cy-1.1,7.2,2.2);}}
+// Torre de menagem de Cerveira em alçado: granito em fiadas, ameias com matacães, guarita no canto, seteiras e porta alta com escada
+function drawKeep(g,st,hit){
+  const ink='#2e2419',tint=(r,gg,b)=>hit>0?`rgb(${Math.min(255,r+50*hit)|0},${gg-50*hit|0},${b-50*hit|0})`:`rgb(${r},${gg},${b})`;
+  const stone=tint(196,186,160),stoneD=tint(160,150,126),stoneL=tint(214,206,184);
+  ctx.save();ctx.translate(g.x+(hit>0?Math.sin(S.t*95)*2.5*hit:0),g.y+10);ctx.scale(1.2,1.2);ctx.lineJoin='round';ctx.lineWidth=1.2;ctx.strokeStyle=ink;
+  ctx.fillStyle='rgba(46,36,25,.28)';ctx.beginPath();ctx.ellipse(5,2,22,5,0,0,Math.PI*2);ctx.fill();
+  if(st>=4){// ruínas: um coto de parede e pedras
+    ctx.fillStyle=stoneD;ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-13,-16);ctx.lineTo(-9,-20);ctx.lineTo(-6,-13);ctx.lineTo(-2,-17);ctx.lineTo(1,-8);ctx.lineTo(4,0);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#8d7f66';[[4,-4,7,4],[10,-3,6,3],[-3,-3,5,3],[12,-7,4,3],[-16,-3,4,3]].forEach(([x,y,w,h])=>{ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);});
+    ctx.restore();return;}
+  const w=24,h=38,x0=-w/2,top=-h;
+  // corpo com face lateral mais escura (volume)
+  ctx.fillStyle=stoneD;ctx.beginPath();ctx.moveTo(w/2,top+2);ctx.lineTo(w/2+6,top-1);ctx.lineTo(w/2+6,-3);ctx.lineTo(w/2,0);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=stone;ctx.fillRect(x0,top,w,h);ctx.strokeRect(x0,top,w,h);
+  // fiadas de granito
+  ctx.strokeStyle='rgba(46,36,25,.3)';ctx.lineWidth=0.55;ctx.beginPath();
+  for(let y=top+3.6,k=0;y<0;y+=3.6,k++){ctx.moveTo(x0,y);ctx.lineTo(w/2,y);for(let x=x0+(k%2?2.5:5.5);x<w/2;x+=6){ctx.moveTo(x,y-3.6);ctx.lineTo(x,y);}}
+  for(let y=top+4,k=0;y<-2;y+=3.6,k++){ctx.moveTo(w/2,y);ctx.lineTo(w/2+6,y-2.6);}ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  ctx.fillStyle=stoneL;ctx.fillRect(x0+1,top+1,2,h-2);// aresta iluminada
+  // seteiras em cruz e janela geminada
+  ctx.fillStyle='#2a2119';[[-5,top+12],[5,top+12]].forEach(([x,y])=>{ctx.fillRect(x-0.7,y-4,1.4,8);ctx.fillRect(x-2,y-0.7,4,1.4);});
+  ctx.beginPath();[-1.8,1.8].forEach(x=>{ctx.moveTo(x-1.3,top+23);ctx.lineTo(x-1.3,top+20.5);ctx.arc(x,top+20.5,1.3,Math.PI,0);ctx.lineTo(x+1.3,top+23);});ctx.fill();
+  ctx.fillStyle='rgba(232,194,74,.5)';ctx.fillRect(-2.3,top+20.5,1,2);ctx.fillRect(1.3,top+20.5,1,2);
+  // porta alta com escada de pedra
+  ctx.fillStyle='#6e4b2a';ctx.beginPath();ctx.moveTo(-3,-8);ctx.lineTo(-3,-13);ctx.arc(0,-13,3,Math.PI,0);ctx.lineTo(3,-8);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(20,12,6,.6)';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(0,-15.8);ctx.lineTo(0,-8);ctx.moveTo(-3,-11);ctx.lineTo(3,-11);ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  ctx.fillStyle=stoneD;ctx.beginPath();ctx.moveTo(-4,-8);ctx.lineTo(4,-8);ctx.lineTo(10,0);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(46,36,25,.45)';ctx.lineWidth=0.5;ctx.beginPath();for(let k=1;k<4;k++){ctx.moveTo(-4,-8+k*2);ctx.lineTo(4+k*1.5,-8+k*2);}ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  // matacães e ameias (vão caindo com o dano)
+  const gone=[[],[],[1,4],[0,1,3,4]][Math.min(3,st)];
+  ctx.fillStyle=stone;ctx.fillRect(x0-2,top-4,w+4,4);ctx.strokeRect(x0-2,top-4,w+4,4);
+  ctx.fillStyle='#2a2119';for(let x=x0;x<w/2-1;x+=4.2)ctx.fillRect(x+0.8,top-1.2,1.6,1.2);
+  for(let i=0;i<5;i++){if(gone.includes(i))continue;const x=x0-2+i*(w+4-3.6)/4;ctx.fillStyle=stoneL;ctx.fillRect(x,top-8.5,3.6,4.5);ctx.strokeRect(x,top-8.5,3.6,4.5);}
+  // guarita no canto
+  if(st<3){ctx.fillStyle=stone;ctx.beginPath();ctx.moveTo(w/2-1,top-4);ctx.lineTo(w/2+5,top-6);ctx.lineTo(w/2+5,top+3);ctx.quadraticCurveTo(w/2+2,top+6,w/2-1,top+3);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#8a3a22';ctx.beginPath();ctx.moveTo(w/2-2,top-6);ctx.lineTo(w/2+2,top-12);ctx.lineTo(w/2+6,top-6.5);ctx.closePath();ctx.fill();ctx.stroke();}
+  // rachas
+  ctx.strokeStyle='rgba(30,22,14,.9)';ctx.lineWidth=0.9;ctx.beginPath();
+  if(st>=1){ctx.moveTo(-9,top+4);ctx.lineTo(-7,top+9);ctx.lineTo(-9,top+13);ctx.lineTo(-7,top+18);}
+  if(st>=2){ctx.moveTo(8,top+26);ctx.lineTo(6,top+30);ctx.lineTo(8,top+34);ctx.moveTo(3,top+2);ctx.lineTo(5,top+7);}
+  if(st>=3){ctx.moveTo(-3,top-3);ctx.lineTo(-1,top+5);ctx.lineTo(-3,top+10);}ctx.stroke();
+  heartFlag(-4,top-8.5,20,st,true);
+  if(st>=2){flame(-8,top-4,3.5);flame(9,top+14,3);if(st>=3){flame(3,top-4,4.5);flame(-10,-12,3.5);flame(12,top-5,3);}}
+  ctx.restore();
+  if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-8,30+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
+}
+// Paiol da Lagarteira: casamata de pedra com abóbada, contrafortes, porta de ferro, respiros e barris de pólvora (que ardem com o dano)
+function drawPaiol(g,st,hit){
+  const ink='#2e2419',tint=(r,gg,b)=>hit>0?`rgb(${Math.min(255,r+50*hit)|0},${gg-50*hit|0},${b-50*hit|0})`:`rgb(${r},${gg},${b})`;
+  const stone=tint(190,180,154),stoneD=tint(156,146,122),vault=tint(170,160,136);
+  ctx.save();ctx.translate(g.x+(hit>0?Math.sin(S.t*95)*2.5*hit:0),g.y+8);ctx.scale(1.2,1.2);ctx.lineJoin='round';ctx.lineWidth=1.2;ctx.strokeStyle=ink;
+  ctx.fillStyle='rgba(46,36,25,.28)';ctx.beginPath();ctx.ellipse(4,1.5,24,4.5,0,0,Math.PI*2);ctx.fill();
+  if(st>=4){// cratera e pedras
+    ctx.fillStyle='#4a4038';ctx.beginPath();ctx.ellipse(0,-2,15,4,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8d7f66';[[-17,-6,6,4],[-9,-9,7,4],[4,-8,8,4],[12,-5,6,4],[-3,-4,5,3]].forEach(([x,y,w,h])=>{ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);});
+    ctx.restore();return;}
+  // muro baixo de proteção à volta
+  ctx.fillStyle=stoneD;ctx.fillRect(-22,-4,44,4);ctx.strokeRect(-22,-4,44,4);
+  // corpo e abóbada
+  ctx.fillStyle=stone;ctx.fillRect(-15,-16,30,12);ctx.strokeRect(-15,-16,30,12);
+  ctx.strokeStyle='rgba(46,36,25,.3)';ctx.lineWidth=0.55;ctx.beginPath();for(let y=-13,k=0;y<-4;y+=3,k++){ctx.moveTo(-15,y);ctx.lineTo(15,y);for(let x=-15+(k%2?2:4.5);x<15;x+=5){ctx.moveTo(x,y-3);ctx.lineTo(x,y);}}ctx.stroke();
+  ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  ctx.fillStyle=vault;ctx.beginPath();ctx.moveTo(-16,-16);ctx.quadraticCurveTo(0,-30,16,-16);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=0.5;ctx.beginPath();[-9,-3,3,9].forEach(x=>{ctx.moveTo(x,-16);ctx.lineTo(x*0.8,-16-(1-(x/16)**2)*6.5);});ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  if(st>=3){ctx.fillStyle='#3a2a1a';ctx.beginPath();ctx.ellipse(3,-21,3.5,2,0.2,0,Math.PI*2);ctx.fill();}// buraco na abóbada
+  // contrafortes
+  ctx.fillStyle=stoneD;[-17,13].forEach(x=>{ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x,-15);ctx.lineTo(x+4,-13);ctx.lineTo(x+4,-4);ctx.closePath();ctx.fill();ctx.stroke();});
+  // porta de ferro com rebites e respiros
+  ctx.fillStyle='#4a4038';ctx.fillRect(-3.5,-13,7,9);ctx.strokeRect(-3.5,-13,7,9);ctx.fillStyle='#8a7a5a';for(let y=-12;y<-4;y+=2.5){ctx.fillRect(-2.6,y,0.9,0.9);ctx.fillRect(1.7,y,0.9,0.9);}
+  ctx.fillStyle='#2a2119';[-9,8].forEach(x=>ctx.fillRect(x,-12,1.4,4));
+  // placa com a palavra
+  ctx.fillStyle='#f2ead4';ctx.fillRect(-4.5,-16.2,9,3);ctx.lineWidth=0.5;ctx.strokeRect(-4.5,-16.2,9,3);ctx.fillStyle=ink;ctx.font='bold 2.6px Georgia,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(LANG==='en'?'POWDER':'PAIOL',0,-14.6);ctx.lineWidth=1.2;
+  // barris de pólvora ao lado
+  [[19,-1],[23.5,-1],[21.2,-5.5]].forEach(([x,y],i)=>{if(st>=3&&i===2)return;ctx.fillStyle='#8a5a32';ctx.beginPath();ctx.ellipse(x,y-2,2.3,3,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#3d3833';ctx.lineWidth=0.7;ctx.beginPath();ctx.moveTo(x-2.2,y-3.2);ctx.lineTo(x+2.2,y-3.2);ctx.moveTo(x-2.2,y-0.8);ctx.lineTo(x+2.2,y-0.8);ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;});
+  // rachas
+  ctx.strokeStyle='rgba(30,22,14,.9)';ctx.lineWidth=0.9;ctx.beginPath();
+  if(st>=1){ctx.moveTo(-12,-16);ctx.lineTo(-10,-11);ctx.lineTo(-12,-7);}
+  if(st>=2){ctx.moveTo(10,-16);ctx.lineTo(8,-12);ctx.lineTo(10,-8);ctx.moveTo(-4,-24);ctx.lineTo(-2,-19);}ctx.stroke();
+  heartFlag(0,-23.5,17,st,false);
+  if(st>=2){flame(21,-7,3.5);if(st>=3){flame(-8,-18,4);flame(8,-19,3.5);flame(23,-3,3);}
+    if(Math.random()<0.08&&!RM())smoke(g.x+20,g.y,1);}
   ctx.restore();
   if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-6,32+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
 }
