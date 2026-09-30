@@ -603,11 +603,6 @@ const inRiver=(x,y)=>DUEL?(y>RTd(x)&&y<RBd(x)):y<riverBot(x);
 const nearWater=(x,y,m)=>DUEL?(y>RTd(x)-m&&y<RBd(x)+m):y<riverBot(x)+m;
 const sideAt=(x,y)=>y>=RBd(x)?0:y<=RTd(x)?1:-1;
 const wTop=x=>DUEL?RTd(x):riverTop(x),wBot=x=>DUEL?RBd(x):riverBot(x);
-function pp(f,r,a){return[f.cx+Math.cos(a)*r*f.sx,f.cy+Math.sin(a)*r*f.sy];}
-function starFort(f){const pts=[],tips=[],d=Math.PI/f.n;
-  for(let i=0;i<f.n;i++){const a=f.rot+i*2*Math.PI/f.n;
-    pts.push(pp(f,f.R*0.72,a-d*0.45),pp(f,f.R*0.86,a-d*0.36),pp(f,f.R,a),pp(f,f.R*0.86,a+d*0.36),pp(f,f.R*0.72,a+d*0.45));tips.push(i*5+2);}
-  return{pts,tips};}
 function edgeGate(p,i,extra){const a=p[i],b=p[(i+1)%p.length];return Object.assign({x:(a[0]+b[0])/2,y:(a[1]+b[1])/2,a:Math.atan2(b[1]-a[1],b[0]-a[0])},extra||{});}
 
 /* ================= Mapas ================= */
@@ -1674,18 +1669,18 @@ function update(dt){
   const fog=S.weather==='nevoeiro';
   for(const t of S.towers){
     if(t.disT>0){t.disT-=dt;continue;}
-    const st=tstat(t);t.cd-=dt;if(t.cd>0)continue;
+    t.cd-=dt;if(t.cd>0)continue;const st=tstat(t);
     if(t.k==='cal'){
       let any=false;
       for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&!(e.hidden&&!S.mods.sight)&&Math.hypot(e.x-t.x,e.y-t.y)<=st.range){any=true;hurt(e,st.dmg,false,t,true);if(!e.f.noslow){e.slowT=1.2;e.slowF=Math.min(e.slowF,st.slow);}}}
       if(any){t.cd=st.rate;S.fx.push({k:'oil',x:t.x,y:t.y,r:st.range,t:0,T:0.7});sfx('oil');}
       continue;
     }
-    let tg=null,best=-Infinity;
+    let tg=null,best=-Infinity;const r2=st.range*st.range;// distância ao quadrado: Math.hypot é lento e isto corre torres × inimigos
     for(const e of S.enemies){
-      if(e.dead||e.under||(e.hidden&&!S.mods.sight))continue;const d=Math.hypot(e.x-t.x,e.y-t.y);if(d>st.range)continue;
+      if(e.dead||e.under||(e.hidden&&!S.mods.sight))continue;const dx=e.x-t.x,dy=e.y-t.y,d2=dx*dx+dy*dy;if(d2>r2)continue;
       if(fog&&!S.mods.sight&&inRiver(e.x,e.y)&&!e.f.boss)continue;
-      let v;switch(t.pri){case'forte':v=e.hp;break;case'rapido':v=e.spd*e.slowF;break;case'perto':v=-d;break;default:v=e.d/PATHS[e.p].len;}
+      let v;switch(t.pri){case'forte':v=e.hp;break;case'rapido':v=e.spd*e.slowF;break;case'perto':v=-d2;break;default:v=e.d/PATHS[e.p].len;}
       if(v>best){best=v;tg=e;}
     }
     if(!tg)continue;
@@ -2270,19 +2265,28 @@ function drawBombard(e){const c=ctx,g=e.aim!=null&&S.gates[e.aim]&&!S.gates[e.ai
   c.strokeStyle='#6e4b2a';c.lineWidth=1;c.beginPath();c.moveTo(4,2);c.lineTo(8,-4);c.stroke();c.fillStyle=`rgba(240,${140+Math.sin(S.t*20)*60|0},40,.95)`;c.beginPath();c.arc(8.2,-4.4,1,0,Math.PI*2);c.fill();
   c.restore();}
 
+/* ---- sprites: o que não mexe desenha-se uma vez num canvas à parte (à resolução do ecrã, em degraus de 2×) e depois só se copia ---- */
+const SPR=new Map();
+function sprite(c,key,x,y,w,h,f){const m=c.getTransform(),k=Math.min(8,2**Math.ceil(Math.log2(Math.max(1,Math.hypot(m.a,m.b))))),id=key+'@'+k;
+  let s=SPR.get(id);if(!s){s=document.createElement('canvas');s.width=Math.ceil(w*k);s.height=Math.ceil(h*k);const g=s.getContext('2d');g.scale(k,k);g.translate(-x,-y);g.lineJoin='round';f(g);SPR.set(id,s);
+    // canvas pequenos ficam na memória do CPU e seriam enviados à GPU a cada frame; um ImageBitmap fica lá de vez
+    if(window.createImageBitmap)createImageBitmap(s).then(b=>SPR.set(id,b),()=>{});}
+  c.drawImage(s,x,y,w,h);}
 /* ---- torres: base que evolui com o nível e unidade que muda com a especialização ---- */
 function towerPlatform(c,lv,col){
+  const R=lv>=4?16:15;
+  sprite(c,'tp'+lv,-20,-20,40,40,c=>{
   c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(2,3,16,14,0,0,Math.PI*2);c.fill();
   if(lv===1){// paliçada de madeira
     c.fillStyle='#b08850';c.strokeStyle=INK;c.lineWidth=1.2;c.beginPath();c.arc(0,0,14,0,Math.PI*2);c.fill();c.stroke();
     for(let i=0;i<14;i++){const a=i/14*Math.PI*2;c.fillStyle=i%2?'#8a5a32':'#9a6a3a';c.beginPath();c.arc(Math.cos(a)*13,Math.sin(a)*13,2.2,0,Math.PI*2);c.fill();c.lineWidth=0.6;c.stroke();}
     c.fillStyle='#c9ad7a';c.beginPath();c.arc(0,0,10,0,Math.PI*2);c.fill();
     c.strokeStyle='rgba(90,60,30,.4)';c.lineWidth=0.6;c.beginPath();for(let x=-9;x<10;x+=3){c.moveTo(x,-Math.sqrt(100-x*x));c.lineTo(x,Math.sqrt(100-x*x));}c.stroke();return;}
-  const R=lv>=4?16:15;
   c.fillStyle='#9a8d72';c.strokeStyle=INK;c.lineWidth=1.4;c.beginPath();c.arc(0,0,R,0,Math.PI*2);c.fill();c.stroke();
   const n=lv>=4?12:10;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+0.13;c.save();c.rotate(a);c.fillStyle=i%2?'#b9ab8c':'#a39478';c.fillRect(R-4.5,-2.6,4.5,5.2);c.lineWidth=0.6;c.strokeRect(R-4.5,-2.6,4.5,5.2);c.restore();}
   c.fillStyle='#cdbb92';c.beginPath();c.arc(0,0,R-5,0,Math.PI*2);c.fill();c.lineWidth=0.8;c.stroke();
-  c.strokeStyle='rgba(78,63,42,.35)';c.lineWidth=0.5;c.beginPath();c.arc(0,0,R-8,0,Math.PI*2);c.stroke();
+  c.strokeStyle='rgba(78,63,42,.35)';c.lineWidth=0.5;c.beginPath();c.arc(0,0,R-8,0,Math.PI*2);c.stroke();});
+  if(lv===1)return;
   if(lv>=3){// estandartes com a cor da torre
     [-0.8,Math.PI-0.8].concat(lv>=4?[Math.PI/2-0.8,-Math.PI/2-0.8]:[]).forEach((a,i)=>{const x=Math.cos(a)*(R-1),y=Math.sin(a)*(R-1),w=Math.sin(S.t*5+i)*0.8;
       c.strokeStyle=INK;c.lineWidth=0.9;c.beginPath();c.moveTo(x,y+2);c.lineTo(x,y-9);c.stroke();
@@ -2372,6 +2376,8 @@ function drawTowerBuilding(c,t){
   // sombra no chão
   c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(3,yB+2,rx+3,ry+2.5,0,0,Math.PI*2);c.fill();
   if(lv>=4){c.fillStyle=`rgba(232,194,74,${0.14+0.08*Math.sin(S.t*3)})`;c.beginPath();c.ellipse(0,yB,rx+6,ry+4,0,0,Math.PI*2);c.fill();}
+  const rim=sq?[...[-1,-0.5,0,0.5,1].map(u=>[u*(rx-1.7),yT-ry+0.4])]:[...Array(5)].map((_,i)=>{const a=Math.PI*1.12+i*Math.PI*0.76/4;return[Math.cos(a)*(rx-1.5),yT+Math.sin(a)*(ry-0.4)];});
+  sprite(c,'tb'+t.k+lv+col,-20,-28,40,48,c=>{
   // corpo
   const g=c.createLinearGradient(-rx,0,rx,0);g.addColorStop(0,m.lite);g.addColorStop(0.45,m.wall);g.addColorStop(1,m.dark);
   c.fillStyle=g;c.strokeStyle=INK;c.lineWidth=1.3;c.beginPath();
@@ -2403,18 +2409,19 @@ function drawTowerBuilding(c,t){
   c.fillStyle=m.floor;c.strokeStyle=INK;c.lineWidth=1.1;c.beginPath();if(sq)c.rect(-rx,yT-ry,rx*2,ry*2);else c.ellipse(0,yT,rx,ry,0,0,Math.PI*2);c.fill();c.stroke();
   c.fillStyle='rgba(30,20,10,.18)';c.beginPath();if(sq)c.rect(-rx+2.4,yT-ry+2,rx*2-4.8,ry*2-2.4);else c.ellipse(0,yT+0.6,rx-2.4,ry-1.4,0,0,Math.PI*2);c.fill();
   // ameias de trás
-  const rim=sq?[...[-1,-0.5,0,0.5,1].map(u=>[u*(rx-1.7),yT-ry+0.4])]:[...Array(5)].map((_,i)=>{const a=Math.PI*1.12+i*Math.PI*0.76/4;return[Math.cos(a)*(rx-1.5),yT+Math.sin(a)*(ry-0.4)];});
-  rim.forEach(([x,y])=>merlon(c,x,y,3.2,2.8,m,wood));
+  rim.forEach(([x,y])=>merlon(c,x,y,3.2,2.8,m,wood));});
   if(lv>=3){[rim[0],rim[rim.length-1]].forEach(([x,y],i)=>towerBanner(c,x,y-2.8,col,i,8));}
   // defensor em cima
   c.save();c.translate(0,yT-3);c.scale(1.05,1.05);drawTowerUnit(c,t,true);c.restore();
   // parapeito da frente
+  sprite(c,'tf'+t.k+lv,-20,-28,40,48,c=>{
   c.fillStyle=m.wall;c.strokeStyle=INK;c.lineWidth=1;c.beginPath();
   if(sq){c.rect(-rx,yT+ry-ph,rx*2,ph);}else{c.moveTo(rx,yT);c.ellipse(0,yT,rx,ry,0,0,Math.PI);c.lineTo(-rx,yT-ph);c.ellipse(0,yT-ph,rx,ry,0,Math.PI,0,true);c.closePath();}
   c.fill();c.stroke();
   const front=sq?[-1,-0.5,0,0.5,1].map(u=>[u*(rx-1.7),yT+ry-ph]):[...Array(6)].map((_,i)=>{const a=0.12+i*(Math.PI-0.24)/5;return[Math.cos(a)*(rx-1.2),yT-ph+Math.sin(a)*ry];});
   front.forEach(([x,y])=>merlon(c,x,y,3.4,2.6,m,wood));
-  if(lv>=4){c.strokeStyle='#e8c24a';c.lineWidth=1.2;c.beginPath();if(sq){c.moveTo(-rx,yT+ry-0.2);c.lineTo(rx,yT+ry-0.2);}else c.ellipse(0,yT-0.2,rx,ry,0,0.05,Math.PI-0.05);c.stroke();
+  if(lv>=4){c.strokeStyle='#e8c24a';c.lineWidth=1.2;c.beginPath();if(sq){c.moveTo(-rx,yT+ry-0.2);c.lineTo(rx,yT+ry-0.2);}else c.ellipse(0,yT-0.2,rx,ry,0,0.05,Math.PI-0.05);c.stroke();}});
+  if(lv>=4){
     towerBanner(c,sq?rx-2:rx-3,yT-ph-4,'#e8c24a',3,9);}
 }
 function drawTower(t){
@@ -3132,8 +3139,10 @@ function draw(){
   else drawScreen(P);
   drawMini();
 }
+// com zoom, o que fica fora da vista não se desenha (no duelo o lado de Castela vem espelhado, por isso desenha-se tudo)
+const onView=(x,y,m)=>DUEL||VIEW.z<1.01||(x>VIEW.ox-m&&x<VIEW.ox+VW()+m&&y>VIEW.oy-m&&y<VIEW.oy+VH()+m);
 function drawSideWorld(P,water){
-  {const cheap=Math.min(...Object.values(TYPES).map(T=>T.cost));SLOTS.forEach((s,i)=>{if(!s.tower)drawSlot(s,i,(S.local?goldOf(sideOf(s)):myGold())>=cheap);});}
+  {const cheap=Math.min(...Object.values(TYPES).map(T=>T.cost));SLOTS.forEach((s,i)=>{if(!s.tower&&onView(s.x,s.y,30))drawSlot(s,i,(S.local?goldOf(sideOf(s)):myGold())>=cheap);});}
   if(typeof S.sel==='number'&&SLOTS[S.sel].tower){const t=SLOTS[S.sel].tower,R=tstat(t).range;
     ctx.fillStyle=`rgba(${P.rng},.10)`;ctx.strokeStyle=`rgba(${P.rng},.75)`;ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(t.x,t.y,R,0,Math.PI*2);ctx.fill();ctx.setLineDash([6,6]);ctx.lineDashOffset=-S.t*10;ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;}
@@ -3148,9 +3157,9 @@ function drawSideWorld(P,water){
     label(ctx,tr('Jogador 1','Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('Jogador 2','Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
   drawPathArrows();
   S.boats.forEach(drawBoat);
-  S.enemies.forEach(drawFoe);
+  for(const e of S.enemies)if(onView(e.x,e.y,90))drawFoe(e);
   drawHero();
-  S.towers.forEach(drawTower);
+  for(const t of S.towers)if(onView(t.x,t.y,50))drawTower(t);
   drawUpgradeMarks();
   drawRadial();
   for(const p of S.proj){
@@ -3613,14 +3622,10 @@ function drawSlot(s,i,can){
   ctx.save();
   // sombra e brilho
   ctx.fillStyle='rgba(46,36,25,.22)';ctx.beginPath();ctx.ellipse(x+2,y+3,R+1,R*0.72,0,0,Math.PI*2);ctx.fill();
-  if(can&&!sel){const a=0.22+0.14*pulse,g=ctx.createRadialGradient(x,y,R*0.6,x,y,R+9);g.addColorStop(0,`rgba(232,194,74,${a})`);g.addColorStop(1,'rgba(232,194,74,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,R+9,0,Math.PI*2);ctx.fill();}
-  // plataforma: anel de pedras e chão de terra batida
-  ctx.fillStyle='#c6b287';ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();ctx.stroke();
-  const n=11;for(let k=0;k<n;k++){const a0=k/n*Math.PI*2+0.08,a1=(k+1)/n*Math.PI*2-0.08;
-    ctx.strokeStyle=k%3===0?'#9a8a6c':k%3===1?'#b3a282':'#7f7058';ctx.lineWidth=3.6;ctx.beginPath();ctx.arc(x,y,R-2.6,a0,a1);ctx.stroke();}
-  ctx.fillStyle=sel?'#f3dcc4':'#e6d6ae';ctx.beginPath();ctx.arc(x,y,R-5,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='rgba(78,63,42,.55)';ctx.lineWidth=0.8;ctx.stroke();
+  if(can&&!sel){ctx.globalAlpha=0.22+0.14*pulse;ctx.translate(x,y);sprite(ctx,'slotG',-R-9,-R-9,2*R+18,2*R+18,c=>{const g=c.createRadialGradient(0,0,R*0.6,0,0,R+9);g.addColorStop(0,'rgba(232,194,74,1)');g.addColorStop(1,'rgba(232,194,74,0)');
+    c.fillStyle=g;c.beginPath();c.arc(0,0,R+9,0,Math.PI*2);c.fill();});ctx.translate(-x,-y);ctx.globalAlpha=1;}
+  // plataforma: anel de pedras e chão de terra batida (a de quem não está escolhido vem do sprite)
+  if(!sel){ctx.translate(x,y);sprite(ctx,'slotP',-R-2,-R-2,2*R+4,2*R+4,c=>slotPlat(c,0,0,R,false));ctx.translate(-x,-y);}else slotPlat(ctx,x,y,R,true);
   // anel tracejado a rodar (dourado se dá para construir, vermelho se escolhido, cor do jogador no mesmo ecrã)
   ctx.save();ctx.translate(x,y);ctx.rotate(t*(sel?1.6:0.5)+ph);
   ctx.setLineDash([2.6,2.8]);ctx.lineWidth=sel?2:1.4;
@@ -3636,6 +3641,13 @@ function drawSlot(s,i,can){
   ctx.fillStyle='#2e2419';ctx.fillRect(-0.7,-8,1.4,13);ctx.fillStyle='#c9971c';ctx.beginPath();ctx.arc(0,-8.3,1.1,0,Math.PI*2);ctx.fill();
   drawFlag(0,0,i*0.7);
   ctx.restore();
+}
+function slotPlat(c,x,y,R,sel){
+  c.fillStyle='#c6b287';c.strokeStyle=INK;c.lineWidth=2;c.beginPath();c.arc(x,y,R,0,Math.PI*2);c.fill();c.stroke();
+  const n=11;for(let k=0;k<n;k++){const a0=k/n*Math.PI*2+0.08,a1=(k+1)/n*Math.PI*2-0.08;
+    c.strokeStyle=k%3===0?'#9a8a6c':k%3===1?'#b3a282':'#7f7058';c.lineWidth=3.6;c.beginPath();c.arc(x,y,R-2.6,a0,a1);c.stroke();}
+  c.fillStyle=sel?'#f3dcc4':'#e6d6ae';c.beginPath();c.arc(x,y,R-5,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(78,63,42,.55)';c.lineWidth=0.8;c.stroke();
 }
 function drawFlag(x,y,seed){
   const tm=RM()?0:S.t*6+seed,w=(k)=>Math.sin(tm+k*1.3)*1.1;
@@ -3742,7 +3754,7 @@ function menuBgShow(){
   menuBgBuild();
   document.body.classList.remove('inpause');document.body.classList.add('inmenu');
   if(MBG.on&&!bg.classList.contains('leave'))return;
-  MBG.on=true;bg.hidden=false;bg.classList.remove('leave');bg.style.transformOrigin='';pop(bg,'show');
+  MBG.on=true;MBG.cover=performance.now()+1000;bg.hidden=false;bg.classList.remove('leave');bg.style.transformOrigin='';pop(bg,'show');
 }
 function menuBgLeave(){
   setMusic('game');const bg=$('menubg');if(!bg||!MBG.on)return;MBG.on=false;document.body.classList.remove('inmenu');
@@ -4568,7 +4580,8 @@ function loop(now){
   if(S)juice(dt);
   if(S&&S.coop&&!S.remote)netSend(now);
   if(DUEL&&DUEL.net)duelNet(now);
-  hud();draw();requestAnimationFrame(loop);
+  hud();if(!(MBG.on&&now>MBG.cover))draw();// com o mapa do menu a tapar tudo não vale a pena desenhar
+  requestAnimationFrame(loop);
 }
 showBoot(showMenu);requestAnimationFrame(loop);
 
