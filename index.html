@@ -554,7 +554,7 @@ function defMoncao(){
     [260,425,tr('Baluarte de Monção','Monção bastion')],[240,395],[200,380],[165,345,tr('Baluarte de Monção','Monção bastion')],[195,325]];
   const wall=OUT.map(p=>T(p[0],p[1])),tips=[];OUT.forEach((p,i)=>{if(p[2])tips.push({i,name:p[2]});});
   const gS=edgeGate(wall,19),gN=edgeGate(wall,5,{post:true});
-  return{id:'moncao',name:'Monção',style:'bastion',across:tr('Salvaterra de Miño, Galiza','Salvaterra de Miño, Galicia'),
+  return{id:'moncao',name:'Monção',style:'bastion',push:125,across:tr('Salvaterra de Miño, Galiza','Salvaterra de Miño, Galicia'),
     wall,tips,inner:[],gates:[gS,gN],
     sandbars:[[190,168,80,13],[450,176,105,13]],
     paths:[
@@ -611,17 +611,18 @@ const LEVELS={valenca:defValenca(),moncao:defMoncao(),ancora:defAncora(),cerveir
    dá mais tempo para reagir a quem chega pelo rio. Tudo o que é da praça desce PUSH; o rio e os desembarques ficam. */
 const PUSH=65;
 function pushBack(L){
-  const done=new Set(),mv=p=>{if(!p||done.has(p))return;done.add(p);if(Array.isArray(p))p[1]+=PUSH;else p.y+=PUSH;};
+  const D=L.push||PUSH,done=new Set(),mv=p=>{if(!p||done.has(p))return;done.add(p);if(Array.isArray(p))p[1]+=D;else p.y+=D;};
   L.wall.forEach(mv);L.gates.forEach(mv);L.inner.forEach(q=>{mv(q.a);mv(q.b);mv(q.g);});
   L.paths.forEach(P=>P.forEach((p,i)=>{if(i>=2)mv(p);}));
-  L.cand.forEach(mv);L.marks.forEach(mv);L.labels.forEach(l=>{if(!done.has(l)){done.add(l);l[2]+=PUSH;}});
-  L.south.y0=Math.min(L.south.y0+PUSH,Math.max(L.south.y0,760));
+  L.cand.forEach(mv);L.marks.forEach(mv);L.labels.forEach(l=>{if(!done.has(l)){done.add(l);l[2]+=D;}});
+  L.south.y0=Math.min(L.south.y0+D,Math.max(L.south.y0,760));
   // curvas no primeiro troço em terra (desembarque -> praça): a maior amplitude que não bate em muralhas, rio ou outros caminhos
   const others=i=>L.paths.filter((_,j)=>j!==i).map(mkPath);
   const snake=(P,pi,si)=>{const a=P[si],b=P[si+1];if(!a||!b)return false;const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);const n=Math.floor(len/55);if(n<1)return false;
     const nx=-dy/len,ny=dx/len,op=others(pi),m=n*8;
     const pts=amp=>{const o=[];for(let i=1;i<m;i++){const t=i/m,k=amp*Math.sin(Math.PI*n*t)*Math.min(1,Math.sin(Math.PI*t)*2.2);o.push([a[0]+dx*t+nx*k,a[1]+dy*t+ny*k]);}return o;};
-    const ok=q=>q.every(([x,y])=>x>22&&x<578&&y>riverBot(x)+12&&y<880&&!inPoly(x,y,L.wall)&&dPoly(x,y,L.wall)>(L.style==='bastion'?40:30)
+    // perto do fim do troço (que pode ser uma porta) é normal estar colado à muralha
+    const ok=q=>q.every(([x,y])=>x>22&&x<578&&y>riverBot(x)+12&&y<880&&!inPoly(x,y,L.wall)&&(Math.hypot(x-b[0],y-b[1])<40||dPoly(x,y,L.wall)>(L.style==='bastion'?40:30))
       &&op.every(O=>O.seg.slice(1).every(sg=>dSeg(x,y,sg.a,sg.b)>26)));
     for(let amp=70;amp>=14;amp-=4){for(const sg of [1,-1]){const q=pts(amp*sg);if(ok(q)){P.splice(si+1,0,...q);return true;}}}return false;};
   // primeiro troço em terra; se não houver espaço (caminho encostado à margem), tenta o seguinte
