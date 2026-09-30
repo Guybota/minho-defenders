@@ -1476,9 +1476,19 @@ function drawBG(){
   for(let i=0;i<800;i++){const x=40+r()*520,y=240+r()*440;if(houseOK(x,y,true))house(c,r,x,y);}
   c.lineJoin='round';c.lineCap='round';
   const land=P=>{c.beginPath();P.pts.slice(1).forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));};
-  PATHS.forEach(P=>{land(P);c.strokeStyle='#5a4630';c.lineWidth=27;c.stroke();});
+  // contorno escuro só a partir de 16 do desembarque: a ponta junto ao rio fica sem contorno e funde-se com o chão
+  const landFrom=(P,d0)=>{const s0=P.seg[1]?P.seg[1].s+d0:P.seg[0].s,q=posAt(P,s0);c.beginPath();c.moveTo(q.x,q.y);for(const sg of P.seg.slice(1))if(sg.s+sg.L>s0)c.lineTo(sg.b[0],sg.b[1]);};
+  // troço do contorno entre d0 e d1 (a contar do desembarque)
+  const landPart=(P,d0,d1)=>{const b=P.seg[1]?P.seg[1].s:P.seg[0].s,q=posAt(P,b+d0);c.beginPath();c.moveTo(q.x,q.y);
+    for(const sg of P.seg.slice(1)){if(sg.s>b+d1)break;if(sg.s+sg.L>b+d0&&sg.s+sg.L<b+d1)c.lineTo(sg.b[0],sg.b[1]);}const r=posAt(P,b+d1);c.lineTo(r.x,r.y);};
+  c.lineCap='butt';PATHS.forEach(P=>{landFrom(P,44);c.strokeStyle='#5a4630';c.lineWidth=27;c.stroke();
+    // o contorno aparece aos poucos entre 8 e 44
+    for(let k=0;k<9;k++){landPart(P,8+k*4,12.5+k*4);c.strokeStyle=`rgba(90,70,48,${((k+1)/10).toFixed(2)})`;c.stroke();}});c.lineCap='round';
   PATHS.forEach((P,i)=>{land(P);c.strokeStyle=i===2&&!S.cOpen?'#d6c29a':'#c9b184';c.lineWidth=23;c.stroke();
     land(P);c.strokeStyle='rgba(236,222,186,.35)';c.lineWidth=9;c.stroke();});
+  // ponta junto ao rio esbatida para o chão
+  PATHS.forEach((P,i)=>{const q=P.pts[1],col=i===2&&!S.cOpen?'214,194,154':'201,177,132',g=c.createRadialGradient(q[0],q[1],4,q[0],q[1],20);
+    g.addColorStop(0,`rgba(${col},.95)`);g.addColorStop(0.55,`rgba(${col},.55)`);g.addColorStop(1,`rgba(${col},0)`);c.fillStyle=g;c.beginPath();c.arc(q[0],q[1],20,0,Math.PI*2);c.fill();});
   // terra batida: manchas e pedrinhas ao longo do caminho
   {const rd=rng(77+LV.id.length);PATHS.forEach(P=>{for(let d=P.seg[0].L;d<P.len;d+=5){const q=posAt(P,d),o=(rd()-0.5)*18,x=q.x-Math.sin(q.a)*o,y=q.y+Math.cos(q.a)*o;
     c.fillStyle=rd()<0.5?'rgba(120,92,58,.22)':'rgba(250,240,210,.25)';c.beginPath();c.arc(x,y,0.6+rd()*1.4,0,Math.PI*2);c.fill();}});}
