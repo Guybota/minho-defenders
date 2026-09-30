@@ -350,6 +350,35 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
   #abilT{width:56px;height:56px}#abil{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 64px)}
   body.panel-open #bWave{opacity:0;pointer-events:none}
 }
+/* ---------- Duelo: botão das tropas no canto inferior direito, como o dos poderes ---------- */
+#sendT{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);width:64px;height:64px;min-height:0;padding:0;border-radius:50%;
+  background:var(--bg);background:var(--glass);border:2px solid var(--line);box-shadow:0 4px 12px var(--shadow);transition:opacity .25s,border-color .15s}
+#sendT .ai{font-size:1.9rem;line-height:1;display:inline-block;transition:transform .3s cubic-bezier(.2,1.3,.4,1)}
+#sendT[aria-expanded="true"]{border-color:var(--red)}
+#sendT[aria-expanded="true"] .ai{transform:rotate(-14deg) scale(.9)}
+#sendT .dot{position:absolute;top:3px;right:3px;width:13px;height:13px;border-radius:50%;background:var(--gold);border:2px solid var(--bg);animation:pulse 1.4s ease-out infinite}
+#send{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 72px);display:grid;grid-template-columns:repeat(2,8.8rem);gap:.35rem;
+  max-height:calc(100vh - 12rem);max-height:calc(100dvh - 12rem);overflow:auto;padding:.15rem;pointer-events:none}
+#send.open{pointer-events:auto}
+.sd{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:.4rem;text-align:left;padding:.3rem .5rem;min-height:0;
+  border-radius:12px;background:var(--bg);background:var(--glass);box-shadow:0 3px 10px var(--shadow);transition:opacity .22s ease,transform .28s cubic-bezier(.2,1.3,.4,1)}
+#send:not(.open) .sd{opacity:0;transform:translateY(26px) scale(.6);pointer-events:none}
+.sd .ai{grid-row:1/3;font-size:1.5rem;line-height:1}
+.sd .sn{font-size:.8rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd .sc{font-size:.72rem;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sd em{position:absolute;top:2px;right:6px;font-style:normal;font-size:.72rem;font-weight:700;color:var(--red)}
+.sd i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(46,36,25,.35);pointer-events:none}
+.sd:disabled .ai,.sd.lock .ai{opacity:.45;filter:grayscale(1)}
+.sd.lock .sc{color:var(--red)}
+.sd.ready{animation:ready .6s ease-out}
+body:not(.duel) #sendT,body:not(.duel) #send{display:none}
+body.send-open #zoomb{opacity:0;pointer-events:none}
+@media (orientation:portrait),(max-width:699px){
+  #sendT{width:56px;height:56px}#send{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 64px);grid-template-columns:repeat(2,7.9rem)}
+  body.panel-open #sendT,body.panel-open #send{opacity:0;pointer-events:none}
+  body.duel .wxs{display:none}
+  body.duel #hud .st{padding-left:.35rem;padding-right:.35rem}
+}
 /* sliders de volume nas Opções */
 .vols{display:grid;gap:.35rem}
 .vol{display:grid;grid-template-columns:5.5rem 1fr 3rem;align-items:center;gap:.6rem;font-size:.95rem}
@@ -370,6 +399,8 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
     <div class="st" id="stGold"><span class="si" data-ic="coin"></span><span class="sv"><small>Ouro</small><b id="gold">0</b></span></div>
     <div class="st" id="gold2w" hidden title="Ouro do parceiro"><span class="si" data-ic="duo"></span><span class="sv"><small>Parceiro</small><b id="gold2">0</b></span></div>
     <div class="st" id="stLives" title="Vidas da praça"><span class="si" data-ic="castle"></span><span class="sv"><small>Praça</small><b id="lives">0</b></span><i class="meter"><i id="mLives"></i></i></div>
+    <div class="st" id="stEco" hidden title="Renda: ouro a cada 6 s (sobe com cada tropa mandada)"><span class="si" data-ic="coinbag"></span><span class="sv"><small>Renda</small><b id="eco">+8</b></span></div>
+    <div class="st" id="stFoe" hidden title="Vidas da praça do adversário"><span class="si" data-ic="foe"></span><span class="sv"><small>Adversário</small><b id="foeL">0</b></span><i class="meter"><i id="mFoe"></i></i></div>
   </div>
   <div class="bar">
     <button id="bWave" class="main"><span id="bWaveT">Chamar vaga</span><i id="bWaveF"></i></button>
@@ -389,6 +420,8 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
   <button class="ab" data-ab="bell"><span class="ai" data-ic="bell"></span><span class="an">Sino</span><em></em><i></i></button>
   <button class="ab" data-ab="hero"><span class="ai" id="heroIc" data-ic="baguette"></span><span class="an" id="heroNm">Heroína</span><em></em><i></i></button>
 </nav>
+<button id="sendT" aria-label="Mandar tropas" aria-expanded="false" aria-controls="send"><span class="ai" data-ic="helmet"></span><b class="dot" hidden></b></button>
+<nav id="send" aria-label="Mandar tropas"></nav>
 <div id="menubg" hidden aria-hidden="true"></div>
 <div id="toast"></div>
 <div id="pausedTag" hidden><span data-ic="pause"></span><span id="pausedTxt">Em pausa</span></div>
@@ -398,7 +431,7 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
 (function(){
 "use strict";
 /* ---- 00-base.js ---- */
-const W=600,H=900,MAXW=20;
+const W=600,MAXW=20;let H=900;// no duelo o mundo é mais alto (duas praças, uma de cada lado do rio)
 // margens do mundo à volta do mapa para o canvas ocupar o espaço todo (atualizadas no resize)
 let MX=0,MY=0;
 const $=id=>document.getElementById(id);
@@ -483,6 +516,7 @@ const ICONS=(()=>{
     fish:s('M2.5 12c3.5-5 11-6 15.5-.1C13.5 17.9 6 17 2.5 12z','#8fa3a8')+s('M18 11.9l3.5-3.5v7z','#8fa3a8')+`<circle cx="6.5" cy="11" r="1" fill="${K}"/>`+s('M9.5 9.5c1 1.5 1 3.5 0 5',null,.9),
     helmet:s('M2.5 14.5c3-1 5-1.2 9.5-1.2s6.5.2 9.5 1.2c-2 2-4.5 2.5-9.5 2.5s-7.5-.5-9.5-2.5z',ST)+s('M6.5 13.5c0-5 2.5-8 5.5-8s5.5 3 5.5 8',ST)+s('M12 5.5V2.8',null,1.8)+s('M12 5.5c0 2.5 0 5 0 7.8',null,.8),
     castleflag:'',
+    foe:s('M3.5 21V10h3v2h2.2v-2h2.1v2h2.4v-2h2.1v2h2.2v-2h3v11z','#b5563a')+s('M9.8 21v-3.6a2.2 2.2 0 0 1 4.4 0V21',K)+s('M12 10V3.2l4.2 1.5L12 6.2',GL)+s('M5 15h2M17 15h2',null,1.1),
     dragon:s('M3 17c2-1 4-1 6 0 1-4 4-6.5 8-6.5l1.5-3 1 3.2 2.5.8-2.5 1.8c-2 .5-3.5 2-4 4.2-1 3.5-4 5-7.5 4.5-2.5-.4-4-2-5-4z',GR)+s('M9.5 12.5L6 4.5l7 5',GD)+`<circle cx="18" cy="11.8" r=".8" fill="${K}"/>`+s('M4 21l1.5-2.5M8 21.8l.5-2.5',null,1.2),
     octopus:s('M6 12a6 6 0 0 1 12 0c0 2-1 3-2 3.5',`#8a3f6e`)+s('M6 12c0 2 1 3 2 3.5',null,1.4)+s('M8 15.5c-1 2-3.5 3-5 2M10 16c0 2.5-1 4-2.5 5M14 16c0 2.5 1 4 2.5 5M16 15.5c1 2 3.5 3 5 2M12 16.2v4.8',null,1.8)+f('M6.1 12.2a6 6 0 0 1 11.8 0c0 1.5-.8 3-3 3.6H9c-2-.6-2.9-2-2.9-3.6z','#8a3f6e')+`<circle cx="10" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/><circle cx="14" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/>`,
     stag:s('M9 13c-1 5 1 8.5 3 8.5s4-3.5 3-8.5c-.5-2-5.5-2-6 0z','#9a6a3a')+s('M9.5 12.5C7 11 5.5 8.5 5.5 5M5.5 8.5L2.5 7M6.5 6L4.5 2.5M14.5 12.5c2.5-1.5 4-4 4-7.5M18.5 8.5l3-1.5M17.5 6l2-3.5',null,1.6)+`<circle cx="10.6" cy="15.5" r=".8" fill="${K}"/><circle cx="13.4" cy="15.5" r=".8" fill="${K}"/><ellipse cx="12" cy="20" rx="1.3" ry=".9" fill="${K}"/>`,
@@ -520,7 +554,19 @@ function dPoly(x,y,p){let m=1e9;for(let i=0;i<p.length;i++)m=Math.min(m,dSeg(x,y
 function inPoly(x,y,p){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1];
   if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
 const riverTop=x=>34+Math.sin(x/70)*7, riverBot=x=>200+Math.sin(x/55+1)*6;
-const inRiver=(x,y)=>y<riverBot(x);
+/* Duelo: Portugal a sul (lado 0, o mapa deslocado DOFF para baixo) e Castela a norte (lado 1, o mapa espelhado); o Minho fica ao meio */
+const DOFF=666,DH=1566,RTd=x=>900-riverBot(x),RBd=x=>riverBot(x)+DOFF;
+let DUEL=null,DRAW_SIDE=0;
+// corre f com o estado, o mapa, os caminhos e as bandeiras do lado i (cada lado do duelo é uma partida completa)
+function withSide(i,f){if(!DUEL)return f();const d=DUEL.sides[i],o=[S,LV,PATHS,SLOTS];S=d.S;LV=d.LV;PATHS=d.PATHS;SLOTS=d.SLOTS;
+  try{return f();}finally{S=o[0];LV=o[1];PATHS=o[2];SLOTS=o[3];}}
+// está a correr o lado do adversário (bot ou do outro aparelho): sem sons, moedas a voar nem conquistas
+const offSide=()=>!!(DUEL&&DUEL.sides[DUEL.me]&&S!==DUEL.sides[DUEL.me].S);
+const inRiver=(x,y)=>DUEL?(y>RTd(x)&&y<RBd(x)):y<riverBot(x);
+// perto da água (margem m); no duelo, também fora do próprio lado do rio
+const nearWater=(x,y,m)=>DUEL?(y>RTd(x)-m&&y<RBd(x)+m):y<riverBot(x)+m;
+const sideAt=(x,y)=>y>=RBd(x)?0:y<=RTd(x)?1:-1;
+const wTop=x=>DUEL?RTd(x):riverTop(x),wBot=x=>DUEL?RBd(x):riverBot(x);
 function pp(f,r,a){return[f.cx+Math.cos(a)*r*f.sx,f.cy+Math.sin(a)*r*f.sy];}
 function starFort(f){const pts=[],tips=[],d=Math.PI/f.n;
   for(let i=0;i<f.n;i++){const a=f.rot+i*2*Math.PI/f.n;
@@ -630,9 +676,23 @@ function pushBack(L){
 }
 Object.values(LEVELS).forEach(pushBack);
 const LEVEL_ORDER=['valenca','moncao','ancora','cerveira'];
+const LDEF={valenca:defValenca,moncao:defMoncao,ancora:defAncora,cerveira:defCerveira};
+function duelLevel(id,side){
+  const L=LDEF[id]();pushBack(L);
+  const f=side?(y=>900-y):(y=>y+DOFF),done=new Set();
+  const mv=p=>{if(!p||done.has(p))return;done.add(p);if(Array.isArray(p))p[1]=f(p[1]);else{p.y=f(p.y);if(side&&p.a!=null)p.a=-p.a;}};
+  L.wall.forEach(mv);L.gates.forEach(mv);L.inner.forEach(q=>{mv(q.a);mv(q.b);mv(q.g);});
+  L.paths.forEach(P=>P.forEach(mv));L.cand.forEach(mv);L.marks.forEach(mv);L.desemb.forEach(mv);
+  L.labels.forEach(l=>{if(!done.has(l)){done.add(l);l[2]=f(l[2]);}});
+  (L.sandbars||[]).forEach(q=>{q[1]=f(q[1]);});
+  const a=f(L.south.y0),b=f(L.south.y1);L.south.y0=Math.min(a,b);L.south.y1=Math.max(a,b);L.south.ly=f(885);
+  if(L.south.road)L.road=[[310,640],[322,780],[335,900]].map(([x,y])=>[x,f(y)]);
+  L.coast=L.sea;L.sea=false;L.side=side;L.compass=0;
+  return L;
+}
 let LV=null,PATHS=[],SLOTS=[];
 function loadLevel(id){
-  LV=LEVELS[id];PATHS=LV.paths.map(mkPath);SLOTS=[];
+  LV=typeof id==='string'?LEVELS[id]:id;PATHS=LV.paths.map(mkPath);SLOTS=[];
   const wall=LV.wall,n=wall.length;
   LV.tips.forEach(({i,name})=>{
     const t=wall[i];
@@ -644,7 +704,7 @@ function loadLevel(id){
   });
   LV.cand.forEach(([x,y,inside])=>{
     if(inside){if(dPath(x,y)>=30&&!SLOTS.some(s=>Math.hypot(s.x-x,s.y-y)<36))SLOTS.push({x,y,kind:'in',name:tr('Plataforma','Platform'),tower:null});return;}
-    if(dPath(x,y)<32||inPoly(x,y,wall)||dPoly(x,y,wall)<(LV.style==='medieval'?26:16)||y<riverBot(x)+18)return;
+    if(dPath(x,y)<32||inPoly(x,y,wall)||dPoly(x,y,wall)<(LV.style==='medieval'?26:16)||nearWater(x,y,18))return;
     if(SLOTS.some(s=>Math.hypot(s.x-x,s.y-y)<36))return;
     if(LV.southRiver&&y>785)return;
     SLOTS.push({x,y,kind:'rev',name:LV.style==='medieval'?tr('Casa fortificada','Fortified house'):tr('Revelim','Ravelin'),tower:null});
@@ -750,6 +810,16 @@ function waveDef(w){
 }
 const hpMult=w=>(1+0.12*(w-1)+0.008*(w-1)*(w-1))*S.diff.hp*S.mods.hp;
 
+/* ================= Duelo: tropas que se mandam para o outro lado do rio ================= */
+// t: inimigo; n: quantos; c: custo; eco: quanto sobe a renda; w: vaga a partir da qual se pode mandar; cd: recarga (s)
+const SENDS=[
+  {t:'peao',n:6,c:30,eco:1,w:1,cd:1.5},{t:'cav',n:4,c:45,eco:2,w:2,cd:2},{t:'nad',n:5,c:50,eco:2,w:3,cd:2},
+  {t:'arqc',n:4,c:60,eco:2,w:4,cd:3},{t:'esc',n:4,c:80,eco:3,w:5,cd:3},{t:'cont',n:2,c:90,eco:3,w:6,cd:5},
+  {t:'cura',n:2,c:100,eco:3,w:7,cd:5},{t:'ari',n:1,c:150,eco:5,w:8,cd:6},{t:'torre',n:1,c:160,eco:5,w:8,cd:6},
+  {t:'bomb',n:1,c:190,eco:6,w:10,cd:8},{t:'cap',n:1,c:420,eco:10,w:12,cd:15},{t:'boss',n:1,c:950,eco:0,w:15,cd:60}];
+// renda: ouro que cai a cada ECO_T segundos (sobe com cada tropa mandada, até ECO_MAX)
+const ECO0=8,ECO_T=6,ECO_MAX=150;
+
 /* ================= Matança (abates seguidos) ================= */
 // [abates, multiplicador do ouro, grito]; a série acaba se passarem 2,5 s sem abates ou se alguém chegar à praça
 const COMBO=[[8,1.25,tr('Boa pontaria!','Nice shooting!')],[16,1.5,tr('Matança!','Killing spree!')],[28,1.75,tr('Carnificina!','Carnage!')],[40,2,tr('Isto é Aljubarrota!','This is Aljubarrota!')]];
@@ -786,6 +856,7 @@ const Q={
   cap:['Chegou o Capitão Paco!','O Capitão Paco quer falar com o gerente','Capitão Paco: «¡Esta vez sí!»'],
   steal:['Levou o ouro para Espanha!','Contrabando! Chamem a alfândega!','Lá se foi o dinheiro do vinho verde'],
   heroDie:['Vou buscar mais pão, volto já!','Ai as minhas costas…','Isto não fica assim!'],
+  dieP:['Ai a minha vida!','Ó mãe!','Carago!','Chamem o INEM!','Ai as minhas costas!','Isto não fica assim!','Ai, que me finei!'],
   weather:{noite:'Cai a noite… os arqueiros veem mal',chuva:'Chove a potes! O azeite arrefece',nevoeiro:'Nevoeiro no Minho… não se veem as barcas'}
 };
 if(LANG==='en')Object.assign(Q,{
@@ -797,6 +868,7 @@ if(LANG==='en')Object.assign(Q,{
   cap:['Captain Paco has arrived!','Captain Paco wants to speak to the manager','Captain Paco: «¡Esta vez sí!»'],
   steal:['Took the gold to Spain!','Smuggling! Call customs!','There goes the vinho verde money'],
   heroDie:['Off to get more bread, back soon!','Oh, my back…','This isn’t over!'],
+  dieP:['Oh, my life!','Mother!','Blimey!','Call an ambulance!','Oh, my back!','This isn’t over!','I’m done for!'],
   weather:{noite:'Night falls… the archers can barely see',chuva:'Pouring rain! The oil is cooling down',nevoeiro:'Fog on the Minho… the boats can’t be seen'}
 });
 
@@ -815,7 +887,7 @@ function noise(dur,vol,fc,delay,dest){const t=AC.currentTime+(delay||0),len=Math
   for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=fc;
   const g=AC.createGain();g.gain.value=vol;s.connect(f);f.connect(g);g.connect(dest||sfxG);s.start(t);}
 function sfx(n){
-  if(!sndMode||!AC)return;const now=performance.now();if(lastS[n]&&now-lastS[n]<(n==='arrow'||n==='hit'?90:70))return;lastS[n]=now;
+  if(!sndMode||!AC||offSide())return;const now=performance.now();if(lastS[n]&&now-lastS[n]<(n==='arrow'||n==='hit'?90:70))return;lastS[n]=now;
   try{switch(n){
     case'arrow':tone('triangle',900,300,0.08,0.06);break;
     case'bolt':tone('sawtooth',520,120,0.12,0.06);break;
@@ -947,7 +1019,7 @@ function samBuffer(text,who){
   samCache.set(key,out);return out;
 }
 function say(text,lang,force,who){
-  if(sndMode<2||!AC)return;
+  if(sndMode<2||!AC||offSide())return;
   const now=AC.currentTime;
   if(!force&&(now<voxUntil+1.5))return;
   who=who||(lang==='es-ES'?'es':'pt');
@@ -1061,7 +1133,7 @@ const ACH=[
   {id:'aljubarrota',ic:'swords',name:tr('Isto é Aljubarrota!','This is Aljubarrota!'),desc:tr('Faz uma matança de 40 abates seguidos.','Reach a 40-kill streak.')}
 ];
 let achDone=LS.get('ach',{});
-function unlock(id){if(achDone[id])return;achDone[id]=Date.now();LS.set('ach',achDone);const a=ACH.find(x=>x.id===id);
+function unlock(id){if(achDone[id]||offSide())return;achDone[id]=Date.now();LS.set('ach',achDone);const a=ACH.find(x=>x.id===id);
   toast(`<b>${tr('Conquista','Achievement')}:</b> ${ic(a.ic)} ${a.name}`);sfx('ach');}
 function toast(html){const t=document.createElement('div');t.className='toast';t.innerHTML=html;$('toast').appendChild(t);setTimeout(()=>t.remove(),3200);}
 
@@ -1087,8 +1159,10 @@ let S=null,EID=0,BZ=1;
 const VIEW={z:1,ox:0,oy:0};
 const OPT=Object.assign({big:false,cb:false},LS.get('opt',{}));
 const CAMP=['moncao','valenca','cerveira','ancora'];
-let menuSel={mode:LS.get('mode','livre'),lvl:(LS.get('lvl','valenca') in {valenca:1,moncao:1,ancora:1,cerveira:1})?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:LS.get('hero','padeira'),chap:0};
+let menuSel={mode:LS.get('mode','livre'),lvl:(LS.get('lvl','valenca') in {valenca:1,moncao:1,ancora:1,cerveira:1})?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:LS.get('hero','padeira'),chap:0,dside:LS.get('dside',0)?1:0};
 function newGame(lvl,di,heroId){
+  // sair de um duelo: o mundo volta a ter uma só praça
+  const leftDuel=!!(DUEL&&!DUEL.init);if(leftDuel){DUEL=null;H=900;duelUI(false);}
   loadLevel(lvl);
   const D=DIFFS[di],HD=HEROES[heroId];
   S={lvl,di,diff:D,gold:D.gold,gold2:D.gold,lives:D.lives,startLives:D.lives,wave:0,spawning:false,queue:[],spawnT:0,nextT:null,pendingBonus:0,
@@ -1102,13 +1176,17 @@ function newGame(lvl,di,heroId){
   $('title').textContent=LV.full||(tr('Cerco de ','Siege of ')+LV.name);
   $('heroIc').innerHTML=ic(HD.icon);$('heroNm').textContent=HD.short;
   $('bSpeed').textContent='×1';$('bPause').innerHTML=ic('pause');lastGold=-1;
-  drawBG();renderPanel();
+  drawBG();renderPanel();if(leftDuel)resize();
 }
 function mkFoe(t,p,d){
   const f=FOES[t],m=hpMult(Math.max(1,S.wave));
-  return{id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:f.spd,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
+  const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:f.spd,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
     d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:f.spd,blocked:false};
+  // no duelo, quem ataca a praça do lado de Castela são portugueses: fardas azuis
+  if(DUEL&&LV.side===1){e.pt=1;if(PT_COL[t])e.col=PT_COL[t];}
+  return e;
 }
+const PT_COL={peao:'#2f4a73',mini:'#3f5f8f',esc:'#2f4a73',arqc:'#3d5d86'};
 function spawn(t){
   const f=FOES[t];let p;
   if(f.swim)p=2;else{const n=S.cOpen?3:2;p=S.side%n;S.side++;}
@@ -1237,14 +1315,14 @@ function kill(e,src){
   if(e.t==='mini'){S.stats.minis++;if(S.stats.minis>=50)unlock('sardinha');}
   if(e.t==='cont'){S.stats.cont++;if(S.stats.cont>=25)unlock('fiscal');}
   if(e.f.boss){
-    const b=LS.get('bosses',{});b[e.t]=1;LS.set('bosses',b);if(['merc','coca','polvo','cervo'].every(k=>b[k]))unlock('lendas');
+    if(!offSide()){const b=LS.get('bosses',{});b[e.t]=1;LS.set('bosses',b);if(['merc','coca','polvo','cervo'].every(k=>b[k]))unlock('lendas');}
     S.texts.push({x:e.x,y:e.y-34,s:e.f.death,t:0,T:3,sp:true});smoke(e.x,e.y,18);sfx('boom');
     jolt(12);S.stop=0.22;S.flash=Math.max(S.flash,0.3);S.flashC='255,236,190';chips(e.x,e.y,22,e.col,1.8);
     S.fx.push({k:'boom',x:e.x,y:e.y,r:55,t:0,T:0.7});
     if(e.t==='merc'){addGold('both',150);S.texts.push({x:e.x,y:e.y+22,s:tr('Liquidação total! +150 💰','Clearance sale! +150 💰'),t:0,T:2.2});}
   }
   else if(e.t==='cap'){S.texts.push({x:e.x,y:e.y-28,s:tr('«¡Volveré!» — Capitão Paco','«¡Volveré!» — Captain Paco'),t:0,T:2.2,sp:true});jolt(6);S.stop=0.1;say('¡Volveré!','es-ES',true,'paco');unlock('paco');}
-  else if(Math.random()<0.14&&e.t!=='mini'){const q=pick(Q.die);S.texts.push({x:e.x,y:e.y-24,s:q,t:0,T:1.4,sp:true});say(q,'es-ES');}
+  else if(Math.random()<0.14&&e.t!=='mini'){const q=pick(e.pt?Q.dieP:Q.die);S.texts.push({x:e.x,y:e.y-24,s:q,t:0,T:1.4,sp:true});say(q,e.pt?'pt-PT':'es-ES');}
   if(e.f.brood){
     for(let k=0;k<e.f.brood;k++){const c=mkFoe('mini',e.p,Math.max(0,e.d-k*7));c.off=(Math.random()-0.5)*16;S.born.push(c);}
     S.fx.push({k:'boom',x:e.x,y:e.y,r:28,t:0,T:0.5});smoke(e.x,e.y,10);sfx('boom');
@@ -1366,7 +1444,7 @@ function update(dt){
     S.spawnT-=dt;
     while(S.queue.length&&S.spawnT<=0){const q=S.queue[0];if(FSZ[q.t])S.spawnT+=launchBoat();else{S.queue.shift();spawn(q.t);S.spawnT+=q.gap;}}
     if(!S.queue.length){S.spawning=false;S.pendingBonus+=20+S.wave*3;S.nextT=(S.infinite||S.wave<MAXW)?18:null;}
-  }else if(S.nextT!=null&&S.wave>0){S.nextT-=dt;if(S.nextT<=0){S.nextT=null;startWave(false);}}
+  }else if(S.nextT!=null&&(S.wave>0||DUEL)){S.nextT-=dt;if(S.nextT<=0){S.nextT=null;startWave(false);}}
   if(S.comboT>0){S.comboT-=dt;if(S.comboT<=0)S.combo=0;}
   updateBoats(dt);
   updateHero(dt);
@@ -1447,7 +1525,7 @@ function update(dt){
   if(!S.spawning&&!S.enemies.length&&S.pendingBonus>0){
     addGold('all',S.pendingBonus);if(!S.hero.dead)heroXP(8+S.wave);
     S.texts.push({x:W/2,y:470,s:tr('Vaga repelida! +','Wave repelled! +')+S.pendingBonus+' 💰',t:0,T:2.2,big:true});S.pendingBonus=0;sfx('coin');saveGame();
-    if(S.wave%3===0&&(S.infinite||S.wave<MAXW))offerCards();}
+    if(S.wave%3===0&&(S.infinite||S.wave<MAXW)){if(S.bot)botCard();else offerCards();}}
   if(!S.infinite&&S.wave>=MAXW&&!S.spawning&&!S.enemies.length&&!S.over){endGame(true);return;}
   ageVisuals(dt);
 }
@@ -1568,7 +1646,8 @@ function vines(c,x,y,a,w,h,r){
 function rock(c,x,y,k,r){c.fillStyle='#b3aa94';c.strokeStyle='#5a5240';c.lineWidth=0.8;c.beginPath();c.ellipse(x,y,3.5*k,2.6*k,r()*3,0,Math.PI*2);c.fill();c.stroke();}
 // onde se pode pôr um enfeite: fora de água, estradas, muralhas, bandeiras, edifícios, legendas e do que já lá está
 function decoOK(x,y,rad,labs){
-  if(y<riverBot(x)+10+rad||(LV.southRiver&&y>782-rad))return false;
+  if(nearWater(x,y,10+rad)||(LV.southRiver&&y>782-rad))return false;
+  if(DUEL&&sideAt(x,y)!==LV.side)return false;
   if(x<-MX+14+rad||x>W+MX-14-rad||y<-MY+14+rad||y>H+MY-14-rad)return false;
   if(dPath(x,y)<16+rad||inPoly(x,y,LV.wall)||dPoly(x,y,LV.wall)<(LV.style==='bastion'?38:24)+rad)return false;
   if(SLOTS.some(s=>Math.hypot(s.x-x,s.y-y)<22+rad)||LV.marks.some(m=>Math.hypot(m.x-x,m.y-y)<Math.max(m.w,m.h)+rad+6))return false;
@@ -1582,7 +1661,7 @@ function drawDeco(c,X0,X1,Y0,Y1){
     ...(LV.across?[lab(LV.across,130,18,15)]:[]),...(LV.south.label?[lab(LV.south.label,LV.southRiver?300:200,LV.southRiver?790:885,13)]:[]),
     ...LV.marks.filter(m=>m.label).map(m=>lab(m.label,m.x,m.y+m.h/2+9,11))];
   const put=(x,y,rad)=>{if(!decoOK(x,y,rad,labs))return false;OCC.push([x-rad,y-rad,x+rad,y+rad]);return true;};
-  const coast=LV.sea;
+  const coast=LV.sea||LV.coast;
   // vinhas (vinho verde!) em manchas retangulares
   const nv=Math.round((X1-X0)*(Y1-Y0)/90000);
   for(let i=0;i<nv*3&&i<60;i++){const x=X0+r()*(X1-X0),y=Y0+r()*(Y1-Y0),w=34+r()*26,h=20+r()*12,a=(r()-0.5)*0.5;
@@ -1641,7 +1720,8 @@ function houseOK(x,y,inside){
   if(y>12&&!houseOK1(x,y-9,inside))return false;return houseOK1(x,y,inside);
 }
 function houseOK1(x,y,inside){
-  if(y<riverBot(x)+10||dPath(x,y)<17)return false;
+  if(nearWater(x,y,10)||dPath(x,y)<17)return false;
+  if(DUEL&&sideAt(x,y)!==LV.side)return false;
   if(LV.southRiver&&y>782)return false;
   if(SLOTS.some(s=>Math.hypot(s.x-x,s.y-y)<22))return false;
   if(LV.marks.some(m=>Math.hypot(m.x-x,m.y-y)<Math.max(m.w,m.h)+8))return false;
@@ -1681,10 +1761,11 @@ function drawFields(c,r,n){
     OCC.push([x-hw,y-hh,x+hw,y+hh]);field(c,r,x,y,w,h,a,K[made%K.length]);made++;}
 }
 function drawBG(){
-  if(!LV)return;
+  if(!LV||(DUEL&&DUEL.init))return;
+  if(offSide())return withSide(DUEL.me,drawBG);
   bgc.width=Math.round(cv.width*BZ);bgc.height=Math.round(cv.height*BZ);
   const kb=scale*dpr*BZ,c=bctx;c.setTransform(kb,0,0,kb,MX*kb,MY*kb);OCC=[];
-  const r=rng(1640+LV.id.length*97),r2=rng(77+LV.id.length*13);
+  const r=rng(1640+LV.id.length*97+(DUEL?7:0)),r2=rng(77+LV.id.length*13);
   const X0=-MX-12,X1=W+MX+12,Y0=-MY,Y1=H+MY;
   c.fillStyle='#e9dcbc';c.fillRect(X0,Y0,X1-X0,Y1-Y0);
   for(let i=0;i<900;i++){c.fillStyle=`rgba(120,95,60,${r()*0.06})`;c.fillRect(r()*W,r()*H,r()*3+1,r()*3+1);}
@@ -1696,14 +1777,47 @@ function drawBG(){
     for(let i=0;i<area/9000;i++){const x=X0+r2()*(X1-X0),y=Math.max(230,Y0)+r2()*(Y1-Math.max(230,Y0));if(x>-20&&x<W+20)continue;c.beginPath();c.ellipse(x,y,40+r2()*70,20+r2()*40,r2()*3,0,Math.PI*2);c.fill();}
   }
   c.fillStyle='rgba(125,138,78,.2)';
-  for(let i=0;i<16;i++){c.beginPath();c.ellipse(r()*W,230+r()*660,40+r()*70,20+r()*40,r()*3,0,Math.PI*2);c.fill();}
-  if(!LV.sea)for(let i=0;i<40;i++){const x=220+r()*360,y=14+r()*14;if(y<riverTop(x)-2)house(c,r,x,y,0.6);}
-  if(!LV.sea&&(MX>1||MY>1))for(let i=0;i<(MX*40+MY*(W+2*MX))/300;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(28-Y0);if(x>220&&x<W&&y>0)continue;if(y>riverTop(x)-4)continue;house(c,r2,x,y,0.6);}
+  for(let i=0;i<(DUEL?30:16);i++){c.beginPath();c.ellipse(r()*W,DUEL?r()*H:230+r()*660,40+r()*70,20+r()*40,r()*3,0,Math.PI*2);c.fill();}
+  if(!DUEL&&!LV.sea)for(let i=0;i<40;i++){const x=220+r()*360,y=14+r()*14;if(y<riverTop(x)-2)house(c,r,x,y,0.6);}
+  if(!DUEL&&!LV.sea&&(MX>1||MY>1))for(let i=0;i<(MX*40+MY*(W+2*MX))/300;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(28-Y0);if(x>220&&x<W&&y>0)continue;if(y>riverTop(x)-4)continue;house(c,r2,x,y,0.6);}
   const xa=Math.floor(X0/10)*10,xb=Math.ceil(X1/10)*10;
+  if(DUEL)return drawBGDuel(c,r,r2,X0,X1,Y0,Y1);
   c.beginPath();c.moveTo(xa,riverTop(xa));for(let x=xa;x<=xb;x+=10)c.lineTo(x,riverTop(x));
   for(let x=xb;x>=xa;x-=10)c.lineTo(x,riverBot(x));c.closePath();
   c.fillStyle=LV.sea?'#7b98a6':'#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();
   if(LV.sea){c.fillStyle='#7b98a6';c.fillRect(X0,Y0,X1-X0,riverTop(0)+8-Y0);}
+  drawSandbars(c,r);
+  c.strokeStyle='rgba(47,74,82,.35)';c.lineWidth=1;
+  for(let k=0;k<9;k++){const yb=58+k*15;c.beginPath();for(let x=xa;x<xb;x+=6){const y=yb+Math.sin(x/18+k)*2;x===xa?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
+  if(LV.southRiver){c.beginPath();c.moveTo(xa,800);for(let x=xa;x<=xb;x+=10)c.lineTo(x,800+Math.sin(x/60)*8);c.lineTo(xb,Y1);c.lineTo(xa,Y1);c.closePath();
+    c.fillStyle='#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();label(c,LV.southRiver,300,850,20,true,'#2f4a52');}
+  c.setLineDash([4,6]);c.strokeStyle='rgba(155,34,38,.7)';c.lineWidth=1.5;
+  PATHS.forEach((P,i)=>{if(i===2)c.strokeStyle='rgba(42,111,138,.8)';c.beginPath();c.moveTo(P.pts[0][0],P.pts[0][1]);c.lineTo(P.pts[1][0],P.pts[1][1]);c.stroke();});c.setLineDash([]);
+  drawLand(c,r,r2,X0,X1,Y0,Y1);
+  if(LV.across)label(c,LV.across,130,18,15,true);
+  label(c,LV.sea?tr('Oceano Atlântico','Atlantic Ocean'):tr('Rio Minho','River Minho'),300,120,22,true,'#2f4a52');
+  if(LV.sea){for(let i=0;i<46;i++){const x=r()*W,y=riverBot(x)-4+r()*30;if(dPath(x,y)<16)continue;c.fillStyle='#9a958a';c.strokeStyle='#4e4a40';c.lineWidth=0.8;
+    c.beginPath();c.ellipse(x,y,4+r()*8,3+r()*4,r()*3,0,Math.PI*2);c.fill();c.stroke();}}
+  drawLandLabels(c);
+  drawCompass(c,540,845);
+  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
+}
+// duelo: rio partilhado ao meio e a terra de cada lado, cada uma com o seu nível
+function drawBGDuel(c,r,r2,X0,X1,Y0,Y1){
+  const xa=Math.floor(X0/10)*10,xb=Math.ceil(X1/10)*10;
+  c.beginPath();c.moveTo(xa,RTd(xa));for(let x=xa;x<=xb;x+=10)c.lineTo(x,RTd(x));for(let x=xb;x>=xa;x-=10)c.lineTo(x,RBd(x));c.closePath();
+  c.fillStyle='#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();
+  c.strokeStyle='rgba(47,74,82,.35)';c.lineWidth=1;
+  for(let yb=RTd(0)+22;yb<RBd(0)-12;yb+=15){c.beginPath();for(let x=xa;x<xb;x+=6){const y=yb+Math.sin(x/18+yb)*2;x===xa?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
+  for(let i=0;i<2;i++)withSide(i,()=>{drawSandbars(c,r);
+    c.setLineDash([4,6]);c.lineWidth=1.5;PATHS.forEach((P,k)=>{c.strokeStyle=k===2?'rgba(42,111,138,.8)':'rgba(155,34,38,.7)';c.beginPath();c.moveTo(P.pts[0][0],P.pts[0][1]);c.lineTo(P.pts[1][0],P.pts[1][1]);c.stroke();});c.setLineDash([]);});
+  for(let i=0;i<2;i++)withSide(i,()=>{drawLand(c,r,r2,X0,X1,Y0,Y1);drawLandLabels(c);});
+  const ym=(RTd(300)+RBd(300))/2;label(c,tr('Rio Minho','River Minho'),300,ym,22,true,'#2f4a52');
+  label(c,tr('Reino de Castela','Kingdom of Castile'),200,RTd(200)-30,12,true,'#9b2226');label(c,tr('Reino de Portugal','Kingdom of Portugal'),205,RBd(205)+32,12,true,'#2f4a73');
+  drawCompass(c,548,H-58);
+  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
+}
+function drawSandbars(c,r){
   // ínsuas: ilhotas de areia com erva e juncos, de contorno irregular
   (LV.sandbars||[]).forEach(([x,y,rx,ry])=>{const n=22,pts=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2,k=0.78+r()*0.3+0.12*Math.sin(a*3+x);pts.push([x+Math.cos(a)*rx*k,y+Math.sin(a)*ry*k*(Math.sin(a)>0?0.9:1.15)]);}
     const blob=(sc,dy)=>{c.beginPath();pts.forEach(([px,py],i)=>{const qx=x+(px-x)*sc,qy=y+(py-y)*sc+dy,[nx,ny]=pts[(i+1)%n],mx=(qx+x+(nx-x)*sc)/2,my=(qy+y+(ny-y)*sc+dy)/2;i?c.quadraticCurveTo(qx,qy,mx,my):c.moveTo(mx,my);});c.closePath();};
@@ -1715,18 +1829,23 @@ function drawBG(){
       for(let j=-1;j<=1;j++){c.beginPath();c.moveTo(bx+j*1.2,by);c.quadraticCurveTo(bx+j*1.6,by-3,bx+j*2.6+0.8,by-5-r()*2);c.stroke();}
       if(r()<0.4){c.fillStyle='#6e4b2a';c.beginPath();c.ellipse(bx+1.5,by-5.5,0.9,1.8,0.3,0,Math.PI*2);c.fill();}}
     c.fillStyle='rgba(120,100,70,.35)';for(let k=0;k<25;k++){const a=r()*Math.PI*2;c.fillRect(x+Math.cos(a)*rx*(0.75+r()*0.2),y+Math.sin(a)*ry*(0.75+r()*0.2),1.2,1.2);}});
-  c.strokeStyle='rgba(47,74,82,.35)';c.lineWidth=1;
-  for(let k=0;k<9;k++){const yb=58+k*15;c.beginPath();for(let x=xa;x<xb;x+=6){const y=yb+Math.sin(x/18+k)*2;x===xa?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
-  if(LV.southRiver){c.beginPath();c.moveTo(xa,800);for(let x=xa;x<=xb;x+=10)c.lineTo(x,800+Math.sin(x/60)*8);c.lineTo(xb,Y1);c.lineTo(xa,Y1);c.closePath();
-    c.fillStyle='#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();label(c,LV.southRiver,300,850,20,true,'#2f4a52');}
-  c.setLineDash([4,6]);c.strokeStyle='rgba(155,34,38,.7)';c.lineWidth=1.5;
-  PATHS.forEach((P,i)=>{if(i===2)c.strokeStyle='rgba(42,111,138,.8)';c.beginPath();c.moveTo(P.pts[0][0],P.pts[0][1]);c.lineTo(P.pts[1][0],P.pts[1][1]);c.stroke();});c.setLineDash([]);
+}
+function drawCompass(c,x,y){c.save();c.translate(x,y);c.rotate(LV.compass||0);c.strokeStyle='#2e2419';c.lineWidth=1;
+  c.beginPath();c.arc(0,0,20,0,Math.PI*2);c.fillStyle='#e9dcbc';c.fill();c.stroke();c.fillStyle='#2e2419';
+  c.beginPath();c.moveTo(0,-30);c.lineTo(5,0);c.lineTo(0,30);c.lineTo(-5,0);c.closePath();c.fill();
+  c.beginPath();c.moveTo(-26,0);c.lineTo(0,4);c.lineTo(26,0);c.lineTo(0,-4);c.closePath();c.stroke();
+  label(c,'N',0,-40,13,false);c.restore();}
+function drawLandLabels(c){
+  LV.desemb.forEach(([x,y],i)=>label(c,i===2?tr('Nadadores','Swimmers'):tr('Desembarque','Landing'),x,y,11,true,i===2?'#2a6f8a':'#9b2226'));
+  LV.labels.forEach(([s,x,y,z,it])=>label(c,s,x,y,z,!!it));
+  const so=LV.south;if(so.label)label(c,so.label,LV.southRiver?300:200,so.ly!=null?so.ly:LV.southRiver?790:885,13,true);}
+function drawLand(c,r,r2,X0,X1,Y0,Y1){
   const so=LV.south;
   if(LV.fields)drawFields(c,r,LV.fields);
   for(let i=0;i<(so.all?700:240);i++){const x=40+r()*520,y=so.y0+r()*(so.y1-so.y0);if(houseOK(x,y,false))house(c,r,x,y);}
-  if(MX>1||MY>1){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/400;
+  if(!DUEL&&(MX>1||MY>1)){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/400;
     for(let i=0;i<n;i++){const x=X0+r2()*(X1-X0),y=ya+r2()*(Y1-ya);if(x>-6&&x<W+6&&y<H+6)continue;if(LV.southRiver&&y>782)continue;if(y<riverBot(x)+10)continue;house(c,r2,x,y);}}
-  if(so.road){c.strokeStyle='#b9a47a';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(310,640);c.lineTo(322,780);c.lineTo(335,900);c.stroke();}
+  if(so.road){const R=LV.road||[[310,640],[322,780],[335,900]];c.strokeStyle='#b9a47a';c.lineWidth=8;c.lineCap='round';c.beginPath();R.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
   c.lineJoin='miter';c.miterLimit=2.2;polyPath(c,LV.wall);
   if(LV.style==='bastion'){
     c.strokeStyle='#6d7443';c.lineWidth=66;c.stroke();c.strokeStyle='#bcc28e';c.lineWidth=62;c.stroke();
@@ -1740,7 +1859,7 @@ function drawBG(){
     else{c.fillStyle='#c7b894';c.strokeStyle='#3e3222';c.lineWidth=1.6;c.fillRect(s.x-16,s.y-16,32,32);c.strokeRect(s.x-16,s.y-16,32,32);}
   });
   polyPath(c,LV.wall);c.fillStyle='#e2d3ae';c.fill();
-  for(let i=0;i<800;i++){const x=40+r()*520,y=240+r()*440;if(houseOK(x,y,true))house(c,r,x,y);}
+  {const ys=LV.wall.map(p=>p[1]),y0=Math.min(...ys),y1=Math.max(...ys);for(let i=0;i<800;i++){const x=40+r()*520,y=y0+r()*(y1-y0);if(houseOK(x,y,true))house(c,r,x,y);}}
   c.lineJoin='round';c.lineCap='round';
   const land=P=>{c.beginPath();P.pts.slice(1).forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));};
   // contorno escuro só a partir de 16 do desembarque: a ponta junto ao rio fica sem contorno e funde-se com o chão
@@ -1774,19 +1893,6 @@ function drawBG(){
     [-1,1].forEach(k=>{c.beginPath();c.arc(k*14,0,5.5,0,Math.PI*2);c.fill();c.stroke();});c.restore();});
   drawDeco(c,X0,X1,Y0,Y1);
   LV.marks.forEach(m=>{if(!m.heart)drawMark(c,m);if(m.label)label(c,m.label,m.x,m.y+m.h/2+9,m.label.length>14?10:11,true);});
-  if(LV.across)label(c,LV.across,130,18,15,true);
-  label(c,LV.sea?tr('Oceano Atlântico','Atlantic Ocean'):tr('Rio Minho','River Minho'),300,120,22,true,'#2f4a52');
-  if(LV.sea){for(let i=0;i<46;i++){const x=r()*W,y=riverBot(x)-4+r()*30;if(dPath(x,y)<16)continue;c.fillStyle='#9a958a';c.strokeStyle='#4e4a40';c.lineWidth=0.8;
-    c.beginPath();c.ellipse(x,y,4+r()*8,3+r()*4,r()*3,0,Math.PI*2);c.fill();c.stroke();}}
-  LV.desemb.forEach(([x,y],i)=>label(c,i===2?tr('Nadadores','Swimmers'):tr('Desembarque','Landing'),x,y,11,true,i===2?'#2a6f8a':'#9b2226'));
-  LV.labels.forEach(([s,x,y,z,it])=>label(c,s,x,y,z,!!it));
-  if(so.label)label(c,so.label,LV.southRiver?300:200,LV.southRiver?790:885,13,true);
-  c.save();c.translate(540,845);c.rotate(LV.compass||0);c.strokeStyle='#2e2419';c.lineWidth=1;
-  c.beginPath();c.arc(0,0,20,0,Math.PI*2);c.fillStyle='#e9dcbc';c.fill();c.stroke();c.fillStyle='#2e2419';
-  c.beginPath();c.moveTo(0,-30);c.lineTo(5,0);c.lineTo(0,30);c.lineTo(-5,0);c.closePath();c.fill();
-  c.beginPath();c.moveTo(-26,0);c.lineTo(0,4);c.lineTo(26,0);c.lineTo(0,-4);c.closePath();c.stroke();
-  label(c,'N',0,-40,13,false);c.restore();
-  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
 }
 
 /* ---- 07-desenho.js ---- */
@@ -2682,7 +2788,7 @@ function drawWavePreview(){
 const WGL=[...Array(46)].map((_,i)=>({u:(i*0.618)%1,v:((i*0.371)%1),s:0.6+((i*0.53)%1)*0.8,ph:i*1.7}));
 function drawWater(){
   if(!LV)return;const t=RM()?0:S.t,X0=-MX-10,X1=W+MX+10,span=X1-X0,c=ctx;c.save();c.lineCap='round';
-  for(const g of WGL){const x=X0+(((g.u*span-t*9*g.s)%span)+span)%span,top=riverTop(x)+6,bot=riverBot(x)-6;if(bot<=top)continue;
+  for(const g of WGL){const x=X0+(((g.u*span-t*9*g.s)%span)+span)%span,top=wTop(x)+6,bot=wBot(x)-6;if(bot<=top)continue;
     const y=top+(bot-top)*g.v+Math.sin(t*0.8+g.ph)*1.5,al=0.18+0.16*Math.sin(t*1.6+g.ph),L=5+g.s*5;
     if(LV.sandbars&&LV.sandbars.some(([sx,sy,rx,ry])=>((x-sx)/(rx+8))**2+((y-sy)/(ry+6))**2<1))continue;
     c.strokeStyle=`rgba(255,255,255,${al})`;c.lineWidth=1.1;c.beginPath();c.moveTo(x-L,y);c.quadraticCurveTo(x,y-1.6,x+L,y);c.stroke();}
@@ -2699,13 +2805,24 @@ function draw(){
   worldT(ctx);
   if(!S)return;
   const P=pal();
+  if(DUEL){drawWater();for(let i=0;i<2;i++)withSide(i,()=>{DRAW_SIDE=i;drawSideWorld(P,false);});DRAW_SIDE=0;}
+  else drawSideWorld(P,true);
+  drawWeather();
+  if(DUEL){for(let i=0;i<2;i++)withSide(i,drawTexts);}else drawTexts();
+  if(DUEL){// a camada de ecrã usa a escala de uma praça só (o mundo do duelo é mais alto e os letreiros ficavam minúsculos)
+    const o=[scale,MX,MY,H],bw=cv.width/dpr,bh=cv.height/dpr;scale=Math.min(bw/W,bh/900);MX=Math.max(0,(bw/scale-W)/2);MY=Math.max(0,(bh/scale-900)/2);H=900;
+    try{drawScreen(P);}finally{[scale,MX,MY,H]=o;}}
+  else drawScreen(P);
+  drawMini();
+}
+function drawSideWorld(P,water){
   {const cheap=Math.min(...Object.values(TYPES).map(T=>T.cost));SLOTS.forEach((s,i)=>{if(!s.tower)drawSlot(s,i,(S.local?goldOf(sideOf(s)):myGold())>=cheap);});}
   if(typeof S.sel==='number'&&SLOTS[S.sel].tower){const t=SLOTS[S.sel].tower,R=tstat(t).range;
     ctx.fillStyle=`rgba(${P.rng},.10)`;ctx.strokeStyle=`rgba(${P.rng},.75)`;ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(t.x,t.y,R,0,Math.PI*2);ctx.fill();ctx.setLineDash([6,6]);ctx.lineDashOffset=-S.t*10;ctx.stroke();ctx.setLineDash([]);ctx.lineDashOffset=0;}
   for(const f of S.fx){if(f.k!=='oil')continue;const p=f.t/f.T;
     ctx.fillStyle=`rgba(210,120,30,${0.28*(1-p)})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(0.6+0.4*p),0,Math.PI*2);ctx.fill();}
-  drawWater();
+  if(water)drawWater();
   drawHeart();
   drawGates();
   if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,H+MY);ctx.stroke();ctx.restore();
@@ -2752,7 +2869,11 @@ function draw(){
     else if(q.k==='chip'){ctx.save();ctx.globalAlpha=Math.min(1,(1-p)*2);ctx.translate(q.x,q.y);ctx.rotate(q.rot);ctx.fillStyle=q.col||'#6d624e';ctx.strokeStyle='#2e2419';ctx.lineWidth=0.6;
       ctx.fillRect(-q.s,-q.s*0.7,q.s*2,q.s*1.4);ctx.strokeRect(-q.s,-q.s*0.7,q.s*2,q.s*1.4);ctx.restore();}
   }
-  if(S.weather==='nevoeiro'){const g=ctx.createLinearGradient(0,20,0,240);g.addColorStop(0,'rgba(236,236,230,.92)');g.addColorStop(0.8,'rgba(236,236,230,.85)');g.addColorStop(1,'rgba(236,236,230,0)');
+}
+function drawWeather(){
+  const each=f=>DUEL?[0,1].forEach(i=>withSide(i,f)):f();
+  if(S.weather==='nevoeiro'&&DUEL){ctx.fillStyle='rgba(236,236,230,.86)';ctx.fillRect(-MX,RTd(0)-30,W+2*MX,RBd(0)-RTd(0)+60);}
+  else if(S.weather==='nevoeiro'){const g=ctx.createLinearGradient(0,20,0,240);g.addColorStop(0,'rgba(236,236,230,.92)');g.addColorStop(0.8,'rgba(236,236,230,.85)');g.addColorStop(1,'rgba(236,236,230,0)');
     ctx.fillStyle=g;ctx.fillRect(-MX,-MY,W+2*MX,245+MY);}
   if(S.weather==='chuva'){ctx.strokeStyle='rgba(60,80,100,.35)';ctx.lineWidth=1;ctx.beginPath();
     for(const d of drops){const y=(d[1]+S.t*420*d[2])%H,x=(d[0]-S.t*60)%W;const xx=x<0?x+W:x;ctx.moveTo(xx,y);ctx.lineTo(xx-4,y+12);}ctx.stroke();}
@@ -2761,14 +2882,18 @@ function draw(){
     octx.globalCompositeOperation='source-over';octx.fillStyle='rgba(12,16,40,.55)';octx.fillRect(-MX,-MY,W+2*MX,H+2*MY);
     octx.globalCompositeOperation='destination-out';
     const hole=(x,y,r)=>{const g=octx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');octx.fillStyle=g;octx.beginPath();octx.arc(x,y,r,0,Math.PI*2);octx.fill();};
-    S.towers.forEach(t=>hole(t.x,t.y,70));if(!S.hero.dead)hole(S.hero.x,S.hero.y,55);LV.marks.forEach(m=>hole(m.x,m.y,50));
-    S.fx.forEach(f=>{if(f.k==='oil'||f.k==='boom')hole(f.x,f.y,f.r+20);});
-    S.enemies.forEach(e=>{if(e.f.boss)hole(e.x,e.y,45);});
+    each(()=>{S.towers.forEach(t=>hole(t.x,t.y,70));if(!S.hero.dead)hole(S.hero.x,S.hero.y,55);LV.marks.forEach(m=>hole(m.x,m.y,50));
+      S.fx.forEach(f=>{if(f.k==='oil'||f.k==='boom')hole(f.x,f.y,f.r+20);});
+      S.enemies.forEach(e=>{if(e.f.boss)hole(e.x,e.y,45);});});
     octx.globalCompositeOperation='source-over';
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(ovc,0,0);worldT(ctx);
   }
+}
+// textos flutuantes; no duelo, os avisos ao centro do lado de Portugal descem para a praça de Portugal
+function drawTexts(){
   const fs=FS();
-  for(const x of S.texts){const p=x.t/x.T;ctx.globalAlpha=Math.max(0,1-p*p);
+  const foe=offSide();
+  for(const x0 of S.texts){if(foe&&x0.x===W/2)continue;const off=DUEL&&x0.x===W/2?(S.txOff||0):0,x=off?Object.assign({},x0,{y:x0.y+off}):x0,p=x.t/x.T;ctx.globalAlpha=Math.max(0,1-p*p);
     if(x.sp){ctx.font=`italic ${Math.round(12*fs)}px 'IM Fell English',Georgia,serif`;const w=ctx.measureText(x.s.replace(/\s*💰/g,'')).width+12+(x.s.includes('💰')?14*fs:0),hh=19*fs,bx=Math.max(14,Math.min(W-14-w,x.x-w/2)),by=x.y-p*10-10;
       const cn=x.s.includes('💰'),ts=cn?x.s.replace(/\s*💰/g,''):x.s;
     ctx.fillStyle='#fbf3df';ctx.strokeStyle='#2e2419';ctx.lineWidth=1;ctx.beginPath();ctx.rect(bx,by,w,hh);ctx.fill();ctx.stroke();
@@ -2782,6 +2907,8 @@ function draw(){
     ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeStyle='rgba(233,220,188,.95)';ctx.strokeText(ts,cx,y);
     ctx.fillStyle=x.big?'#9b2226':'#7a5a10';ctx.fillText(ts,cx,y);
     if(cn)drawIc(ctx,'coin',cx+tw+3+iw/2,y,iw);ctx.globalAlpha=1;}
+}
+function drawScreen(P){
   // camada de ecrã
   ctx.setTransform(scale*dpr,0,0,scale*dpr,MX*scale*dpr,MY*scale*dpr);
   const boss=S.enemies.find(e=>e.f.boss);
@@ -2801,15 +2928,18 @@ function draw(){
     ctx.fillStyle='#c9971c';ctx.fillRect(1,31,116*Math.max(0,S.comboT/COMBO_T),2);ctx.restore();}
   if(S.aim==='rain')label(ctx,tr('Toca no mapa para lançar as flechas','Tap the map to drop the arrows'),W/2,TOP+(boss?54:28),15,true,'#9b2226');
   if(S.coop)label(ctx,S.remote?tr('Convidado · sala ','Guest · room ')+(NET.code||''):tr('Anfitrião · sala ','Host · room ')+(NET.code||'')+(NET.partner?'':tr(' (sem parceiro)',' (no partner)')),W/2,H-22,11,true,'#2f4a73');
+}
+// minimapa no canto quando há zoom (no duelo sobe para dar lugar ao botão das tropas)
+function drawMini(){
   if(VIEW.z>1.01){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
-    const cw=cv.width/dpr,ch=cv.height/dpr,ew=W+2*MX,eh=H+2*MY,vw=Math.min(cw<500?78:132,cw*0.24),vh=Math.min(vw*eh/ew,ch*(cw<500?0.2:0.3)),vw2=vh*ew/eh,x0=cw-vw2-12,y0=ch-vh-12;
+    const cw=cv.width/dpr,ch=cv.height/dpr,ew=W+2*MX,eh=H+2*MY,vw=Math.min(cw<500?78:132,cw*0.24),vh=Math.min(vw*eh/ew,ch*(cw<500?0.2:0.3)),vw2=vh*ew/eh,x0=cw-vw2-12,y0=ch-vh-12-(DUEL?84:0);
     ctx.fillStyle='rgba(46,36,25,.35)';ctx.fillRect(x0+3,y0+4,vw2,vh);
     ctx.drawImage(bgc,0,0,bgc.width,bgc.height,x0,y0,vw2,vh);
     ctx.fillStyle='rgba(233,220,188,.25)';ctx.fillRect(x0,y0,vw2,vh);
     ctx.strokeStyle='#3e3222';ctx.lineWidth=2;ctx.strokeRect(x0,y0,vw2,vh);
     const rx=x0+(VIEW.ox+MX)/ew*vw2,ry=y0+(VIEW.oy+MY)/eh*vh,rw=vw2/VIEW.z,rh=vh/VIEW.z;
     ctx.fillStyle='rgba(155,34,38,.12)';ctx.fillRect(rx,ry,rw,rh);ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.strokeRect(rx,ry,rw,rh);
-    S.enemies.forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':'#b8302a';ctx.fillRect(x0+(en.x+MX)/ew*vw2-1.5,y0+(en.y+MY)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
+    (DUEL?DUEL.sides.flatMap(d=>d.S.enemies):S.enemies).forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':en.pt?'#2f4a73':'#b8302a';ctx.fillRect(x0+(en.x+MX)/ew*vw2-1.5,y0+(en.y+MY)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
     ctx.restore();}
 
 }
@@ -2822,7 +2952,7 @@ let bzT=null;
 function bgZoomCheck(){const want=VIEW.z>1.5?2:1;const nb=(cv.width*cv.height*want*want>24e6)?1:want;
   if(nb!==BZ){clearTimeout(bzT);bzT=setTimeout(()=>{BZ=nb;drawBG();},160);}}
 function setZoom(nz,wx,wy,sx,sy){
-  nz=Math.max(1,Math.min(3,nz));
+  nz=Math.max(1,Math.min(DUEL?5:3,nz));
   if(wx==null){wx=VIEW.ox+VW()/2;wy=VIEW.oy+VH()/2;sx=(W+2*MX)*scale/2;sy=(H+2*MY)*scale/2;}
   VIEW.z=nz;VIEW.ox=wx-sx/(scale*nz);VIEW.oy=wy-sy/(scale*nz);clampView();bgZoomCheck();
 }
@@ -2850,7 +2980,7 @@ function ptrEnd(e){
 cv.addEventListener('pointerup',ptrEnd);cv.addEventListener('pointercancel',ptrEnd);
 cv.addEventListener('wheel',e=>{e.preventDefault();const w=toWorld(e.clientX,e.clientY);setZoom(VIEW.z*(e.deltaY<0?1.15:1/1.15),w.x,w.y,w.sx,w.sy);},{passive:false});
 $('zoomb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const z=b.dataset.z;
-  if(z==='in')setZoom(VIEW.z*1.35);else if(z==='out')setZoom(VIEW.z/1.35);else setZoom(1);});
+  if(z==='in')setZoom(VIEW.z*1.35);else if(z==='out')setZoom(VIEW.z/1.35);else if(DUEL&&VIEW.z<1.05)duelView();else setZoom(1);});
 
 /* ================= Ações (locais ou do parceiro) ================= */
 function act(a){
@@ -2872,7 +3002,7 @@ function doAct(a,who){
     case'sell':{const t=s&&s.tower;if(!t||(t.owner||1)!==who)return;const g=Math.floor(t.spent*0.7);if(who===2)S.gold2+=g;else S.gold+=g;
       S.towers=S.towers.filter(x=>x!==t);s.tower=null;break;}
     case'abil':useAbility(a.k,a.x,a.y,who);break;
-    case'hero':{const h=S.hero;if(h.dead)return;if(!inRiver(a.x,a.y)&&a.x>12&&a.x<W-12&&a.y<H-12&&!(LV.southRiver&&a.y>790)){h.tx=a.x;h.ty=a.y;}break;}
+    case'hero':{const h=S.hero;if(h.dead)return;if(!inRiver(a.x,a.y)&&(!DUEL||sideAt(a.x,a.y)===LV.side)&&a.x>12&&a.x<W-12&&a.y<H-12&&!(LV.southRiver&&a.y>790)){h.tx=a.x;h.ty=a.y;}break;}
     case'heroSp':heroSpecial();break;
     case'heroUp':heroUpgrade(a.b===1?1:0);if(S.sel==='hero')renderPanel();break;
     case'wave':startWave(true,who);break;
@@ -2891,7 +3021,7 @@ function onTap(x,y){
   let bi=null,bd=26;SLOTS.forEach((s,i)=>{const d=Math.hypot(s.x-x,s.y-y);if(d<bd){bd=d;bi=i;}});
   if(bi!=null){if(S.sel!==bi){S.selT=performance.now();S.radArm=null;}S.sel=bi;if(S.local)S.me=sideOf(SLOTS[bi]);renderPanel();return;}
   if(S.sel==='hero'&&!h.dead){
-    if(inRiver(x,y)||(LV.southRiver&&y>790))S.texts.push({x,y:y+20,s:tr('Não sei nadar!','I can’t swim!'),t:0,T:1.2,sp:true});
+    if(inRiver(x,y)||(DUEL&&sideAt(x,y)!==LV.side)||(LV.southRiver&&y>790))S.texts.push({x,y:y+20,s:tr('Não sei nadar!','I can’t swim!'),t:0,T:1.2,sp:true});
     else act({a:'hero',x:Math.round(x),y:Math.round(y)});
     return;}
   S.sel=null;renderPanel();
@@ -2916,7 +3046,7 @@ function hud(){
     if(S.wave>hudPrev.w&&S.wave>0)waveBanner(S.wave);}
   hudPrev=cur;
   {const pz=!!(S.paused&&!S.over&&$('modal').hidden);if(document.body.classList.contains('paused')!==pz){document.body.classList.toggle('paused',pz);$('pausedTag').hidden=!pz;}}
-  setTxt('lives',String(S.lives));setTxt('wave',S.wave+(S.infinite?' ∞':'/'+MAXW));if(last.wx!==S.weather){last.wx=S.weather;$('wx').innerHTML=ic(WEATHER[S.weather].ic);$('wx').parentNode.title=WEATHER[S.weather].name;}
+  setTxt('lives',String(S.lives));setTxt('wave',S.wave+(DUEL?'':S.infinite?' ∞':'/'+MAXW));if(last.wx!==S.weather){last.wx=S.weather;$('wx').innerHTML=ic(WEATHER[S.weather].ic);$('wx').parentNode.title=WEATHER[S.weather].name;}
   setW('mLives',S.lives/S.startLives);setW('mWave',S.infinite?1:S.wave/MAXW);
   const low=S.lives/S.startLives<=0.25;if($('stLives').classList.contains('low')!==low)$('stLives').classList.toggle('low',low);
   const g2=$('gold2w');if(g2.hidden===!!S.coop)g2.hidden=!S.coop;if(S.coop)setTxt('gold2',String(S.local?S.gold2:S.me===2?S.gold:S.gold2));
@@ -2935,6 +3065,7 @@ function hud(){
     const pr=(k==='rain'&&S.aim==='rain')||(k==='hero'&&S.sel==='hero');if(el.getAttribute('aria-pressed')!==String(pr))el.setAttribute('aria-pressed',String(pr));});
   // pontinho dourado no botão fechado quando há algum poder pronto
   {const ready=S.started&&!S.over&&S.wave>0&&!$('abil').classList.contains('open')&&['rain','gate','bell','hero'].some(k=>S.cd[k]<=0),d=$('abilT').querySelector('.dot');if(d.hidden===ready)d.hidden=!ready;}
+  if(DUEL)duelHud();
   const now=performance.now(),mg=myGold();
   // não reconstruir o painel (o botão debaixo do dedo seria substituído a meio do toque): só atualizar o que mudou
   if(mg!==lastGold||(S.sel==='hero'&&now-lastPanelTick>250)){lastGold=mg;lastPanelTick=now;if(S.sel!=null)refreshPanel();}
@@ -3027,8 +3158,8 @@ document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 document.addEventListener('touchmove',e=>{if(e.touches.length>1&&e.target!==cv)e.preventDefault();},{passive:false});
 $('bWave').addEventListener('click',()=>{audio();if(S)act({a:'wave'});});
-$('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed===1?2:S.speed===2?3:1;$('bSpeed').textContent='×'+S.speed;});
-$('bPause').addEventListener('click',()=>{if(!S)return;if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
+$('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote||(DUEL&&DUEL.net))return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed===1?2:S.speed===2?3:1;$('bSpeed').textContent='×'+S.speed;});
+$('bPause').addEventListener('click',()=>{if(!S)return;if(DUEL&&DUEL.net)return toast(tr('No duelo online não há pausa.','There is no pause in an online duel.'));if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
 $('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').innerHTML=ic(SND_IC[sndMode]);audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
 $('bSound').innerHTML=ic(SND_IC[sndMode]);
 $('bMenu').addEventListener('click',()=>{if(!S)return showMenu();pauseMenu();});
@@ -3075,7 +3206,7 @@ function goldChip(n){
 // moedas a voar dos abates até ao contador de ouro
 let coinLast=0,coinLive=0;
 function coinFly(wx,wy){
-  if(RM()||!S||S.remote)return;const now=performance.now();if(now-coinLast<110||coinLive>=10)return;coinLast=now;
+  if(RM()||!S||S.remote||offSide())return;const now=performance.now();if(now-coinLast<110||coinLive>=10)return;coinLast=now;
   const r=cv.getBoundingClientRect(),tg=$('stGold');if(!tg)return;const t=tg.getBoundingClientRect();
   const sx=r.left+(wx-VIEW.ox)*scale*VIEW.z,sy=r.top+(wy-VIEW.oy)*scale*VIEW.z;
   if(sx<r.left||sx>r.right||sy<r.top||sy>r.bottom)return;
@@ -3281,7 +3412,7 @@ function menuBgCheck(){if(MBG.on&&S&&S.started&&!S.over&&$('modal').hidden&&!$('
 /* ---- 09-guardar-coop.js ---- */
 /* ================= Guardar ================= */
 function saveGame(){
-  if(!S||S.coop||!S.started||S.over)return;
+  if(!S||S.coop||DUEL||!S.started||S.over)return;
   LS.set('save',{lvl:S.lvl,di:S.di,hero:S.hero.id,gold:S.gold,lives:S.lives,sl:S.startLives,wave:S.wave,cOpen:S.cOpen,inf:S.infinite,camp:S.campaign,
     tw:S.towers.map(t=>[t.si,t.k,t.lv,t.br,t.pri,t.spent,Math.round(t.dmgDone||0)]),st:S.stats,built:[...S.built],hk:S.hero.kills,hl:S.hero.lv,hx:Math.round(S.hero.xp),hu:S.hero.ups,cards:S.cards,offer:S.offer,at:Date.now()});
 }
@@ -3410,7 +3541,7 @@ function startLocalCoop(lvl,di,hero){
   S.coop=true;S.local=true;S.remote=false;S.me=1;S.gold2=S.gold;S.started=true;S.paused=false;
   toast(tr(`<b>Dois jogadores, um ecrã.</b> Jogador 1 ${ic('p1')} à esquerda, Jogador 2 ${ic('p2')} à direita. Cada um tem o seu ouro.`,`<b>Two players, one screen.</b> Player 1 ${ic('p1')} on the left, Player 2 ${ic('p2')} on the right. Each has their own gold.`));sfx('horn');
 }
-function restartGame(){const c=S.campaign;if(S.local)return startLocalCoop(S.lvl,S.di,S.hero.id);newGame(S.lvl,S.di,S.hero.id);S.campaign=c;S.started=true;clearSave();}
+function restartGame(){if(DUEL&&!DUEL.net)return startDuel(DUEL.opts);const c=S.campaign;if(S.local)return startLocalCoop(S.lvl,S.di,S.hero.id);newGame(S.lvl,S.di,S.hero.id);S.campaign=c;S.started=true;clearSave();}
 function netLeave(){try{if(NET.helloT)clearInterval(NET.helloT);if(NET.R)NET.R.leave();}catch(e){}NET={};}
 async function hostCoop(){
   netLeave();
@@ -3508,14 +3639,14 @@ function applySnap(d){
   if(d.co&&!S.cOpen){S.cOpen=true;drawBG();}
   S.cd.rain=d.cd[0];S.cd.gate=d.cd[1];S.cd.bell=d.cd[2];S.cd.hero=d.cd[3];
   const h=S.hero,H_=d.h;h.x=H_[0];h.y=H_[1];h.max=100;h.hp=H_[2];h.dead=!!H_[3];h.lv=H_[4];h.kills=H_[5];h.respawn=H_[6];h.ang=H_[7]/10;h.swing=H_[8]?0.1:0;h.xpP=H_[9]||0;h.ups=String(H_[10]||'').split('').map(Number).filter(b=>b===0||b===1);
-  const nm=new Map();
-  S.enemies=(d.e||[]).map(v=>{const[id,ti,x,y,a,hp,fl]=v;const t=ET[ti];if(!FOES[t])return null;let o=NET.emap.get(id);
-    if(!o){const f=FOES[t];o={id,t,f,r:f.r,col:f.col,max:1,x,y,px:x,py:y,off:0};}
+  const nm=new Map(),NH=DUEL?S:NET;if(!NH.emap)NH.emap=new Map();
+  S.enemies=(d.e||[]).map(v=>{const[id,ti,x,y,a,hp,fl]=v;const t=ET[ti];if(!FOES[t])return null;let o=NH.emap.get(id);
+    if(!o){const f=FOES[t];o={id,t,f,r:f.r,col:f.col,max:1,x,y,px:x,py:y,off:0};if(DUEL&&LV.side===1){o.pt=1;if(PT_COL[t])o.col=PT_COL[t];}}
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/10;o.hp=hp/100;o.max=1;o.slowT=fl&1?1:0;o.stunT=fl&2?1:0;o.eat=!!(fl&4);o.burnT=fl&8?1:0;o.ride=fl&16?1:0;nm.set(id,o);return o;}).filter(Boolean);
   const ob=new Map(S.boats.map(b=>[b.id,b]));
   S.boats=(d.bt||[]).filter(v=>Array.isArray(v)&&BOATS[BK[v[1]]]).map(([id,k,x,y,a,al,mv])=>{const o=ob.get(id)||{id,k:BK[k],x,y,px:x,py:y};
     o.px=o.x;o.py=o.y;o.tx=x;o.ty=y;o.a=a/100;o.al=al/10;o.mv=!!mv;return o;});
-  NET.emap=nm;NET.snapT=performance.now();
+  NH.emap=nm;NH.snapT=performance.now();
   S.proj=(d.p||[]).map(v=>v[0]===0?{k:'stoneRaw',x:v[1],y:v[2],burn:!!v[3]}:v[0]===4?{k:'eshell',x:v[1],y:v[2]}:{k:v[0]===1?'arrow':v[0]===2?'bolt':'bread',x:v[1],y:v[2],ang:v[3]/10});
   if(d.ta&&d.ta.length===S.towers.length)d.ta.forEach((v,i)=>{S.towers[i].ang=v[0]/10;S.towers[i].disT=v[1]?1:0;});
   (d.x||[]).forEach(v=>S.texts.push({s:String(v[0]),x:v[1],y:v[2],T:v[3],big:!!v[4],sp:!!v[5],ic:ICONS[v[6]]?v[6]:undefined,t:0}));
@@ -3526,7 +3657,7 @@ function applySnap(d){
 }
 function guestTick(dt){
   S.t+=dt;
-  const k=Math.min(1,(performance.now()-NET.snapT)/130);
+  const k=Math.min(1,(performance.now()-(DUEL?S:NET).snapT)/150);
   for(const e of S.enemies){e.x=e.px+(e.tx-e.px)*k;e.y=e.py+(e.ty-e.py)*k;}
   for(const b of S.boats){b.x=b.px+(b.tx-b.px)*k;b.y=b.py+(b.ty-b.py)*k;}
   ageVisuals(dt);
@@ -3535,6 +3666,188 @@ function guestEnd(d){
   S.over=true;S.stats.kills=d.kills|0;S.stats.gold=d.gold|0;S.stats.time=d.time||0;S.wave=d.wave|0;S.lives=d.lives|0;
   if(d.win){sfx('win');unlock('amigos');}else sfx('lose');
   showEnd(!!d.win);
+}
+
+/* ---- 09b-duelo.js ---- */
+/* Duelo 1 contra 1: cada um defende a sua praça, uma de cada lado do Minho, e paga para mandar tropas para o outro lado.
+   Cada tropa mandada sobe a renda (ouro a cada ECO_T s), como nos Bloons TD Battles. Ganha quem aguentar mais.
+   Contra o bot, este aparelho corre os dois lados; online, cada um corre a sua praça e recebe só o retrato da outra. */
+function startDuel(o){
+  DUEL={sides:[],me:o.me,bot:!!o.bot,net:!!o.net,opts:o,init:true,over:false};H=DH;
+  for(const i of [1-o.me,o.me]){
+    const L=duelLevel(i===o.me?o.mine:o.foe,i);
+    newGame(L,o.di,i===o.me?o.hero:o.foeHero);
+    Object.assign(S,{lvl:L.id,dside:i,txOff:i?0:DOFF,infinite:true,started:true,paused:false,nextT:20,eco:ECO0,ecoT:ECO_T,sendQ:[],sendT:0,scd:{},
+      bot:i!==o.me&&!!o.bot,remote:i!==o.me&&!!o.net});
+    S.stats.sent=0;DUEL.sides[i]={S,LV,PATHS,SLOTS};
+  }
+  DUEL.init=false;$('title').textContent=LV.name+' × '+DUEL.sides[1-o.me].LV.name;
+  duelUI(true);resize();duelView();sfx('horn');
+  const K=o.me?tr('Castela','Castile'):'Portugal',F=DUEL.sides[1-o.me].LV.name;
+  toast(tr(`<b>Duelo!</b> Defendes ${LV.name} por ${K}. Do outro lado do rio está ${F}${o.bot?', comandada pelo bot':''}. Toca em ${ic('helmet')} (canto inferior direito) para mandar tropas.`,
+    `<b>Duel!</b> You defend ${LV.name} for ${K}. Across the river is ${F}${o.bot?', led by the bot':''}. Tap ${ic('helmet')} (bottom right) to send troops.`));
+}
+function startBotDuel(){
+  const o=LEVEL_ORDER.filter(k=>k!==menuSel.lvl);
+  startDuel({mine:menuSel.lvl,foe:pick(o),me:menuSel.dside|0,di:menuSel.di,hero:menuSel.hero,foeHero:pick(Object.keys(HEROES)),bot:true});
+}
+// vista inicial: a própria praça, com um bocado do rio
+function duelView(){
+  VIEW.z=Math.max(1,Math.min((H+2*MY)/960,(W+2*MX)/600));
+  VIEW.ox=W/2-VW()/2;VIEW.oy=(DUEL.me?430:DOFF+470)-VH()/2;clampView();bgZoomCheck();
+}
+function duelTick(dt){
+  const sp=DUEL.net?1:DUEL.sides[DUEL.me].S.speed;
+  for(let i=0;i<2&&!DUEL.over;i++)withSide(i,()=>{
+    if(S.remote)return guestTick(dt);
+    if(S.stop>0){S.stop-=dt;return;}
+    let t=dt*sp;while(t>0&&!DUEL.over){const st=Math.min(0.02,t);update(st);if(DUEL.over)break;duelSide(st);t-=st;if(S.stop>0)break;}
+  });
+}
+// renda, recargas das tropas, tropas recebidas a desembarcar e o bot
+function duelSide(dt){
+  if(S.wave>0){S.ecoT-=dt;if(S.ecoT<=0){S.ecoT+=ECO_T;addGold(1,S.eco);}}
+  for(const k in S.scd)if(S.scd[k]>0)S.scd[k]-=dt;
+  if(S.sendQ.length){S.sendT-=dt;
+    if(S.sendT<=0){const q=S.queue,it=S.sendQ[0];let g;S.queue=S.sendQ;
+      if(FSZ[it.t])g=launchBoat();else{S.queue.shift();spawn(it.t);g=it.gap;}
+      S.sendQ=S.queue;S.queue=q;S.sendT=Math.min(1.2,g);}}
+  if(S.bot)botThink(dt);
+}
+// chegam tropas do outro lado (corre no lado de quem as recebe)
+function queueSend(t,n){
+  for(let i=0;i<n;i++)S.sendQ.push({t,gap:0.55});
+  S.texts.push({x:W/2,y:540,s:tr('Do outro lado mandaram: ','Sent from across the river: ')+(n>1?n+' × ':'')+FOES[t].name,ic:E_IC[t],t:0,T:2.6,big:true});sfx('drum');
+}
+// manda tropas (corre no lado de quem manda)
+function sendTroop(i){
+  const D=SENDS[i];if(!D||!DUEL||DUEL.over||S.wave<D.w||(S.scd[i]||0)>0||!pay(1,D.c))return false;
+  const t=D.t==='boss'?BOSS[LV.id]:D.t;S.eco=Math.min(ECO_MAX,S.eco+D.eco);S.scd[i]=D.cd;S.stats.sent+=D.n;
+  S.texts.push({x:W/2,y:580,s:tr('A caminho: ','On their way: ')+(D.n>1?D.n+' × ':'')+FOES[t].name+(D.eco?' · '+tr('renda','income')+' +'+D.eco:''),ic:E_IC[t],t:0,T:1.8});
+  if(DUEL.net){if(NET.R)NET.R.emit('send',{t,n:D.n}).catch(()=>{});}
+  else withSide(1-S.dside,()=>queueSend(t,D.n));
+  sfx('horn');return true;
+}
+/* ---- bot: constrói onde passa mais estrada, melhora o mais barato, usa os poderes e manda tropas com o que sobra ---- */
+const pickW=o=>{let x=Math.random()*Object.values(o).reduce((a,b)=>a+b,0);for(const k in o){x-=o[k];if(x<=0)return k;}return Object.keys(o)[0];};
+function botCard(){const p=CARDS.filter(c=>!(c.once&&S.cards.includes(c.id))&&(!c.ok||c.ok()));if(p.length)applyCard(pick(p));}
+function botThink(dt){
+  S.bT=(S.bT==null?1.5:S.bT)-dt;if(S.bT>0||S.over)return;S.bT=0.6+Math.random()*0.8-S.di*0.12;
+  const h=S.hero,prog=e=>e.d/PATHS[e.p].len;
+  if(heroPend(h)>0)doAct({a:'heroUp',b:Math.random()<0.5?0:1},1);
+  if(S.wave>=1){
+    const land=S.enemies.filter(e=>!e.dead&&!e.ride&&!inRiver(e.x,e.y));
+    if(S.cd.bell<=0)doAct({a:'abil',k:'bell'},1);
+    if(S.cd.rain<=0&&land.length>=4){const e=land.reduce((a,b)=>prog(a)>prog(b)?a:b);doAct({a:'abil',k:'rain',x:Math.round(e.x),y:Math.round(e.y)},1);}
+    if(S.cd.gate<=0&&(S.gates.some(G=>!G.broken&&G.hp<G.max*0.3)||land.filter(e=>prog(e)>0.8).length>=3))doAct({a:'abil',k:'gate'},1);
+    if(S.cd.hero<=0&&!h.dead&&land.filter(e=>Math.hypot(e.x-h.x,e.y-h.y)<75).length>=3)doAct({a:'heroSp'},1);
+  }
+  if(!S.bScore)S.bScore=SLOTS.map(s=>{let n=0;PATHS.forEach(P=>{for(let d=P.seg[0].L;d<P.len;d+=12){const q=posAt(P,d);if(Math.hypot(q.x-s.x,q.y-s.y)<125)n++;}});return n;});
+  const free=SLOTS.map((s,i)=>i).filter(i=>!SLOTS[i].tower).sort((a,b)=>S.bScore[b]-S.bScore[a]);
+  const want=3+Math.floor(S.wave*0.6),ups=S.towers.filter(t=>t.lv<4).map(t=>({t,c:TYPES[t.k].up[t.lv-1]})).sort((a,b)=>a.c-b.c);
+  const build=()=>{const k=S.towers.length?pickW({arq:3,bes:2.5,tra:2,cal:1.6}):'arq';return{c:TYPES[k].cost,go:()=>doAct({a:'build',i:free[0],k},1)};};
+  let plan=null;
+  if(free.length&&(S.towers.length<want||!ups.length))plan=build();
+  else if(ups.length){const u=ups[0];plan={c:u.c,go:()=>doAct(u.t.lv===2?{a:'br',i:u.t.si,b:Math.random()<0.5?0:1}:{a:'up',i:u.t.si},1)};}
+  // mandar tropas: só com defesa montada e sem gastar o ouro do próximo plano; é mais atrevido nas dificuldades altas
+  if(S.wave>=1&&S.towers.length>=3&&Math.random()<([0.2,0.32,0.45][S.di]||0.3)){const res=plan?plan.c*0.7:0;
+    const ok=SENDS.map((D,i)=>i).filter(i=>SENDS[i].w<=S.wave&&!(S.scd[i]>0)&&S.gold-SENDS[i].c>=res);
+    if(ok.length&&sendTroop(ok[Math.max(0,ok.length-1-Math.floor(Math.random()*3))]))return;}
+  if(plan&&S.gold>=plan.c)plan.go();
+}
+/* ---- fim do duelo ---- */
+function duelLose(loser){
+  if(!DUEL||DUEL.over)return;DUEL.over=true;DUEL.sides.forEach(d=>{d.S.over=true;d.S.paused=false;});
+  const win=loser!==DUEL.me;
+  if(DUEL.net&&!win&&!DUEL.forfeit)[0,600,1500].forEach(ms=>setTimeout(()=>{if(NET.R)NET.R.emit('dend',{}).catch(()=>{});},ms));
+  withSide(DUEL.me,()=>{if(win){sfx('win');setTimeout(confetti,250);setTimeout(()=>say(tr('Ganhámos o duelo!','We won the duel!'),'pt-PT',true),700);}
+    else{sfx('lose');defeatFx(true);}});
+  setSendOpen(false);showDuelEnd(win);
+}
+function showDuelEnd(win){
+  const M=DUEL.sides[DUEL.me],F=DUEL.sides[1-DUEL.me],st=M.S.stats,pt=DUEL.me===0,mm=Math.floor(st.time/60),ss=String(Math.floor(st.time%60)).padStart(2,'0');
+  const fill=s=>s.replace('{m}',M.LV.name).replace('{f}',F.LV.name).replace('{w}',M.S.wave);
+  const title=win?tr('Vitória no duelo!','Duel won!'):tr('Perdeste o duelo','Duel lost');
+  const msg=DUEL.forfeit?tr('O adversário fugiu a meio do duelo. Dizem que foi buscar reforços, mas ninguém acredita.','Your opponent fled mid-duel. They say they went for reinforcements, but nobody believes it.'):
+    win?(pt?tr('{f} caiu. Do outro lado do Minho só se ouve «¡Qué vergüenza!», e as barcas voltam carregadas de chouriço, presunto e um ou outro castelhano arrependido.','{f} has fallen. Across the Minho all you hear is «¡Qué vergüenza!», and the boats come back loaded with chorizo, ham and the odd repentant Castilian.')
+      :tr('{f} rendeu-se. O Capitão Paco já está a medir as muralhas para estender toalhas, e em Portugal fala-se de «um dia mau» e de «árbitros comprados».','{f} has surrendered. Captain Paco is already measuring the walls to hang towels on, and in Portugal they talk of “a bad day” and “bought referees”.'))
+    :(pt?tr('{m} caiu na vaga {w}. Os castelhanos entraram a cantar e levaram tudo o que não estava pregado. Pede a desforra antes que levem também o rio.','{m} fell on wave {w}. The Castilians marched in singing and took everything that wasn’t nailed down. Ask for a rematch before they take the river too.')
+      :tr('{m} caiu na vaga {w}. Os portugueses entraram, comeram o jamón todo e deixaram bacalhau no lugar. Pede a desforra.','{m} fell on wave {w}. The Portuguese marched in, ate all the jamón and left salt cod in its place. Ask for a rematch.'));
+  const stats=`<div class="stats-end"><span>${tr('Vagas aguentadas','Waves held')}</span><span>${M.S.wave}</span><span>${tr('Inimigos despachados','Enemies dispatched')}</span><span>${st.kills}</span>
+    <span>${tr('Tropas mandadas','Troops sent')}</span><span>${st.sent||0}</span><span>${tr('Renda final','Final income')}</span><span>+${M.S.eco}</span><span>${tr('Tempo','Time')}</span><span>${mm}:${ss}</span></div>`;
+  const btns=DUEL.net?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]
+    :[{label:tr('Desforra ▶','Rematch ▶'),main:true,fn:()=>{defeatFx(false);startDuel(DUEL.opts);}},{label:'Menu',keep:true,fn:()=>{defeatFx(false);showMenu();}}];
+  showModal(`<h2>${title}</h2><p>${fill(msg)}</p>${stats}`,btns);
+}
+/* ---- interface: estado do adversário, renda e o botão das tropas no canto inferior direito ---- */
+function duelUI(on){
+  document.body.classList.toggle('duel',on);$('stFoe').hidden=!on;$('stEco').hidden=!on;
+  if(!on)return setSendOpen(false);
+  const my=DUEL.sides[DUEL.me].LV.id;
+  $('send').innerHTML=SENDS.map((D,i)=>{const t=D.t==='boss'?BOSS[my]:D.t;
+    return`<button class="sd" data-sd="${i}" title="${FOES[t].name}"><span class="ai">${ic(E_IC[t])}</span><span class="sn">${D.n>1?D.n+'× ':''}${FOES[t].name}</span><span class="sc">${D.c} ${ic('coin')}${D.eco?' · +'+D.eco:''}</span><em></em><i></i></button>`;}).reverse().join('');
+}
+function setSendOpen(o){$('send').classList.toggle('open',o);$('sendT').setAttribute('aria-expanded',String(o));document.body.classList.toggle('send-open',o);}
+$('sendT').addEventListener('click',()=>{audio();setSendOpen(!$('send').classList.contains('open'));});
+$('send').addEventListener('click',e=>{const b=e.target.closest('.sd');if(!b||!DUEL||DUEL.over)return;audio();const D=SENDS[+b.dataset.sd];
+  if(S.wave<D.w)return toast(tr('Esta tropa só se pode mandar a partir da vaga ','This troop can only be sent from wave ')+D.w+'.');
+  if(sendTroop(+b.dataset.sd))pop(b,'ready');});
+function duelHud(){
+  const F=DUEL.sides[1-DUEL.me].S;setTxt('foeL',String(Math.max(0,F.lives)));setW('mFoe',F.lives/F.startLives);setTxt('eco','+'+S.eco+(S.eco>=ECO_MAX?' '+tr('máx','max'):''));
+  let any=false;
+  $('send').querySelectorAll('.sd').forEach(b=>{const i=+b.dataset.sd,D=SENDS[i],lock=S.wave<D.w,cd=S.scd[i]||0,dis=!lock&&(S.gold<D.c||S.over);
+    if(b.classList.contains('lock')!==lock){b.classList.toggle('lock',lock);b.querySelector('.sc').innerHTML=lock?ic('lock')+' '+tr('vaga ','wave ')+D.w:D.c+' '+ic('coin')+(D.eco?' · +'+D.eco:'');}
+    if(b.disabled!==dis)b.disabled=dis;
+    const pct=Math.round(Math.min(1,cd/D.cd)*100)+'%',ii=b.lastChild;if(ii.style.height!==pct)ii.style.height=pct;
+    const sec=cd>0?String(Math.ceil(cd)):'',em=b.querySelector('em');if(em.textContent!==sec)em.textContent=sec;
+    if(!lock&&!dis&&cd<=0)any=true;});
+  const d=$('sendT').querySelector('.dot'),rd=any&&!$('send').classList.contains('open');if(d.hidden===rd)d.hidden=!rd;
+}
+/* ---- duelo online: reutiliza a sala do cooperativo ---- */
+function duelNet(now){
+  if(!NET.R||!NET.partner||!DUEL||DUEL.over)return;
+  withSide(DUEL.me,()=>{
+    if(now-NET.lastSt>=150){NET.lastSt=now;NET.R.emit('st',snapshot()).catch(()=>{});}
+    if(NET.twDirty||now-NET.lastTw>1500){NET.twDirty=false;NET.lastTw=now;
+      NET.R.emit('tw',S.towers.map(t=>[t.si,t.k,t.lv,t.br,PRIK.indexOf(t.pri),1,t.spent,Math.round(t.dmgDone||0)])).catch(()=>{});}});
+}
+function duelWire(R){
+  const ok=m=>DUEL&&DUEL.net&&!DUEL.over&&m.peer===NET.partner;
+  R.on('st',m=>{if(ok(m))withSide(1-DUEL.me,()=>applySnap(m.data));});
+  R.on('tw',m=>{if(ok(m))withSide(1-DUEL.me,()=>applyTw(m.data));});
+  R.on('send',m=>{const d=m.data||{};if(ok(m)&&FOES[d.t]&&d.n>0&&d.n<=12)withSide(DUEL.me,()=>queueSend(d.t,d.n|0));});
+  R.on('dend',m=>{if(ok(m))duelLose(1-DUEL.me);});
+  R.onPeers(ch=>{if(NET.partner&&ch.left.some(p=>p.peer===NET.partner)){
+    if(DUEL&&DUEL.net&&!DUEL.over){DUEL.forfeit=true;duelLose(1-DUEL.me);}else if(!DUEL)toast(tr('O adversário saiu da sala.','Your opponent left the room.'));}});
+}
+const roomCode=()=>Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*31)]).join('');
+async function hostDuel(){
+  netLeave();const code=roomCode(),mine={lvl:menuSel.lvl,hero:menuSel.hero,side:menuSel.dside|0,di:menuSel.di};
+  showModal(tr('<h2>Sala de duelo</h2><p>A abrir a sala…</p>','<h2>Duel room</h2><p>Opening the room…</p>'),[{label:tr('Cancelar','Cancel'),fn:()=>{netLeave();showMenu();}}]);
+  let R;try{R=await joinRoom(code,'host');}catch(e){return coopUnavailable(netErr(e));}
+  NET={R,role:'host',code,partner:null,waiting:true,twDirty:true,lastSt:0,lastTw:0,duel:true};
+  R.on('hello',m=>{const d=m.data||{};if(m.sameTab||!m.peer||!d.duel)return;
+    if(!NET.partner&&NET.waiting){NET.partner=m.peer;NET.waiting=false;closeModal();
+      startDuel({mine:mine.lvl,foe:LEVELS[d.lvl]?d.lvl:'valenca',me:mine.side,di:mine.di,hero:mine.hero,foeHero:HEROES[d.hero]?d.hero:'padeira',net:true});}
+    if(m.peer===NET.partner)R.emit('dstart',{to:m.peer,lvl:mine.lvl,hero:mine.hero,side:mine.side,di:mine.di}).catch(()=>{});});
+  duelWire(R);
+  showModal(`${tr('<h2>Sala de duelo</h2><p>Dá este código ao teu adversário:</p>','<h2>Duel room</h2><p>Give this code to your opponent:</p>')}<p style="font-size:2.4rem;letter-spacing:.3em;text-align:center;margin:.6rem 0">${code.toUpperCase()}</p>
+    <p class="small">${tr('A tua praça','Your fortress')}: ${LEVELS[mine.lvl].name} · ${mine.side?tr('Castela','Castile'):'Portugal'} · ${DIFFS[mine.di].name}. ${tr('O adversário escolhe a praça dele e fica com o outro reino. O duelo começa quando ele entrar.','Your opponent picks their own fortress and takes the other kingdom. The duel starts when they join.')}</p>`,
+    [{label:tr('Cancelar','Cancel'),fn:()=>{netLeave();showMenu();}}]);
+}
+async function joinDuel(code){
+  code=(code||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(code.length!==4)return toast(tr('O código tem 4 caracteres.','The code has 4 characters.'));
+  netLeave();
+  showModal(`<h2>${tr('A entrar no duelo','Joining duel')} ${code.toUpperCase()}…</h2><p>${tr('À espera do adversário.','Waiting for your opponent.')}</p>`,[{label:tr('Cancelar','Cancel'),fn:()=>{netLeave();showMenu();}}]);
+  let R;try{R=await joinRoom(code,'guest');}catch(e){return coopUnavailable(netErr(e));}
+  NET={R,role:'guest',code,partner:null,myPeer:null,started:false,twDirty:true,lastSt:0,lastTw:0,duel:true};
+  R.on('hello',m=>{if(m.isMe&&m.sameTab)NET.myPeer=m.peer;});
+  R.on('dstart',m=>{const d=m.data||{};if(NET.started||m.sameTab)return;if(NET.myPeer&&d.to!==NET.myPeer)return;if(!LEVELS[d.lvl])return;
+    NET.started=true;NET.partner=m.peer;clearInterval(NET.helloT);closeModal();
+    startDuel({mine:menuSel.lvl,foe:d.lvl,me:d.side?0:1,di:Math.max(0,Math.min(2,d.di|0)),hero:menuSel.hero,foeHero:HEROES[d.hero]?d.hero:'padeira',net:true});});
+  duelWire(R);
+  const hi=()=>R.emit('hello',{duel:1,lvl:menuSel.lvl,hero:menuSel.hero}).catch(()=>{});hi();NET.helloT=setInterval(()=>{if(!NET.started)hi();},1000);
 }
 
 /* ---- 10-janelas.js ---- */
@@ -3579,7 +3892,7 @@ function showMenu(){
   const it=[];
   if(inGame)it.push(['back',tr('▶ Voltar ao jogo','▶ Back to the game'),true]);
   if(sv&&LEVELS[sv.lvl]&&!(inGame&&S.coop))it.push(['cont',`▶ ${tr('Continuar','Continue')} · ${LEVELS[sv.lvl].name}, ${tr('vaga','wave')} ${sv.wave}`,!inGame]);
-  it.push(['campanha',ic('castle')+' '+tr('Campanha','Campaign'),!inGame&&!sv],['livre',ic('map')+' '+tr('Jogo livre','Free play')],['coop',ic('duo')+' '+tr('Cooperativo','Co-op')]);
+  it.push(['campanha',ic('castle')+' '+tr('Campanha','Campaign'),!inGame&&!sv],['livre',ic('map')+' '+tr('Jogo livre','Free play')],['coop',ic('duo')+' '+tr('Cooperativo','Co-op')],['duelo',ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel')]);
   const threat=pick([tr('muitas','lots'),tr('demasiadas','too many'),tr('uma armada inteira','a whole armada'),tr('já se perdeu a conta','lost count'),tr('cheias de toalhas','full of towels')]);
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Defende as praças do Alto Minho das barcas de Castela.','Defend the fortresses of the Alto Minho from the boats of Castile.')}</p>
     <p class="status">${tr('Praças por defender','Fortresses to defend')}: ${LEVEL_ORDER.filter(k=>!LS.get('wins',{})[k]).length} · ${tr('Barcas no rio','Boats on the river')}: <b>${threat}</b></p>
@@ -3608,23 +3921,32 @@ function showSetup(){
   let body='';
   if(m==='campanha')body=`<h3>${tr('Capítulo','Chapter')}</h3><div class="seg">${ch}</div><p class="small">${prog>=4?tr('Campanha terminada. Podes voltar a jogar qualquer capítulo.','Campaign complete. You can replay any chapter.'):tr('Ganha um capítulo para abrir o seguinte.','Win a chapter to unlock the next.')}</p>`;
   else if(m==='livre')body=`<h3>${tr('Mapa','Map')}</h3><div class="seg">${lv}</div>`;
+  else if(m==='duelo')body=`<h3>${tr('A tua praça','Your fortress')}</h3><div class="seg">${lv}</div><h3>${tr('O teu reino','Your kingdom')}</h3>
+    <div class="seg"><button data-m="dside" data-v="0" aria-pressed="${!menuSel.dside}">${ic('castle')} Portugal<small>${tr('Margem sul','South bank')}</small></button><button data-m="dside" data-v="1" aria-pressed="${!!menuSel.dside}">${ic('foe')} ${tr('Castela','Castile')}<small>${tr('Margem norte','North bank')}</small></button></div>
+    <p class="small">${tr('Cada um defende a sua praça, uma de cada lado do Minho. Paga para mandar tropas para o outro lado: cada tropa mandada aumenta a tua renda, o ouro que recebes a cada 6 segundos. Ganha quem aguentar mais.','Each player defends their own fortress, one on each side of the Minho. Pay to send troops across the river: every troop you send raises your income, the gold you get every 6 seconds. Whoever holds out longer wins.')}</p>
+    <h3>${tr('Contra outra pessoa','Against another person')}</h3><p class="small">${tr('Um cria a sala e passa o código; o outro escolhe a praça dele e entra com esse código no mesmo link do jogo.','One player creates a room and shares the code; the other picks their fortress and joins with that code on the same game link.')}</p>
+    <div class="coopbox"><input id="cCode" maxlength="4" placeholder="${tr('Código','Code')}" autocomplete="off" aria-label="${tr('Código da sala','Room code')}"><button id="cJoin">${tr('Entrar na sala','Join room')}</button></div>`;
   else body=`<h3>${tr('Mapa','Map')}</h3><div class="seg">${lv}</div><h3>${tr('Jogar a dois','Two players')}</h3>
     <p class="small">${tr('Um cria a sala e passa o código; o outro entra com esse código no mesmo link do jogo. Cada um tem o seu ouro e as suas torres; as vidas e a heroína são de ambos.','One player creates a room and shares the code; the other joins with that code on the same game link. Each has their own gold and towers; lives and the heroine are shared.')} ${tr('Ou joguem os dois no mesmo aparelho: o Jogador 1 defende a metade esquerda do mapa e o Jogador 2 a direita.','Or both play on the same device: Player 1 defends the left half of the map and Player 2 the right.')}</p>
     <div class="coopbox"><input id="cCode" maxlength="4" placeholder="${tr('Código','Code')}" autocomplete="off" aria-label="${tr('Código da sala','Room code')}"><button id="cJoin">${tr('Entrar na sala','Join room')}</button></div>`;
   const btns=[];
   if(m==='campanha')btns.push({label:tr('Começar capítulo ▶','Start chapter ▶'),main:true,fn:()=>{saveSel();netLeave();showChapter(Math.min(menuSel.chap,prog));},keep:true});
   else if(m==='livre')btns.push({label:tr('Começar o cerco ▶','Start the siege ▶'),main:true,fn:()=>{saveSel();netLeave();clearSave();newGame(menuSel.lvl,menuSel.di,menuSel.hero);S.started=true;S.paused=false;}});
+  else if(m==='duelo'){btns.push({label:tr('Contra o bot ▶','Against the bot ▶'),main:true,fn:()=>{saveSel();netLeave();startBotDuel();}});
+    btns.push({label:tr('Criar sala ▶','Create room ▶'),keep:true,fn:()=>{saveSel();hostDuel();}});}
   else{btns.push({label:tr('Criar sala ▶','Create room ▶'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
     btns.push({label:tr('Mesmo ecrã ▶','Same screen ▶'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
   btns.push({label:tr('← Voltar','← Back'),keep:true,fn:showMenu});
-  const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Quatro capítulos, de Monção a Âncora, em 1368.','Four chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')]}[m];
+  const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Quatro capítulos, de Monção a Âncora, em 1368.','Four chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')],
+    duelo:[ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel'),tr('Portugal contra Castela, com o Minho pelo meio.','Portugal against Castile, with the Minho in between.')]}[m];
   showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Heroína','Heroine')}</h3><div class="seg">${hr}</div>`,btns);
   const mc=$('mcard');
   mc.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{
-    const k=b.dataset.m;menuSel[k]=(k==='di'||k==='chap')?+b.dataset.v:b.dataset.v;
+    const k=b.dataset.m;menuSel[k]=(k==='di'||k==='chap'||k==='dside')?+b.dataset.v:b.dataset.v;
     mc.querySelectorAll(`[data-m="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
-  const cj=$('cJoin');if(cj)cj.addEventListener('click',()=>{saveSel();joinCoop($('cCode').value);});
-  const cc=$('cCode');if(cc)cc.addEventListener('keydown',e=>{if(e.key==='Enter'){saveSel();joinCoop(cc.value);}});
+  const jn=m==='duelo'?joinDuel:joinCoop;
+  const cj=$('cJoin');if(cj)cj.addEventListener('click',()=>{saveSel();jn($('cCode').value);});
+  const cc=$('cCode');if(cc)cc.addEventListener('keydown',e=>{if(e.key==='Enter'){saveSel();jn(cc.value);}});
 }
 function offerCards(){
   if(S.remote||S.over)return;
@@ -3638,8 +3960,10 @@ function offerCards(){
     <div class="cards">${three.map(c=>`<button class="bcard${c.k==='p'?' pacto':''}" data-c="${c.id}"><span class="ci">${ic(c.ic)}</span><em>${c.k==='p'?tr('Pacto','Pact'):tr('Bênção','Blessing')}</em><b>${c.name}</b><small>${c.desc}</small></button>`).join('')}</div>`,[]);
   $('mcard').querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{audio();closeModal();act({a:'card',id:b.dataset.c});}));
 }
-function saveSel(){LS.set('lvl',menuSel.lvl);LS.set('di',menuSel.di);LS.set('hero',menuSel.hero);}
+function saveSel(){LS.set('lvl',menuSel.lvl);LS.set('di',menuSel.di);LS.set('hero',menuSel.hero);LS.set('dside',menuSel.dside);}
 function pauseMenu(){
+  if(DUEL&&DUEL.net&&!DUEL.over){showModal(tr(`<h2>Duelo online</h2><p>Sala ${(NET.code||'').toUpperCase()}. Não há pausa: do outro lado continuam a jogar.</p>`,`<h2>Online duel</h2><p>Room ${(NET.code||'').toUpperCase()}. There is no pause: your opponent keeps playing.</p>`),
+    [{label:tr('Voltar ao jogo','Back to the game'),main:true},{label:tr('Desistir','Surrender'),fn:()=>duelLose(DUEL.me)},{label:tr('Opções','Options'),keep:true,fn:()=>showOpts(pauseMenu)}]);return;}
   if(S.remote){showModal(tr(`<h2>Cooperativo</h2><p>Estás na sala ${(NET.code||'').toUpperCase()} como convidado. Só o anfitrião pode pausar.</p>`,`<h2>Co-op</h2><p>You are in room ${(NET.code||'').toUpperCase()} as a guest. Only the host can pause.</p>`),
     [{label:tr('Voltar ao jogo','Back to the game'),main:true},{label:tr('Sair da sala','Leave room'),fn:()=>{netLeave();S.over=true;showMenu();},keep:true},{label:tr('Opções','Options'),keep:true,fn:()=>showOpts(pauseMenu)}]);return;}
   S.paused=true;
@@ -3685,6 +4009,7 @@ function showHelp(back){
     <p>Nas vagas 10 e 20 aparece a lenda de cada praça: o Mercador das Toalhas em Valença, a Coca em Monção, o Polvo da Lagarteira em Âncora e o Cervo Gigante em Cerveira. A Coca voa e o Polvo e a Coca deixam torres fora de combate por uns segundos.</p>
     <p>Os castelhanos atravessam o rio de barco: batéis pequenos, barcas, galeotas e, mais tarde, naus enormes. Cada barco leva vários inimigos, e os maiores ocupam mais lugares (um cavaleiro vale dois peões, um aríete ou uma torre de cerco enchem uma barca). Quanto mais avanças, maiores são os barcos.</p>
     <p>Nadadores vêm pelo meio e esbarram no postigo, que também tem porta. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Archeiros e bombardas param longe e atacam as portas à distância: as bombardas são lentas mas arrombam uma porta em poucos tiros. Na vaga 10 rebentam o postigo e passam a usar três caminhos; podes voltar a fechá-lo com Fechar portas.</p>
+    <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão ⤢ alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The ⤢ button switches between your fortress and the whole map.')}</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
@@ -3714,6 +4039,7 @@ async function showBoard(lvl,back){
   }catch(e){box.innerHTML=html+tr('<p class="small">Não foi possível carregar a tabela partilhada agora.</p>','<p class="small">Couldn’t load the shared leaderboard right now.</p>');}
 }
 function endGame(win){
+  if(DUEL)return duelLose(S.dside);
   S.over=true;S.paused=false;
   if(S.coop&&NET.role==='host'){
     const d={win:!!win,wave:S.wave,lives:S.lives,kills:S.stats.kills,gold:S.stats.gold,time:Math.round(S.stats.time)};
@@ -3809,7 +4135,7 @@ function applyStaticLang(){
   if(LANG!=='en')return;
   const T=(sel,txt)=>{const e=document.querySelector(sel);if(e)e.textContent=txt;};
   const A=(sel,at,txt)=>{const e=document.querySelector(sel);if(e)e.setAttribute(at,txt);};
-  T('#stWave small','Wave');T('#stGold small','Gold');T('#gold2w small','Partner');T('#stLives small','Fortress');
+  T('#stWave small','Wave');T('#stEco small','Income');T('#stFoe small','Opponent');A('#stEco','title','Income: gold every 6 s (rises with every troop sent)');A('#stFoe','title','Opponent’s fortress lives');A('#sendT','aria-label','Send troops');A('#send','aria-label','Send troops');T('#stGold small','Gold');T('#gold2w small','Partner');T('#stLives small','Fortress');
   A('.wxs','title','Weather');A('#gold2w','title','Partner’s gold');A('#stLives','title','Fortress lives');
   T('#bWaveT','Call wave');T('#pausedTxt','Paused');A('#bSpeed','aria-label','Speed');A('#bPause','aria-label','Pause');A('#bSound','aria-label','Sound');
   A('#zoomb [data-z="in"]','aria-label','Zoom in');A('#zoomb [data-z="out"]','aria-label','Zoom out');A('#zoomb [data-z="reset"]','aria-label','Show whole map');
@@ -3833,12 +4159,14 @@ function juice(dt){
 function loop(now){
   const dt=Math.min(0.05,(now-prev)/1000);prev=now;
   if(S&&S.offer&&!S.remote&&!S.over&&$('modal').hidden)offerCards();
-  if(S&&S.remote){if(!S.over)guestTick(dt);}
+  if(DUEL){if(!DUEL.over&&(DUEL.net||(!S.paused&&$('modal').hidden)))duelTick(dt);}
+  else if(S&&S.remote){if(!S.over)guestTick(dt);}
   else if(S&&S.started&&!S.paused&&!S.over&&($('modal').hidden||S.coop)){
     if(S.stop>0)S.stop-=dt;// congelamento de impacto
     else{let t=dt*S.speed;while(t>0){const st=Math.min(0.02,t);update(st);t-=st;if(S.over||S.stop>0)break;}}}
   if(S)juice(dt);
   if(S&&S.coop&&!S.remote)netSend(now);
+  if(DUEL&&DUEL.net)duelNet(now);
   hud();draw();requestAnimationFrame(loop);
 }
 showBoot(showMenu);requestAnimationFrame(loop);
