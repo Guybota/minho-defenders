@@ -35,7 +35,7 @@ O jogo também está alojado no GitHub Pages.
 | 03-som-vozes | Web Audio: `audio()`, `tone`, `noise`, `sfx(n)`, `sndMode` (0 desligado, 1 efeitos, 2 efeitos e vozes), `say()`. **Música procedural** (`MUS`, `SONGS.menu`/`SONGS.game`, `setMusic(nome)` com transição cruzada, `musKick` no primeiro toque; é desligável em Opções) |
 | 04-conquistas-recordes | conquistas e recordes partilhados (`db`) |
 | 05-estado-combate | objeto de estado `S`, `update(dt)`, `updateHero`, `heroSpecial`, portas destrutíveis (`S.gates`), inimigos que atiram de longe (`S.eproj`) |
-| 06-fundo | `drawBG()` desenha o fundo **uma vez** num canvas à parte (`bgc`): rio, casas sem sobreposição (`OCC`), árvores e enfeites, muralhas, igrejas pequenas |
+| 06-fundo | `drawBG()` desenha o fundo **uma vez** num canvas à parte (`bgc`): rio, casas em alçado com variantes (`house`: térrea, sobrado, granito, alpendre, palheiro, espigueiro) sem sobreposição (`OCC`), árvores e enfeites, muralhas, igrejas pequenas |
 | 07-desenho | `draw()` corre a cada frame. Desenha `drawWater` (animação do rio), `drawSlot`, `drawChurch`/`drawHeart`, `drawGates`, inimigos (`drawChibi`, `drawRam`, `drawSiege`, `drawBombard`, `drawBoss`), heroínas (`drawPadeira`, `drawDeu`) e torres (`drawTowerBuilding` para arq e bes, que são torres a sério com o defensor no topo; `towerPlatform` + `drawTowerUnit` para o trabuco e o azeite, que **ficam como plataformas redondas de propósito**) |
 | 08-zoom-acoes-interface, 08b-animacoes | zoom e arrasto, ações locais ou do parceiro, HUD, painel das habilidades no canto inferior esquerdo, mapa SVG do menu (`menuSvg`, `menuBgShow`/`menuBgLeave`) |
 | 09-guardar-coop | guardar a partida e o **modo cooperativo**. No claude.ai usa a capacidade `room`, com recurso à presença para quem só pode ver. Fora do claude.ai usa PeerJS/WebRTC. `snapshot`/`applySnap` sincronizam o estado (os campos novos têm de entrar nos dois). Há ainda coop no mesmo ecrã, com J1 à esquerda e J2 à direita |
@@ -53,7 +53,9 @@ O jogo também está alojado no GitHub Pages.
   - vêm por estradas e alguns atravessam o rio a nado (os nadadores);
   - os archeiros e as bombardas atacam as portas de longe;
   - nas vagas 10 e 20 aparece o chefe de cada mapa (Mercador das Toalhas, Coca, Polvo da Lagarteira, Cervo Gigante).
-- **Heroína:** bloqueia até 3 inimigos, move-se tocando nela e depois no mapa, e tem um poder especial.
+- **Barcos:** os inimigos (menos nadadores, a Coca, o Polvo e o Cervo) atravessam o rio em barcos (`BOATS`: batel, barca, galeota, nau), que aparecem por vaga (`from`) e com peso crescente. Cada inimigo ocupa `FSZ[t]` lugares. `launchBoat`/`seatBoat`/`updateBoats` em 05; `drawBoat` em 07. A bordo, o inimigo tem `e.ride=id` do barco e não anda sozinho.
+- **Heroína:** bloqueia até 3 inimigos, move-se tocando nela e depois no mapa, e tem um poder especial. Ganha experiência (`heroXP`) até ao nível 10; nos níveis 3, 6 e 9 escolhe uma de duas melhorias (`HEROES[id].ups`, `hUp(h,k)`), no painel dela.
+- **Postigo:** a porta da estrada dos nadadores é destrutível como as outras; na vaga 10 rebenta e abre o terceiro caminho, mas pode voltar a ser fechada.
 - **Modos:** campanha, jogo livre, infinito e cooperativo. Há três dificuldades: Turista, Castelhano e Capitão Paco.
 
 ## Testes (Playwright com o Chromium pré-instalado)
