@@ -667,7 +667,7 @@ function defAncora(){
 }
 function defCerveira(){
   // castelo de Vila Nova de Cerveira: um só recinto irregular, com torres na muralha e a torre de menagem ao centro
-  const RAW=[[132,360,1],[168,318],[232,300,1],[300,291],[370,299,1],[432,321],[476,360,1],[493,420],[479,482,1],[440,526],[372,549,1],[300,556],[236,546,1],[186,520],[146,481],[119,430,1]];
+  const RAW=[[132,360,1],[168,318],[232,300,1],[300,291],[370,299,1],[432,321],[476,360,1],[493,420],[479,482,1],[440,526],[372,549,1],[300,556],[236,546],[186,520,1],[146,481],[119,430,1]];
   const wall=RAW.map(p=>[p[0],p[1]]);
   const tips=[];RAW.forEach((p,i)=>{if(p[2])tips.push({i,name:tr('Torre do castelo','Castle tower')});});
   const gA=edgeGate(wall,13),gB=edgeGate(wall,7),gC=edgeGate(wall,3,{post:true});
