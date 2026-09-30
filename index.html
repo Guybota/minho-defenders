@@ -584,26 +584,21 @@ function defAncora(){
     south:{label:'Vila Praia de Âncora',y0:720,y1:870},desemb:[[105,236],[500,236],[285,236]]};
 }
 function defCerveira(){
-  // castelo de Vila Nova de Cerveira: três recintos encadeados
-  const T=(x,y)=>[(x-385)*1.3+80,(y-10)*1.3+300];
-  const RAW=[[385,55],[400,22],[440,12],[510,10],[545,25],[552,65],[590,70],[622,92],[628,122],[660,118],[705,135],[720,175],
-    [712,215],[690,235],[615,236],[575,212],[560,185],[500,182],[475,160],[470,125],[430,120],[395,100]];
-  const wall=RAW.map(p=>T(p[0],p[1]));
-  const tips=[0,1,3,7,10,12,14,17,20].map(i=>({i,name:tr('Torre do castelo','Castle tower')}));
-  const gA=edgeGate(wall,21),gB=edgeGate(wall,11),gC=edgeGate(wall,5,{post:true});
-  const i1a=T(552,65),i1b=T(470,125),i2a=T(628,122),i2b=T(560,185);
-  const g1={x:(i1a[0]+i1b[0])/2,y:(i1a[1]+i1b[1])/2,a:Math.atan2(i1b[1]-i1a[1],i1b[0]-i1a[0])};
-  const g2={x:(i2a[0]+i2b[0])/2,y:(i2a[1]+i2b[1])/2,a:Math.atan2(i2b[1]-i2a[1],i2b[0]-i2a[0])};
-  const goal=T(550,125);
+  // castelo de Vila Nova de Cerveira: um só recinto irregular, com torres na muralha e a torre de menagem ao centro
+  const RAW=[[132,360,1],[168,318],[232,300,1],[300,291],[370,299,1],[432,321],[476,360,1],[493,420],[479,482,1],[440,526],[372,549,1],[300,556],[236,546,1],[186,520],[146,481],[119,430,1]];
+  const wall=RAW.map(p=>[p[0],p[1]]);
+  const tips=[];RAW.forEach((p,i)=>{if(p[2])tips.push({i,name:tr('Torre do castelo','Castle tower')});});
+  const gA=edgeGate(wall,13),gB=edgeGate(wall,7),gC=edgeGate(wall,3,{post:true});
+  const goal=[300,440];
   return{id:'cerveira',name:'Cerveira',style:'medieval',across:tr('Goián, Galiza','Goián, Galicia'),
-    wall,tips,towerTips:true,inner:[{a:i1a,b:i1b,g:g1},{a:i2a,b:i2b,g:g2}],gates:[gA,gB,gC,g1,g2],
+    wall,tips,towerTips:true,inner:[],gates:[gA,gB,gC],
     paths:[
-     [[60,45],[50,222],[40,300],[30,388],[gA.x,gA.y],[160,380],[g1.x,g1.y],goal],
-     [[540,45],[560,222],[570,400],[575,540],[gB.x,gB.y],[430,520],[g2.x,g2.y],goal],
-     [[330,45],[330,224],[325,300],[gC.x,gC.y],goal]],
-    cand:[[150,260],[450,300],[80,520],[200,640],[330,660],[470,650],[120,600],[430,405],[520,300],[230,300]],
+     [[60,45],[50,222],[42,320],[40,470],[80,545],[gA.x,gA.y],[232,475],goal],
+     [[540,45],[560,222],[566,330],[562,452],[gB.x,gB.y],[405,445],goal],
+     [[330,45],[330,224],[gC.x,gC.y],[322,360],goal]],
+    cand:[[150,262],[450,262],[95,600],[210,640],[330,660],[460,640],[540,560],[235,395,1],[385,485,1],[250,258],[410,390,1]],
     marks:[{x:goal[0],y:goal[1]-22,w:24,h:24,keep:true,label:''}],
-    labels:[[tr('Torre de menagem','Keep'),goal[0]+2,goal[1]+18,10,1],[tr('Castelo','Castle'),150,420,14]],
+    labels:[[tr('Torre de menagem','Keep'),goal[0]+2,goal[1]+18,10,1],[tr('Castelo','Castle'),300,528,14]],
     south:{label:'Vila Nova de Cerveira',y0:230,y1:880,all:true},desemb:[[95,236],[505,236],[360,236]]};
 }
 const LEVELS={valenca:defValenca(),moncao:defMoncao(),ancora:defAncora(),cerveira:defCerveira()};
