@@ -607,6 +607,27 @@ function defCerveira(){
     south:{label:'Vila Nova de Cerveira',y0:230,y1:880,all:true},desemb:[[95,236],[505,236],[360,236]]};
 }
 const LEVELS={valenca:defValenca(),moncao:defMoncao(),ancora:defAncora(),cerveira:defCerveira()};
+/* A fortaleza fica mais para trás (longe do rio) e a estrada do desembarque até ela faz curvas:
+   dá mais tempo para reagir a quem chega pelo rio. Tudo o que é da praça desce PUSH; o rio e os desembarques ficam. */
+const PUSH=65;
+function pushBack(L){
+  const done=new Set(),mv=p=>{if(!p||done.has(p))return;done.add(p);if(Array.isArray(p))p[1]+=PUSH;else p.y+=PUSH;};
+  L.wall.forEach(mv);L.gates.forEach(mv);L.inner.forEach(q=>{mv(q.a);mv(q.b);mv(q.g);});
+  L.paths.forEach(P=>P.forEach((p,i)=>{if(i>=2)mv(p);}));
+  L.cand.forEach(mv);L.marks.forEach(mv);L.labels.forEach(l=>{if(!done.has(l)){done.add(l);l[2]+=PUSH;}});
+  L.south.y0=Math.min(L.south.y0+PUSH,Math.max(L.south.y0,760));
+  // curvas no primeiro troço em terra (desembarque -> praça): a maior amplitude que não bate em muralhas, rio ou outros caminhos
+  const others=i=>L.paths.filter((_,j)=>j!==i).map(mkPath);
+  const snake=(P,pi,si)=>{const a=P[si],b=P[si+1];if(!a||!b)return false;const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);const n=Math.floor(len/55);if(n<1)return false;
+    const nx=-dy/len,ny=dx/len,op=others(pi),m=n*8;
+    const pts=amp=>{const o=[];for(let i=1;i<m;i++){const t=i/m,k=amp*Math.sin(Math.PI*n*t)*Math.min(1,Math.sin(Math.PI*t)*2.2);o.push([a[0]+dx*t+nx*k,a[1]+dy*t+ny*k]);}return o;};
+    const ok=q=>q.every(([x,y])=>x>22&&x<578&&y>riverBot(x)+12&&y<880&&!inPoly(x,y,L.wall)&&dPoly(x,y,L.wall)>(L.style==='bastion'?40:30)
+      &&op.every(O=>O.seg.slice(1).every(sg=>dSeg(x,y,sg.a,sg.b)>26)));
+    for(let amp=70;amp>=14;amp-=4){for(const sg of [1,-1]){const q=pts(amp*sg);if(ok(q)){P.splice(si+1,0,...q);return true;}}}return false;};
+  // primeiro troço em terra; se não houver espaço (caminho encostado à margem), tenta o seguinte
+  L.paths.forEach((P,pi)=>{if(!snake(P,pi,1))snake(P,pi,2);});
+}
+Object.values(LEVELS).forEach(pushBack);
 const LEVEL_ORDER=['valenca','moncao','ancora','cerveira'];
 let LV=null,PATHS=[],SLOTS=[];
 function loadLevel(id){
@@ -1363,7 +1384,27 @@ function drawDeco(c,X0,X1,Y0,Y1){
   for(let i=0;i<ng*2;i++){const x=X0+r()*(X1-X0),y=Y0+r()*(Y1-Y0),k=0.8+r()*0.5;if(put(x,y,5*k))items.push([y,r()<0.75?'b':'r',x,k]);}
   items.sort((a,b)=>a[0]-b[0]).forEach(([y,t,x,k])=>t==='t'?tree(c,x,y,k,r):t==='p'?pine(c,x,y,k):t==='b'?bush(c,x,y,k):rock(c,x,y,k,r));
 }
+// igreja pequena (capelas): a Matriz em miniatura, parada, desenhada no fundo
+function miniChurch(c,x,y,k){
+  c.save();c.translate(x,y);c.scale(k,k);c.lineJoin='round';c.strokeStyle='#2e2419';c.lineWidth=1.3;
+  c.fillStyle='rgba(46,36,25,.25)';c.beginPath();c.ellipse(3,10.5,20,4,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#d8c9a4';c.beginPath();c.moveTo(12,-1);c.lineTo(17,-1);c.quadraticCurveTo(19,5,17,10);c.lineTo(12,10);c.closePath();c.fill();c.stroke();// abside
+  c.fillStyle='#b5563a';c.beginPath();c.moveTo(11,-7);c.quadraticCurveTo(18,-6,18.5,-1);c.lineTo(11,-1);c.closePath();c.fill();c.stroke();
+  c.fillStyle='#d8c9a4';c.fillRect(-8,-3,20,13);c.strokeRect(-8,-3,20,13);// nave
+  c.fillStyle='#3a3025';[-3,3.5].forEach(x=>{c.beginPath();c.moveTo(x-1.3,5);c.lineTo(x-1.3,1.5);c.arc(x,1.5,1.3,Math.PI,0);c.lineTo(x+1.3,5);c.closePath();c.fill();});
+  c.fillStyle='#b5563a';c.beginPath();c.moveTo(-9,-3);c.lineTo(13,-3);c.lineTo(10.5,-10);c.lineTo(-6.5,-10);c.closePath();c.fill();c.stroke();
+  c.strokeStyle='rgba(60,20,10,.45)';c.lineWidth=0.6;c.beginPath();for(let x=-5;x<11;x+=2.6){c.moveTo(x,-3);c.lineTo(x+0.9,-10);}c.stroke();c.strokeStyle='#2e2419';c.lineWidth=1.3;
+  c.fillStyle='#d8c9a4';c.fillRect(-16,-17,8,27);c.strokeRect(-16,-17,8,27);// campanário
+  c.fillStyle='#beac86';c.fillRect(-10,-16,1.8,25);
+  c.fillStyle='#2e2419';c.beginPath();c.moveTo(-14,-10);c.lineTo(-14,-12.5);c.arc(-12,-12.5,2,Math.PI,0);c.lineTo(-10,-10);c.closePath();c.fill();
+  c.fillStyle='#e8c24a';c.beginPath();c.arc(-12,-11.4,1.1,0,Math.PI*2);c.fill();
+  c.fillStyle='#6e4b2a';c.beginPath();c.moveTo(-14,10);c.lineTo(-14,5.5);c.arc(-12,5.5,2,Math.PI,0);c.lineTo(-10,10);c.closePath();c.fill();c.stroke();
+  c.fillStyle='#8a3a22';c.beginPath();c.moveTo(-17,-17);c.lineTo(-12,-25);c.lineTo(-7,-17);c.closePath();c.fill();c.stroke();
+  c.strokeStyle='#5a4630';c.lineWidth=1.4;c.beginPath();c.moveTo(-12,-25);c.lineTo(-12,-31);c.moveTo(-14.2,-28.8);c.lineTo(-9.8,-28.8);c.stroke();
+  c.restore();
+}
 function drawMark(c,m){
+  if(m.label&&/^(S\.|Sta\.|Igreja)/.test(m.label)){miniChurch(c,m.x,m.y-2,Math.max(0.55,Math.min(0.8,m.w/28)));return;}
   c.fillStyle='#d7c7a2';c.strokeStyle='#2e2419';c.lineWidth=1.4;
   if(m.keep){c.fillStyle='#b9ab8c';c.fillRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);c.strokeRect(m.x-m.w/2,m.y-m.h/2,m.w,m.h);
     for(let i=0;i<4;i++){c.fillStyle='#8d7f66';c.fillRect(m.x-m.w/2+i*m.w/4+1,m.y-m.h/2-4,m.w/8,4);}return;}
