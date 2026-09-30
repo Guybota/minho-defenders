@@ -106,6 +106,11 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .ab em{position:absolute;top:2px;right:5px;font-style:normal;font-size:.72rem;color:var(--soft);font-variant-numeric:tabular-nums}
 .ab i{position:absolute;left:0;right:0;bottom:0;background:rgba(46,36,25,.35);height:0;pointer-events:none}
 .ab.cd .ai{opacity:.45;filter:grayscale(1)}
+/* poder indisponível (a recarregar ou antes da 1.ª vaga): botão inteiro desvanecido e escurecido; o contador fica legível */
+#abil.open .ab.cd{opacity:.9;background:color-mix(in srgb,var(--bg) 66%,#1e160e);box-shadow:0 2px 6px var(--shadow);border-color:var(--dis)}
+.ab.cd .ai{opacity:.5;filter:grayscale(1) brightness(.6)}
+.ab.cd .an{opacity:.55}
+.ab.cd em{color:#fbf1dc;text-shadow:0 1px 2px rgba(0,0,0,.8)}
 .ab.ready{animation:ready .6s ease-out}
 @keyframes ready{0%{box-shadow:0 0 0 0 rgba(201,151,28,.8);border-color:var(--gold)}100%{box-shadow:0 0 0 10px rgba(201,151,28,0)}}
 
