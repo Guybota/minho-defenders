@@ -516,6 +516,7 @@ const ICONS=(()=>{
     fish:s('M2.5 12c3.5-5 11-6 15.5-.1C13.5 17.9 6 17 2.5 12z','#8fa3a8')+s('M18 11.9l3.5-3.5v7z','#8fa3a8')+`<circle cx="6.5" cy="11" r="1" fill="${K}"/>`+s('M9.5 9.5c1 1.5 1 3.5 0 5',null,.9),
     helmet:s('M2.5 14.5c3-1 5-1.2 9.5-1.2s6.5.2 9.5 1.2c-2 2-4.5 2.5-9.5 2.5s-7.5-.5-9.5-2.5z',ST)+s('M6.5 13.5c0-5 2.5-8 5.5-8s5.5 3 5.5 8',ST)+s('M12 5.5V2.8',null,1.8)+s('M12 5.5c0 2.5 0 5 0 7.8',null,.8),
     castleflag:'',
+    flagx:s('M5 2.5v19',null,1.8)+s('M5.5 3.5h7v10h-7z',P,1)+f('M8.3 5.5h1.4v6H8.3zM6.3 7.8h5.4v1.4H6.3z','#2f4a9e')+s('M12.5 3.5h7l-1.6 5 1.6 5h-7z',R,1)+f('M12.5 7.2h6.3l-.4 1.3.4 1.3h-6.3z',GL)+s('M3 21.5h5',null,1.6),
     foe:s('M3.5 21V10h3v2h2.2v-2h2.1v2h2.4v-2h2.1v2h2.2v-2h3v11z','#b5563a')+s('M9.8 21v-3.6a2.2 2.2 0 0 1 4.4 0V21',K)+s('M12 10V3.2l4.2 1.5L12 6.2',GL)+s('M5 15h2M17 15h2',null,1.1),
     dragon:s('M3 17c2-1 4-1 6 0 1-4 4-6.5 8-6.5l1.5-3 1 3.2 2.5.8-2.5 1.8c-2 .5-3.5 2-4 4.2-1 3.5-4 5-7.5 4.5-2.5-.4-4-2-5-4z',GR)+s('M9.5 12.5L6 4.5l7 5',GD)+`<circle cx="18" cy="11.8" r=".8" fill="${K}"/>`+s('M4 21l1.5-2.5M8 21.8l.5-2.5',null,1.2),
     octopus:s('M6 12a6 6 0 0 1 12 0c0 2-1 3-2 3.5',`#8a3f6e`)+s('M6 12c0 2 1 3 2 3.5',null,1.4)+s('M8 15.5c-1 2-3.5 3-5 2M10 16c0 2.5-1 4-2.5 5M14 16c0 2.5 1 4 2.5 5M16 15.5c1 2 3.5 3 5 2M12 16.2v4.8',null,1.8)+f('M6.1 12.2a6 6 0 0 1 11.8 0c0 1.5-.8 3-3 3.6H9c-2-.6-2.9-2-2.9-3.6z','#8a3f6e')+`<circle cx="10" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/><circle cx="14" cy="11" r="1.1" fill="${P}" stroke="${K}" stroke-width=".7"/>`,
@@ -652,7 +653,31 @@ function defCerveira(){
     labels:[[tr('Torre de menagem','Keep'),goal[0]+2,goal[1]+18,10,1],[tr('Castelo','Castle'),300,528,14]],
     south:{label:'Vila Nova de Cerveira',y0:230,y1:880,all:true},desemb:[[95,236],[505,236],[360,236]]};
 }
-const LEVELS={valenca:defValenca(),moncao:defMoncao(),ancora:defAncora(),cerveira:defCerveira()};
+function defMelgaco(){
+  // traçado a partir da planta antiga: vila com baluartes, o castelo com a torre de menagem a sudoeste e o hornaveque a poente
+  const T=(x,y)=>[90+(x-40)*1.35,245+(y-76)*1.35];
+  const OUT=[[40,125,1],[95,122],[145,128],[180,118],[225,90],[245,76,1],[262,96],[300,84],[330,98,1],[348,140],[352,190,1],[335,240],[285,280],[240,318,1],[222,296],[175,275],[150,295,1],[118,288],[122,250],[100,205],[60,180],[42,175,1]];
+  const wall=OUT.map(p=>T(p[0],p[1])),tips=[];OUT.forEach((p,i)=>{if(p[2])tips.push({i,name:tr('Baluarte de Melgaço','Melgaço bastion')});});
+  const gW=edgeGate(wall,21),gE=edgeGate(wall,10),gN=edgeGate(wall,6,{post:true}),goal=T(168,240);
+  const at=(x,y,...r)=>[...T(x,y),...r];
+  return{id:'melgaco',name:'Melgaço',style:'bastion',push:140,fields:6,across:tr('Arbo, Galiza','Arbo, Galicia'),
+    wall,tips,inner:[],gates:[gW,gE,gN],sandbars:[[160,172,42,9]],
+    paths:[
+     [[110,50],[45,222],[32,300],[38,gW.y],[gW.x,gW.y],T(75,150),T(120,178),T(150,215),goal],
+     [[490,50],[560,222],[572,330],[568,gE.y],[gE.x,gE.y],T(300,215),T(230,232),goal],
+     [[310,45],[320,224],[gN.x,gN.y],T(270,140),T(215,190),goal]],
+    cand:[at(110,140,1),at(200,160,1),at(300,160,1),at(290,250,1),at(225,265,1),[200,250],[300,255],[520,280],[140,480],[60,560],[180,620],[330,640],[470,600],[560,540]],
+    marks:[{x:goal[0],y:goal[1]-22,w:24,h:24,keep:true,label:''},{...(([x,y])=>({x,y}))(T(255,195)),w:30,h:16,tower:true,label:'Igreja Matriz'}],
+    labels:[[tr('Torre de menagem','Keep'),goal[0]+2,goal[1]+18,10,1],[tr('Hornaveque','Hornwork'),...T(95,160),12,1],[tr('Solar do Alvarinho','Alvarinho House'),...T(300,262),10,1],['Termas do Peso',470,700,10,1]],
+    south:{label:tr('Melgaço, arrabalde','Melgaço, outskirts'),y0:640,y1:870},desemb:[[95,238],[530,238],[320,236]],
+    // cultura local: Alvarinho, fumeiro, contrabando, emigração, o cão de Castro Laboreiro, o festival de cinema e a Inês Negra
+    idle:[tr('Alguém trouxe presunto de Melgaço?','Did anyone bring Melgaço ham?'),tr('O Alvarinho de Monção é bom… mas o de cá é melhor','Monção’s Alvarinho is good… but ours is better'),
+      tr('Se vier a Inês Negra, nem precisam de nós','If Inês Negra shows up, they won’t need us'),tr('Metade da vila está em França, a outra metade está aqui a defender','Half the town is in France, the other half is here defending'),
+      tr('Onde anda o cão de Castro Laboreiro quando é preciso?','Where’s the Castro Laboreiro dog when you need it?'),tr('Diz que o festival de cinema vai fazer um documentário sobre isto','Word is the film festival will make a documentary about this'),
+      tr('Depois disto vamos todos de molho para as Termas do Peso','After this we’re all off to soak at the Peso spa')],
+    leak:[tr('Foi às compras de fumeiro!','Gone shopping for smoked sausage!'),tr('Levou um presunto debaixo do braço!','Took a ham under his arm!'),tr('Contrabando outra vez! Chamem a Guarda Fiscal!','Smuggling again! Call the customs guard!')]};
+}
+const LEVELS={valenca:defValenca(),moncao:defMoncao(),ancora:defAncora(),cerveira:defCerveira(),melgaco:defMelgaco()};
 /* A fortaleza fica mais para trás (longe do rio) e a estrada do desembarque até ela faz curvas:
    dá mais tempo para reagir a quem chega pelo rio. Tudo o que é da praça desce PUSH; o rio e os desembarques ficam. */
 const PUSH=65;
@@ -675,8 +700,8 @@ function pushBack(L){
   L.paths.forEach((P,pi)=>{if(!snake(P,pi,1))snake(P,pi,2);});
 }
 Object.values(LEVELS).forEach(pushBack);
-const LEVEL_ORDER=['valenca','moncao','ancora','cerveira'];
-const LDEF={valenca:defValenca,moncao:defMoncao,ancora:defAncora,cerveira:defCerveira};
+const LEVEL_ORDER=['valenca','moncao','ancora','cerveira','melgaco'];
+const LDEF={valenca:defValenca,moncao:defMoncao,ancora:defAncora,cerveira:defCerveira,melgaco:defMelgaco};
 function duelLevel(id,side){
   const L=LDEF[id]();pushBack(L);
   const f=side?(y=>900-y):(y=>y+DOFF),done=new Set();
@@ -756,10 +781,14 @@ const FOES={
   arqc:{name:tr('Archeiro castelhano','Castilian archer'),hp:45,spd:40,armor:0,gold:7,r:7,col:'#5e7a36',leak:1,ranged:{range:95,rate:1.3,dmg:9,k:'arrow'}},
   bomb:{name:tr('Bombarda','Bombard'),hp:280,spd:17,armor:5,gold:22,r:12,col:'#4a4038',leak:3,ranged:{range:190,rate:3.4,dmg:75,k:'shell'}}
 };
-const BOSS={valenca:'merc',moncao:'coca',ancora:'polvo',cerveira:'cervo'};
+const BOSS={valenca:'merc',moncao:'coca',ancora:'polvo',cerveira:'cervo',melgaco:'arren'};
+// a Arrenegada: a portuguesa que se passou para Castela e que a Inês Negra pôs a correr no alto da muralha de Melgaço (1388)
+FOES.arren={name:tr('A Arrenegada','The Arrenegada'),hp:2600,spd:26,armor:6,gold:120,r:16,col:'#9b2226',leak:8,boss:'arren',
+  intro:tr('Chegou a Arrenegada, a portuguesa que se passou para Castela!','The Arrenegada has arrived, the Portuguese woman who went over to Castile!'),
+  death:tr('A Arrenegada foge outra vez! A Inês Negra ficaria orgulhosa.','The Arrenegada runs away again! Inês Negra would be proud.')};
 /* ================= Barcos ================= */
 // espaço que cada inimigo ocupa no barco; quem não está aqui não vem de barco (nadadores, a Coca que voa, o Polvo e o Cervo que atravessa a vau)
-const FSZ={peao:1,mini:1,arqc:1,cont:1,cura:1,cav:2,esc:2,cap:4,bomb:4,ari:5,torre:6,merc:12};
+const FSZ={peao:1,mini:1,arqc:1,cont:1,cura:1,cav:2,esc:2,cap:4,bomb:4,ari:5,torre:6,merc:12,arren:6};
 // from: vaga a partir da qual aparece; w: peso na escolha (cresce com as vagas)
 const BOATS={
   batel:{name:tr('Batel','Rowboat'),cap:3,spd:46,L:40,B:15,oars:2,masts:0,from:1,w:w=>Math.max(1,5-w*0.25)},
@@ -811,6 +840,12 @@ Object.assign(HEROES,{
       [{k:'fast',name:tr('Galope','Gallop'),desc:tr('Ataca e corre 35% mais depressa','Attacks and runs 35% faster')},{k:'cleave',name:tr('Armação larga','Wide antlers'),desc:tr('Cada golpe acerta também em quem está à volta','Every blow also hits those around')}],
       [{k:'spBig',name:tr('Investida brutal','Brutal charge'),desc:tr('A investida faz o dobro e deixa-os tontos','The charge hits twice as hard and leaves them dazed')},{k:'spFast',name:tr('Fôlego de monte','Mountain lungs'),desc:tr('Especial recarrega 40% mais depressa','Special recharges 40% faster')}]]}
 });
+HEROES.arren={name:tr('A Arrenegada','The Arrenegada'),short:tr('Arrenegada','Arrenegada'),icon:'flagx',boss:'arren',map:'melgaco',r:10,hp:260,dmg:22,rate:0.75,range:30,melee:true,spd:95,
+  pass:tr('Arrependida, voltou para o lado de cá. Os inimigos perto dela andam 20% mais devagar a ouvir as bocas','Repentant, she came back to our side. Enemies near her move 20% slower, busy listening to her insults'),
+  sp:{name:tr('Desafio no adarve','Duel on the wall'),desc:tr('Salta para o inimigo mais forte e dá-lhe uma tareia; se o despachar, cura-se e ganha ouro','Leaps at the strongest enemy and gives it a beating; if it falls, she heals and earns gold'),cd:20},
+  ups:[[{k:'dmg',name:tr('Roca de carvalho','Oak distaff'),desc:tr('+35% de dano','+35% damage')},{k:'hp',name:tr('Saias de burel','Burel skirts'),desc:tr('+40% de vida e recupera o dobro','+40% health, heals twice as fast')}],
+    [{k:'aura',name:tr('Língua afiada','Sharp tongue'),desc:tr('As bocas chegam mais longe e abrandam 35%','Her insults reach further and slow by 35%')},{k:'block',name:tr('Braço de ferro','Iron grip'),desc:tr('Segura mais 2 inimigos','Holds 2 more enemies')}],
+    [{k:'spBig',name:tr('Desafio duplo','Double duel'),desc:tr('O desafio apanha os dois mais fortes','The duel takes on the two strongest')},{k:'spFast',name:tr('Pavio curto','Short fuse'),desc:tr('Especial recarrega 40% mais depressa','Special recharges 40% faster')}]]};
 const heroLocked=k=>!!(HEROES[k]&&HEROES[k].map&&!LS.get('wins',{})[HEROES[k].map]);
 // níveis da heroína: ganha experiência a derrotar inimigos (e um pouco com os que caem perto dela); nos níveis 3, 6 e 9 escolhe uma melhoria
 const HERO_MAX=10,HERO_TIERS=[3,6,9],xpNeed=lv=>30+lv*22;
@@ -832,6 +867,8 @@ function waveDef(w){
   if(w>=8)g.push(['cura',Math.max(1,Math.floor((w-5)/3)),2.0]);
   if(w>=7)g.push(['ari',Math.floor((w-4)/2),2.4]);
 
+  // em Melgaço os contrabandistas conhecem o rio de cor
+  if(LV.id==='melgaco'&&w>=4)g.push(['cont',1+Math.floor(w/4),1.2]);
   if(w%10===0)g.push([BOSS[LV.id],1,3]);
   else if(w%5===0)g.push(['cap',Math.ceil(w/5),4]);
   const q=[];g.forEach(([t,c,gap])=>{for(let i=0;i<c;i++)q.push({t,gap:i===c-1?1.6:gap});});
@@ -1155,7 +1192,7 @@ const ACH=[
   {id:'fiscal',ic:'scroll',name:tr('Fiscal das Finanças','Tax inspector'),desc:tr('Derrota 25 contrabandistas num jogo.','Defeat 25 smugglers in one game.')},
   {id:'infinito',ic:'infinite',name:tr('Infinito e mais além','To infinity and beyond'),desc:tr('Chega à vaga 30 no modo infinito.','Reach wave 30 in endless mode.')},
   {id:'maispaco',ic:'helmet',name:tr('Mais Paco que o Paco','More Paco than Paco'),desc:tr('Ganha na dificuldade Capitão Paco.','Win on Captain Paco difficulty.')},
-  {id:'minho',ic:'castle',name:tr('Senhor do Alto Minho','Lord of the Alto Minho'),desc:tr('Ganha nos quatro mapas.','Win on all four maps.')},
+  {id:'minho',ic:'castle',name:tr('Senhor do Alto Minho','Lord of the Alto Minho'),desc:tr('Ganha em todos os mapas.','Win on every map.')},
   {id:'lendas',ic:'dragon',name:tr('Caçador de lendas','Legend hunter'),desc:tr('Derrota a Coca, o Mercador, o Polvo e o Cervo.','Defeat the Coca, the Merchant, the Octopus and the Stag.')},
   {id:'campanha',ic:'scroll',name:tr('Alto Minho livre','The Alto Minho is free'),desc:tr('Termina a campanha.','Finish the campaign.')},
   {id:'amigos',ic:'duo',name:tr('Amigos para sempre','Friends forever'),desc:tr('Ganha um mapa em cooperativo.','Win a map in co-op.')},
@@ -1188,7 +1225,7 @@ let S=null,EID=0,BZ=1;
 const VIEW={z:1,ox:0,oy:0};
 const OPT=Object.assign({big:false,cb:false},LS.get('opt',{}));
 const CAMP=['moncao','valenca','cerveira','ancora'];
-let menuSel={mode:LS.get('mode','livre'),lvl:(LS.get('lvl','valenca') in {valenca:1,moncao:1,ancora:1,cerveira:1})?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:(k=>HEROES[k]&&!heroLocked(k)?k:'padeira')(LS.get('hero','padeira')),chap:0,dside:LS.get('dside',0)?1:0};
+let menuSel={mode:LS.get('mode','livre'),lvl:LEVELS[LS.get('lvl','valenca')]?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:(k=>HEROES[k]&&!heroLocked(k)?k:'padeira')(LS.get('hero','padeira')),chap:0,dside:LS.get('dside',0)?1:0};
 function newGame(lvl,di,heroId){
   // sair de um duelo: o mundo volta a ter uma só praça
   const leftDuel=!!(DUEL&&!DUEL.init);if(leftDuel){DUEL=null;H=900;duelUI(false);}
@@ -1440,6 +1477,7 @@ function bossSpecial(h){
   if(h.id==='cervo'){// só carrega se houver alguém em terra ao alcance (senão não gasta o especial)
     for(const e of live){if(e.ride||inRiver(e.x,e.y)||Math.hypot(e.x-h.x,e.y-h.y)>240)continue;if(!tg||e.d/PATHS[e.p].len>tg.d/PATHS[tg.p].len)tg=e;}
     if(!tg){S.texts.push({x:h.x,y:h.y-30,s:tr('Não há ninguém para atropelar!','Nobody to trample!'),t:0,T:1.3,sp:true});return;}}
+  if(h.id==='arren'&&!near(150).length){S.texts.push({x:h.x,y:h.y-30,s:tr('Ninguém aceita o desafio?','Nobody dares to fight?'),t:0,T:1.3,sp:true});return;}
   S.cd.hero=heroSpCd(h);h.spT=0.7;
   if(h.id==='merc'){const R=big?170:110,es=near(R);let n=0;
     es.forEach(e=>{e.stunT=Math.max(e.stunT,e.f.boss?1:3);n++;});
@@ -1456,6 +1494,14 @@ function bossSpecial(h){
       if(!e.ride&&!e.f.boss)e.d=Math.max(PATHS[e.p].seg[0].L+2,e.d-(big?110:65));
       S.fx.push({k:'tent',x:h.x,y:h.y,x2:e.x,y2:e.y,r:0,t:0,T:0.8});});
     sfx('roar');jolt(3);S.texts.push({x:h.x,y:h.y-30,s:tr('Anda cá, anda!','Come here, you!'),t:0,T:1.4,sp:true});}
+  else if(h.id==='arren'){// desafio: salta para o mais forte (os dois mais fortes com a melhoria) e dá-lhe uma tareia
+    const es=near(150).sort((a,b)=>b.hp-a.hp).slice(0,big?2:1);
+    es.forEach((e,i)=>{if(i===0&&!e.ride&&!inRiver(e.x,e.y)){smoke(h.x,h.y,5);h.x=e.x-12;h.y=e.y+4;h.tx=null;h.ang=0;}
+      hurt(e,(e.f.boss?e.max*0.12:250+h.lv*30)*hm,true,'hero');S.fx.push({k:'boom',x:e.x,y:e.y,r:26,t:0,T:0.45});chips(e.x,e.y,8,'#9b2226',1);
+      if(e.dead){addGold('both',20);h.hp=Math.min(h.max,h.hp+h.max*0.5);S.texts.push({x:e.x,y:e.y-20,s:tr('Despachado! +20 💰','Dispatched! +20 💰'),t:0,T:1.6});}
+      else e.stunT=Math.max(e.stunT,2);});
+    sfx('smash');jolt(5);S.texts.push({x:h.x,y:h.y-30,s:tr('Anda cá, que eu mostro-te o que é Melgaço!','Come here and I’ll show you what Melgaço is!'),t:0,T:1.8,sp:true});
+    say(tr('Anda cá, que eu mostro-te o que é Melgaço!','Come here and I’ll show you what Melgaço is!'),'pt-PT',true,'her');}
   else{// cervo: atropela tudo entre a posição dele e o alvo
     const a=[h.x,h.y],b=[tg.x,tg.y],dmg=(70+h.lv*10)*hm*(big?2:1);
     for(const e of live){if(e.ride||dSeg(e.x,e.y,a,b)>26)continue;hurt(e,dmg,false,'hero',true);if(e.dead)continue;
@@ -1499,12 +1545,18 @@ function bossAct(e){
   else if(b==='coca'||b==='polvo'){e.bcd=5;const t=nearestTower(e,b==='coca'?150:130);
     if(t){t.disT=b==='coca'?3:4;t.disK=b;S.fx.push({k:b==='coca'?'fire':'tent',x:e.x,y:e.y,x2:t.x,y2:t.y,r:0,t:0,T:0.9});sfx('roar');
       S.texts.push({x:t.x,y:t.y-26,s:b==='coca'?tr('Queimou-nos a torre!','Our tower’s on fire!'):tr('Larga-me, bicho!','Let go of me, beast!'),t:0,T:1.6,sp:true});}}
+  else if(b==='arren'){e.bcd=5;// grita pelos castelhanos (andam mais depressa) e, se a heroína estiver perto, puxa-lhe os cabelos
+    for(const o of S.enemies)if(!o.dead&&o!==e&&Math.hypot(o.x-e.x,o.y-e.y)<100)o.hasteT=3;
+    S.fx.push({k:'ring',x:e.x,y:e.y,r:95,t:0,T:0.8,c:'155,34,38'});sfx('horn');
+    const h=S.hero;if(!h.dead&&!e.ride&&Math.hypot(h.x-e.x,h.y-e.y)<90){h.hp-=h.max*0.2;S.texts.push({x:h.x,y:h.y-30,s:tr('Ai, os puxões de cabelo!','Ow, she pulled my hair!'),t:0,T:1.6,sp:true});}
+    else S.texts.push({x:e.x,y:e.y-36,s:pick([tr('Força, castelhanos, que eu sei o caminho!','Come on, Castilians, I know the way!'),tr('Traidora, eu? Só mudei de fornecedor de presunto!','Traitor, me? I just changed ham supplier!'),
+      tr('Em Castela o Alvarinho é mais barato!','Alvarinho is cheaper in Castile!'),tr('Onde está a Inês Negra agora, hã?','Where’s Inês Negra now, eh?')]),t:0,T:1.8,sp:true});}
   else if(b==='cervo'){e.bcd=5;if(!inRiver(e.x,e.y)&&!e.blocked){e.d+=75;smoke(e.x,e.y,8);sfx('smash');S.texts.push({x:e.x,y:e.y-32,s:tr('O Cervo investe!','The Stag charges!'),t:0,T:1.4,sp:true});}}
 }
 function update(dt){
   S.t+=dt;S.stats.time+=dt;
   for(const k in S.cd)if(S.cd[k]>0)S.cd[k]=Math.max(0,S.cd[k]-dt);
-  S.idleT-=dt;if(S.idleT<=0){S.idleT=9+Math.random()*9;if(S.towers.length){const t=pick(S.towers),q=pick(Q.idle);S.texts.push({x:t.x,y:t.y-26,s:q,t:0,T:2.6,sp:true});say(q,'pt-PT');}}
+  S.idleT-=dt;if(S.idleT<=0){S.idleT=9+Math.random()*9;if(S.towers.length){const t=pick(S.towers),q=pick(LV.idle&&Math.random()<0.5?LV.idle:Q.idle);S.texts.push({x:t.x,y:t.y-26,s:q,t:0,T:2.6,sp:true});say(q,'pt-PT');}}
   if(S.spawning){
     S.spawnT-=dt;
     while(S.queue.length&&S.spawnT<=0){const q=S.queue[0];if(FSZ[q.t])S.spawnT+=launchBoat();else{S.queue.shift();spawn(q.t);S.spawnT+=q.gap;}}
@@ -1513,14 +1565,17 @@ function update(dt){
   if(S.comboT>0){S.comboT-=dt;if(S.comboT<=0)S.combo=0;}
   updateBoats(dt);
   updateHero(dt);
+  // bocas da Arrenegada: quem está perto dela abranda
+  const H0=S.hero,aura=H0.id==='arren'&&!H0.dead?(hUp(H0,'aura')?{r:100,f:0.65}:{r:70,f:0.8}):null;
   for(const e of S.enemies){
     if(e.dead)continue;
     if(e.slowT>0){e.slowT-=dt;if(e.slowT<=0)e.slowF=1;}
+    if(e.hasteT>0)e.hasteT-=dt;
     if(e.ride){if(e.stunT>0)e.stunT-=dt;}// a bordo: quem manda é o barco
     else if(e.stunT>0){e.stunT-=dt;e.cur=0;if(e.stunT<=0)e.eat=false;}
     else if(e.blocked)e.cur=0;
     else if(e.f.ranged&&!inRiver(e.x,e.y)&&rangedHold(e,dt))e.cur=0;
-    else{e.cur=e.spd*e.slowF*(S.weather==='chuva'?0.9:1);e.d+=e.cur*dt;e.atGate=0;
+    else{e.cur=e.spd*e.slowF*(S.weather==='chuva'?0.9:1)*(e.hasteT>0?1.4:1)*(aura&&Math.hypot(e.x-S.hero.x,e.y-S.hero.y)<aura.r?aura.f:1);e.d+=e.cur*dt;e.atGate=0;
       if(!e.f.fly)for(const q of LV.pathGates[e.p]){const G=S.gates[q.i];if(G.broken||e.d>=q.d+2)continue;const stop=q.d-e.r-7;
         if(e.d>stop&&e.d<q.d+2){e.d=stop;e.cur=0;e.atGate=1;G.hp-=gateDps(e)*dt;G.hitT=0.15;if(Math.random()<dt*3)chips(LV.gates[q.i].x,LV.gates[q.i].y,1,'#7a5230',0.5);
           if(G.hp<=0)breakGate(q.i);}break;}}
@@ -1533,7 +1588,7 @@ function update(dt){
     const P=PATHS[e.p],p=posAt(P,e.d);e.a=p.a;e.x=p.x-Math.sin(p.a)*e.off;e.y=p.y+Math.cos(p.a)*e.off;
     if(e.d>=P.len){e.dead=true;S.fx.push({k:'ring',x:e.x,y:e.y,r:30,t:0,T:0.6});sfx('leak');
       if(e.f.steal){const g=Math.min(S.gold,20+S.wave*2);S.gold-=g;if(S.coop)S.gold2-=Math.min(S.gold2,g);S.texts.push({x:e.x,y:e.y-26,s:pick(Q.steal)+' −'+g+'💰',t:0,T:1.8,sp:true});}
-      else{S.lives-=e.leak;hitHeart(e.leak);if(Math.random()<0.5)S.texts.push({x:e.x,y:e.y-26,s:pick(Q.leak),t:0,T:1.6,sp:true});}}
+      else{S.lives-=e.leak;hitHeart(e.leak);if(Math.random()<0.5)S.texts.push({x:e.x,y:e.y-26,s:pick(LV.leak&&Math.random()<0.5?LV.leak:Q.leak),t:0,T:1.6,sp:true});}}
   }
   if(S.lives<=0&&!S.over){S.lives=0;endGame(false);return;}
   const fog=S.weather==='nevoeiro';
@@ -2634,7 +2689,7 @@ function drawHero(){
   a.hot=hUp(h,'spBurn');a.lv=h.lv;
   c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';
   if(h.D.boss){c.restore();const e=h._fe||(h._fe={id:3,hero:1,f:FOES[h.D.boss]});
-    Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4:0});drawBoss(e);}
+    Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4.5:0});drawBoss(e);}
   else{if(h.id==='padeira')drawPadeira(c,a);else drawDeu(c,a);
   c.restore();}
   const w=26,y0=h.y-31;ctx.fillStyle='#2e2419';ctx.fillRect(h.x-w/2-1,y0,w+2,7);ctx.fillStyle=pal().g;ctx.fillRect(h.x-w/2,y0+1,w*Math.max(0,h.hp/h.max),3);
@@ -2716,6 +2771,22 @@ function drawBoss(e){
     c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.arc(0,0.8,1.2,0.2,Math.PI-0.2);c.stroke();
     c.fillStyle='#2f4a73';c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.ellipse(1,-10.2,5,1.6,0.12,0,Math.PI*2);c.fill();c.stroke();// boina de pescador
     oval(c,1.4,-11.8,1,1,'#9b2226',0.5);
+  }else if(b==='arren'){// a Arrenegada: portuguesa vestida à castelhana, carrapito, roca em punho e cara de poucos amigos
+    const sway=moving?Math.sin(ph)*0.8:0,bob=moving?Math.abs(Math.sin(ph))*0.8:Math.sin(t*2)*0.25,mad=e.bcd>4;
+    c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.8,7,1.8,0,0,Math.PI*2);c.fill();
+    c.translate(0,-bob);c.scale(fx,1);
+    heroFeet(c,ph,moving,8.6);heroSkirt(c,'#9b2226',sway,8.6,'#e8c24a');
+    c.strokeStyle='rgba(232,194,74,.8)';c.lineWidth=0.8;c.beginPath();c.moveTo(-5+sway*0.5,5);c.quadraticCurveTo(sway*0.4,6,5.2+sway*0.5,5);c.stroke();// faixa amarela de Castela
+    oval(c,0,0,4.6,3.6,'#e8c24a',0.9);c.fillStyle='#9b2226';c.fillRect(-4.3,-0.5,8.6,1.4);
+    oval(c,-4.6,1.8,1.5,2.3,SKIN,0.7);
+    oval(c,-3.6,-7.2,1.9,1.9,'#1e1812',0.6);// carrapito
+    head(c,-4.6);c.fillStyle='#1e1812';c.beginPath();c.arc(0,-5.9,3.9,Math.PI*1.08,-0.08);c.fill();// cabelo apanhado
+    c.fillStyle='#9b2226';c.beginPath();c.arc(-2.6,-8.4,0.9,0,Math.PI*2);c.fill();// flor no cabelo, à castelhana
+    faceEyes(c,0.7,-5,blink?0:1,blink);heroMouth(c,mad);
+    c.save();c.translate(3.8,1.2);c.rotate(-0.9+Math.sin(t*(mad?14:3))*(mad?0.5:0.15));// roca de fiar a abanar
+    c.strokeStyle=INK;c.lineWidth=1.9;c.beginPath();c.moveTo(0,0);c.lineTo(0,-11);c.stroke();c.strokeStyle='#9a6a3a';c.lineWidth=1;c.stroke();
+    oval(c,0,-11.8,1.9,2.6,'#efe3c6',0.6);c.strokeStyle='rgba(120,100,70,.6)';c.lineWidth=0.4;c.beginPath();c.moveTo(-1.2,-12.5);c.lineTo(1.2,-11);c.moveTo(-1.2,-11);c.lineTo(1.2,-12.8);c.stroke();
+    oval(c,0,0,1.3,1.3,SKIN,0.6);c.restore();
   }else{// Cervo Gigante: de perfil, a galopar, com uma armação enorme
     const g=moving?Math.sin(ph*1.2):0,bob=moving?Math.abs(Math.sin(ph*1.2))*0.9:Math.sin(t*1.8)*0.2;
     c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.4,9,1.9,0,0,Math.PI*2);c.fill();
@@ -2806,7 +2877,7 @@ function drawUpgradeMarks(){
     ctx.fill();ctx.stroke();});
 }
 // próxima vaga: composição e setas nos caminhos durante a contagem
-const E_IC={arqc:'bow',bomb:'cannon',peao:'dagger',cav:'horse',esc:'shield',nad:'swim',cont:'coinbag',cura:'plus',torre:'siege',ari:'ram',cap:'crown',merc:'basket',coca:'dragon',polvo:'octopus',cervo:'stag'};
+const E_IC={arren:'flagx',arqc:'bow',bomb:'cannon',peao:'dagger',cav:'horse',esc:'shield',nad:'swim',cont:'coinbag',cura:'plus',torre:'siege',ari:'ram',cap:'crown',merc:'basket',coca:'dragon',polvo:'octopus',cervo:'stag'};
 let nextCache={w:-1,lv:null,v:null};
 function nextWaveInfo(){
   if(!S||S.over||S.spawning||!S.started)return null;
@@ -3370,12 +3441,12 @@ function drawFlag(x,y,seed){
 
 /* ================= Mapa do Alto Minho por trás do menu ================= */
 // posições (0..1) das praças no mapa, usadas para "mergulhar" na praça escolhida ao entrar no jogo
-const MBG_XY={moncao:[1235,470],valenca:[895,510],cerveira:[575,585],ancora:[215,800]};
+const MBG_XY={melgaco:[1375,432],moncao:[1235,470],valenca:[895,510],cerveira:[575,585],ancora:[215,800]};
 const MBG={on:false,t:null};
 // área visível do mapa do menu: em paisagem é o mapa 1600×1000 (cortado para encher); em retrato estica-se na vertical
 // (mais Galiza em cima, mais Portugal em baixo) para o mapa encher o ecrã sem faixas vazias
 function menuVB(vw,vh){const ar=vw/vh;if(ar>=1.25)return{x:0,y:0,w:1600,h:1000,fs:1,port:false};
-  const w=ar<0.9?1400:1600,h=w/ar;return{x:0,y:540-h/2,w,h,fs:ar<0.9?1.65:1.25,port:true};}
+  const w=ar<0.9?1560:1600,h=w/ar;return{x:0,y:540-h/2,w,h,fs:ar<0.9?1.65:1.25,port:true};}
 function menuSvg(V){
   // rio: linha central suavizada (Catmull-Rom) e margens que alargam de nascente até à foz, onde entra no oceano
   const RC=[[1660,292],[1520,330],[1380,372],[1270,410],[1180,428],[1060,446],[950,470],[830,500],[720,515],[610,528],[500,552],[400,576],[300,598],[210,614],[120,628],[40,640]];
@@ -3394,7 +3465,7 @@ function menuSvg(V){
   const Y0=Math.min(0,V.y),Y1=Math.max(1000,V.y+V.h),fs=V.fs,R=rng(2024);
   const coast=`M190,${Y0} L190,0 C170,160 200,300 160,420 C140,520 175,610 150,700 C130,800 160,900 140,1000 L140,${Y1}`;
   // longe do rio, das vilas, do mar e dos títulos: onde se pode pôr colinas e árvores
-  const TOWNS=[[1235,470],[895,510],[575,585],[215,800],[1235,345],[900,415],[520,500],[225,560]];
+  const TOWNS=[[1375,432],[1400,318],[1235,470],[895,510],[575,585],[215,800],[1235,345],[900,415],[520,500],[225,560]];
   const dRiver=(x,y)=>{let m=1e9;for(const q of RP)m=Math.min(m,Math.hypot(q[0]-x,q[1]-y));return m;};
   const tY1=V.port?V.y+(330-V.y)*0.42:110,tY2=V.port?V.y+V.h-(V.y+V.h-900)*0.42:950;
   const cx=V.port?V.x+V.w-150:1470,cy=V.port?Math.min(V.y+V.h-150,1300):850,tX=V.port?V.x+V.w/2+80:930,tW=V.port?340:520;
@@ -3417,9 +3488,9 @@ function menuSvg(V){
   for(let i=0;i<Math.round((Y1-Y0-1000)/60);i++){const x=V.x+60+R()*(V.w-120),y=R()<0.5?Y0+40+R()*(-Y0-20):1020+R()*(Y1-1060);if(freeLand(x,y,30))HL.push([x,y,0.9+R()*0.6]);}
   const hills=HL.map(h=>hill(...h)).join('');
   const star=(x,y,r,col)=>{let p='';for(let i=0;i<12;i++){const a=-Math.PI/2+i*Math.PI/6,rr=i%2?r*0.55:r;p+=(i?'L':'M')+(x+Math.cos(a)*rr).toFixed(1)+','+(y+Math.sin(a)*rr).toFixed(1);}return `<path d="${p}Z" fill="${col}" stroke="#2e2419" stroke-width="2"/>`;};
-  const town=(k,x,y,label,sub)=>`<g><g class="pin">${star(x,y,17*Math.min(fs,1.35),'#b9ab8c')}<circle cx="${x}" cy="${y}" r="${5*Math.min(fs,1.35)}" fill="#9b2226"/></g>
-    <text x="${x}" y="${y+22+18*fs}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="${30*fs}" fill="#2e2419" stroke="#e9dcbc" stroke-width="${6*fs}" paint-order="stroke">${label}</text>
-    ${sub?`<text x="${x}" y="${y+22+42*fs}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${18*fs}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="${4*fs}" paint-order="stroke">${sub}</text>`:''}</g>`;
+  const town=(k,x,y,label,sub,dx=0)=>`<g><g class="pin">${star(x,y,17*Math.min(fs,1.35),'#b9ab8c')}<circle cx="${x}" cy="${y}" r="${5*Math.min(fs,1.35)}" fill="#9b2226"/></g>
+    <text x="${x+dx}" y="${y+22+18*fs}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="${30*fs}" fill="#2e2419" stroke="#e9dcbc" stroke-width="${6*fs}" paint-order="stroke">${label}</text>
+    ${sub?`<text x="${x+dx}" y="${y+22+42*fs}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${18*fs}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="${4*fs}" paint-order="stroke">${sub}</text>`:''}</g>`;
   const gal=(x,y,label)=>`<g><rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#a4583a" stroke="#2e2419"/><text x="${x}" y="${y-14}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${20*Math.min(fs,1.4)}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="4" paint-order="stroke">${label}</text></g>`;
   const boat=(x,y,rot)=>`<g class="boat" style="transform-box:fill-box;transform-origin:center"><g transform="translate(${x},${y}) rotate(${rot})"><path d="M-16,-6 L12,-6 L19,0 L12,6 L-16,6Z" fill="#6e4b2a" stroke="#2e2419" stroke-width="1.5"/><circle cx="-2" cy="0" r="4" fill="#b8302a"/></g></g>`;
   // rotas de ataque: saem da vila galega, atravessam o rio e acabam (com seta) à porta da praça portuguesa
@@ -3447,12 +3518,13 @@ function menuSvg(V){
   ${title(tY2,'PORTUGAL','ALTO MINHO')}
   <text x="${V.port?730:1075}" y="${V.port?478:492}" text-anchor="middle" transform="rotate(-7 ${V.port?730:1075} ${V.port?478:492})" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.4)}" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
   <text x="80" y="330" text-anchor="middle" transform="rotate(-90 80 330)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.3)}" fill="#2f4a52">${tr('Oceano Atlântico','Atlantic Ocean')}</text>
+  ${gal(1400,318,'Arbo')}${route('M1400,329 C1415,365 1380,392 1377,412')}${boat(1395,370,100)}
   ${gal(1235,345,'Salvaterra')}${gal(900,415,'Tui')}${gal(520,500,'Goián')}${gal(225,560,'A Guarda')}
   ${route('M1235,356 C1250,395 1225,425 1233,446')}${route('M900,426 C915,460 885,470 893,486')}${route('M520,511 C540,540 560,545 568,560')}
   ${route('M218,570 C150,600 60,640 70,720 C78,780 140,800 186,801')}
   ${boat(1238,408,95)}${boat(903,470,100)}${boat(545,546,55)}${boat(62,705,95)}
   ${town('moncao',1235,470,'Monção','Deu-la-Deu')}${town('valenca',895,510,'Valença',tr('Praça e Coroada','Praça & Coroada'))}
-  ${town('cerveira',575,585,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,800,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}
+  ${town('cerveira',575,585,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,800,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}${town('melgaco',1375,432,'Melgaço','Inês Negra',V.port?70:0)}
   <g transform="translate(${cx},${cy}) scale(${V.port?1.3:1})"><circle r="46" fill="#e9dcbc" stroke="#2e2419" stroke-width="2"/><path d="M0,-66 L10,0 L0,66 L-10,0Z" fill="#2e2419"/><path d="M-58,0 L0,8 L58,0 L0,-8Z" fill="none" stroke="#2e2419" stroke-width="2"/><text y="-78" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="#2e2419">N</text></g>
   <rect x="${V.x+12}" y="${V.y+12}" width="${V.w-24}" height="${V.h-24}" fill="none" stroke="#3e3222" stroke-width="${4*fs}"/><rect x="${V.x+12+12*fs}" y="${V.y+12+12*fs}" width="${V.w-24-24*fs}" height="${V.h-24-24*fs}" fill="none" stroke="#3e3222" stroke-width="1.5"/>
 </svg>`;
@@ -4081,7 +4153,7 @@ function showHelp(back){
     <p>Os castelhanos atravessam o rio de barco: batéis pequenos, barcas, galeotas e, mais tarde, naus enormes. Cada barco leva vários inimigos, e os maiores ocupam mais lugares (um cavaleiro vale dois peões, um aríete ou uma torre de cerco enchem uma barca). Quanto mais avanças, maiores são os barcos.</p>
     <p>Nadadores vêm pelo meio e esbarram no postigo, que também tem porta. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Archeiros e bombardas param longe e atacam as portas à distância: as bombardas são lentas mas arrombam uma porta em poucos tiros. Na vaga 10 rebentam o postigo e passam a usar três caminhos; podes voltar a fechá-lo com Fechar portas.</p>
     <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão ⤢ alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The ⤢ button switches between your fortress and the whole map.')}</p>
-    <p>${ic('crown')} ${tr('Ganha um mapa pela primeira vez e a lenda desse mapa muda de lado: o Mercador das Toalhas (Valença), a Coca (Monção), o Polvo da Lagarteira (Âncora) e o Cervo Gigante (Cerveira) passam a poder ser escolhidos como heróis, cada um com o seu especial e as suas melhorias. A Coca voa por cima do rio, o Polvo nada e segura nadadores, o Cervo carrega contra o inimigo mais adiantado e o Mercador faz mais ouro.','Win a map for the first time and its legend switches sides: the Towel Merchant (Valença), the Coca (Monção), the Lagarteira Octopus (Âncora) and the Giant Stag (Cerveira) can then be picked as heroes, each with its own special and upgrades. The Coca flies over the river, the Octopus swims and holds swimmers, the Stag charges the most advanced enemy and the Merchant makes more gold.')}</p>
+    <p>${ic('crown')} ${tr('Ganha um mapa pela primeira vez e a lenda desse mapa muda de lado: o Mercador das Toalhas (Valença), a Coca (Monção), o Polvo da Lagarteira (Âncora), o Cervo Gigante (Cerveira) e a Arrenegada (Melgaço) passam a poder ser escolhidos como heróis, cada um com o seu especial e as suas melhorias. A Coca voa por cima do rio, o Polvo nada e segura nadadores, o Cervo carrega contra o inimigo mais adiantado, o Mercador faz mais ouro e a Arrenegada desafia o inimigo mais forte.','Win a map for the first time and its legend switches sides: the Towel Merchant (Valença), the Coca (Monção), the Lagarteira Octopus (Âncora), the Giant Stag (Cerveira) and the Arrenegada (Melgaço) can then be picked as heroes, each with its own special and upgrades. The Coca flies over the river, the Octopus swims and holds swimmers, the Stag charges the most advanced enemy, the Merchant makes more gold and the Arrenegada duels the strongest enemy.')}</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
@@ -4156,7 +4228,13 @@ const END_MSG={
          tr('As barcas voltam para Goián e o Minho fica outra vez só para barqueiros e pescadores de lampreia. Na próxima Bienal de Arte já há uma instalação nova: «Barcas castelhanas abandonadas, técnica mista».','The boats head back to Goián and the Minho belongs once more to ferrymen and lamprey fishermen. The next Art Biennial already has a new installation: “Abandoned Castilian boats, mixed media”.')],
     loseTitle:tr('Levaram o Cervo para Goián','They took the Stag to Goián'),
     lose:tr('Os castelhanos chegaram à torre de menagem na vaga {w}. Pior ainda: desceram o Cervo do monte e puseram-no numa rotunda em Goián. E nenhum barqueiro de Cerveira aceita ir buscá-lo.','The Castilians reached the keep on wave {w}. Worse still: they took the Stag down from the hill and put it on a roundabout in Goián. And no ferryman in Cerveira will go and fetch it.'),
-    inf:tr('Cerveira aguentou mais {x} vagas. A Bienal já pensa fazer uma exposição só com os capacetes que ficaram no rio.','Cerveira held for {x} more waves. The Biennial is planning an exhibition of nothing but the helmets left in the river.')}
+    inf:tr('Cerveira aguentou mais {x} vagas. A Bienal já pensa fazer uma exposição só com os capacetes que ficaram no rio.','Cerveira held for {x} more waves. The Biennial is planning an exhibition of nothing but the helmets left in the river.')},
+  melgaco:{
+    win:[tr('Melgaço aguentou, tal como em 1388, quando a Inês Negra correu com a Arrenegada à estalada no alto da muralha. Desta vez nem foi preciso despentear ninguém: bastaram as torres.','Melgaço held, just like in 1388, when Inês Negra slapped the Arrenegada off the top of the wall. This time nobody even had to mess up their hair: the towers were enough.'),
+         tr('As barcas voltam para Arbo e o contrabando fica, como sempre, por conta dos de cá. Na Festa do Alvarinho e do Fumeiro deste ano há brinde especial: um presunto por cada castelhano que voltou a nado.','The boats head back to Arbo and the smuggling stays, as always, in local hands. This year’s Alvarinho and Smoked Meats Festival has a special prize: a ham for every Castilian who swam home.')],
+    loseTitle:tr('Levaram o fumeiro todo','They took all the smoked meats'),
+    lose:tr('Os castelhanos chegaram à torre de menagem na vaga {w} e levaram os presuntos, os salpicões e as garrafas de Alvarinho. Em Arbo já se vende «fumeiro galego» com um sotaque muito suspeito. A Inês Negra, se cá estivesse, resolvia isto à chapada.','The Castilians reached the keep on wave {w} and took the hams, the sausages and the bottles of Alvarinho. Arbo is already selling “Galician smoked meats” with a very suspicious accent. If Inês Negra were here, she’d sort this out with a slap.'),
+    inf:tr('Melgaço aguentou mais {x} vagas. Os contrabandistas de Arbo já pedem para passar só com o café, como antigamente.','Melgaço held for {x} more waves. The Arbo smugglers are now asking to cross with just the coffee, like in the old days.')}
 };
 function showEnd(win){
   if(win&&!S.infinite)setTimeout(confetti,250);else if(!win)defeatFx(true);

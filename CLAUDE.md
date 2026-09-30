@@ -1,6 +1,6 @@
 # Minho Defenders (O Cerco do Minho)
 
-Jogo de *tower defense* no browser, passado nas praças-fortes do Alto Minho: Valença, Monção, Caminha/Âncora e Cerveira. O tom é histórico e humorístico: os castelhanos invadem e os portugueses defendem-se com arqueiros, besteiros, trabucos, azeite a ferver e duas heroínas lendárias.
+Jogo de *tower defense* no browser, passado nas praças-fortes do Alto Minho: Valença, Monção, Caminha/Âncora, Cerveira e Melgaço. O tom é histórico e humorístico: os castelhanos invadem e os portugueses defendem-se com arqueiros, besteiros, trabucos, azeite a ferver e duas heroínas lendárias.
 
 - **Idioma:** o jogo é bilingue através de `tr('pt','en')`, e o português (de Portugal) é o principal. O utilizador escreve em português europeu, por isso as respostas e as mensagens de commit são em português.
 - **Tudo num só ficheiro:** `index.html`. É HTML, CSS e JS inline, sem build nem dependências, e desenha em Canvas 2D.
@@ -30,7 +30,7 @@ O jogo também está alojado no GitHub Pages.
 | Secção | O que tem |
 |---|---|
 | 00-base, 00b-icones | `$`, `LS` (localStorage com o prefixo `cerco-`), `tr`, `ICONS`/`ic`/`drawIc` |
-| 01-geometria-mapas | `LEVELS` (`defValenca`, `defMoncao`, `defAncora`, `defCerveira`). `pushBack` afasta as fortalezas do rio e faz as estradas às curvas. Também `loadLevel`, `PATHS`, `SLOTS`, `LV.gates`, `edgeGate` e `sandbars` (ínsuas) |
+| 01-geometria-mapas | `LEVELS` (`defValenca`, `defMoncao`, `defAncora`, `defCerveira`, `defMelgaco`; `push` por mapa, `idle`/`leak` com frases locais). `pushBack` afasta as fortalezas do rio e faz as estradas às curvas. Também `loadLevel`, `PATHS`, `SLOTS`, `LV.gates`, `edgeGate` e `sandbars` (ínsuas) |
 | 02-regras-humor | `TYPES` (torres arq/bes/tra/cal, 4 níveis, especialização no nível 3 com `br` 0/1), `FOES`, `BOSS`, `DIFFS`, `HEROES` (padeira, deuladeu), `ABIL`, `WEATHER`, `waveDef`, bênçãos e pactos, frases de humor |
 | 03-som-vozes | Web Audio: `audio()`, `tone`, `noise`, `sfx(n)`, `sndMode` (0 desligado, 1 efeitos, 2 efeitos e vozes), `say()`. Volumes em `VOL` (geral, música, efeitos, vozes; sliders nas Opções, guardados em `cerco-vol`): os efeitos vão para `sfxG`, as vozes para `voxG` e a música para `musG`, todos ligados a `master`. **Música procedural** (`MUS`, `SONGS.menu`/`SONGS.game`, `setMusic(nome)` com transição cruzada, `musKick` no primeiro toque; é desligável em Opções) |
 | 04-conquistas-recordes | conquistas e recordes partilhados (`db`) |
@@ -52,7 +52,7 @@ O jogo também está alojado no GitHub Pages.
 - **Inimigos:**
   - vêm por estradas e alguns atravessam o rio a nado (os nadadores);
   - os archeiros e as bombardas atacam as portas de longe;
-  - nas vagas 10 e 20 aparece o chefe de cada mapa (Mercador das Toalhas, Coca, Polvo da Lagarteira, Cervo Gigante).
+  - nas vagas 10 e 20 aparece o chefe de cada mapa (Mercador das Toalhas, Coca, Polvo da Lagarteira, Cervo Gigante, Arrenegada). Ganhar um mapa pela primeira vez desbloqueia o chefe como herói (`HEROES[k].map`, `heroLocked`, `bossSpecial`).
 - **Barcos:** os inimigos (menos nadadores, a Coca, o Polvo e o Cervo) atravessam o rio em barcos (`BOATS`: batel, barca, galeota, nau), que aparecem por vaga (`from`) e com peso crescente. Cada inimigo ocupa `FSZ[t]` lugares. `launchBoat`/`seatBoat`/`updateBoats` em 05; `drawBoat` em 07. A bordo, o inimigo tem `e.ride=id` do barco e não anda sozinho.
 - **Heroína:** bloqueia até 3 inimigos, move-se tocando nela e depois no mapa, e tem um poder especial. Ganha experiência (`heroXP`) até ao nível 10; nos níveis 3, 6 e 9 escolhe uma de duas melhorias (`HEROES[id].ups`, `hUp(h,k)`), no painel dela.
 - **Postigo:** a porta da estrada dos nadadores é destrutível como as outras; na vaga 10 rebenta e abre o terceiro caminho, mas pode voltar a ser fechada.
