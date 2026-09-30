@@ -44,7 +44,8 @@ O jogo também está alojado no GitHub Pages.
 
 ## Mecânicas principais
 
-- **Onde se constrói:** as torres só se constroem em lugares fixos (as bandeiras). No nível 3 escolhe-se uma de duas especializações.
+- **Onde se constrói:** as torres só se constroem em lugares fixos (as bandeiras). No nível 3 escolhe-se uma de duas especializações; o nível 5 dá um efeito próprio a cada uma (`TYPES[k].L5`, `multi`/`stun` em `tstat`).
+- **Gastar ouro no fim:** obras na praça (`WORKS`, tocar no coração da praça, `S.works`, `applyWork`) e treino/oferendas da heroína (`heroBuy`, `h.gift`).
 - **Portas e habilidades:**
   - as portas das muralhas têm vida e os inimigos arrombam-nas;
   - "Fechar portas" atordoa quem está em terra e reconstrói as portas;
@@ -52,6 +53,7 @@ O jogo também está alojado no GitHub Pages.
 - **Inimigos:**
   - vêm por estradas e alguns atravessam o rio a nado (os nadadores);
   - os archeiros e as bombardas atacam as portas de longe;
+  - vagas avançadas: sapador (`e.under`, cava por baixo da primeira porta fechada), porta-estandarte (`armorB`), gaiteiro (`gaitB`), peregrino espião (`e.hidden`, `reveal`); elites a partir da vaga 15 (`e.elite`);
   - nas vagas 10 e 20 aparece o chefe de cada mapa (Mercador das Toalhas, Coca, Polvo da Lagarteira, Cervo Gigante, Arrenegada). Ganhar um mapa pela primeira vez desbloqueia o chefe como herói (`HEROES[k].map`, `heroLocked`, `bossSpecial`).
 - **Barcos:** os inimigos (menos nadadores, a Coca, o Polvo e o Cervo) atravessam o rio em barcos (`BOATS`: batel, barca, galeota, nau), que aparecem por vaga (`from`) e com peso crescente. Cada inimigo ocupa `FSZ[t]` lugares. `launchBoat`/`seatBoat`/`updateBoats` em 05; `drawBoat` em 07. A bordo, o inimigo tem `e.ride=id` do barco e não anda sozinho.
 - **Heroína:** bloqueia até 3 inimigos, move-se tocando nela e depois no mapa, e tem um poder especial. Ganha experiência (`heroXP`) até ao nível 10; nos níveis 3, 6 e 9 escolhe uma de duas melhorias (`HEROES[id].ups`, `hUp(h,k)`), no painel dela.
