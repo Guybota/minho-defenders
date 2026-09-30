@@ -1303,8 +1303,8 @@ function newGame(lvl,di,heroId){
   drawBG();renderPanel();if(leftDuel)resize();
 }
 function mkFoe(t,p,d){
-  // todos com +20% de vida e 10% mais lentos que o valor base
-  const f=FOES[t],m=hpMult(Math.max(1,S.wave))*1.2,sp=f.spd*0.9;
+  // vida: os +20% de antes baixados 20% (1,2×0,8); 10% mais lentos que o valor base
+  const f=FOES[t],m=hpMult(Math.max(1,S.wave))*0.96,sp=f.spd*0.9;
   const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:sp,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
     d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:sp,blocked:false};
   // elites: a partir da vaga 15 alguns vêm com mais vida, mais armadura e o dobro do ouro (contorno dourado)
