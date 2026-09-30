@@ -875,7 +875,7 @@ const HERO_MAX=10,HERO_TIERS=[3,6,9],xpNeed=lv=>30+lv*22;
 const hUp=(h,k)=>(h.ups||[]).some((b,i)=>h.D.ups[i]&&h.D.ups[i][b]&&h.D.ups[i][b].k===k);
 const heroPend=h=>HERO_TIERS.filter(l=>h.lv>=l).length-(h.ups||[]).length;
 const heroSpCd=h=>h.D.sp.cd*S.mods.cd*(hUp(h,'spFast')?0.6:1);
-const ABIL={rain:{cd:25,name:tr('Chuva de flechas','Arrow rain')},gate:{cd:40,name:tr('Fechar portas','Close the gates')},bell:{cd:45,name:tr('Sino','Bell')}};
+const ABIL={rain:{cd:25,name:tr('Chuva de flechas','Arrow rain')},gate:{cd:40,name:tr('Fechar portas','Close the gates')},bell:{cd:30,name:tr('Sino','Bell')}};
 const WEATHER={sol:{ic:'sun',name:tr('Sol','Sun')},noite:{ic:'moon',name:tr('Noite','Night')},chuva:{ic:'rain',name:tr('Chuva','Rain')},nevoeiro:{ic:'fog',name:tr('Nevoeiro','Fog')}};
 function waveDef(w){
   const g=[['peao',6+Math.round(w*2),0.8]];
@@ -1459,7 +1459,7 @@ function useAbility(k,x,y,who){
     repairGates();
     S.texts.push({x:W/2,y:440,s:tr('Portas fechadas e reparadas!','Gates shut and repaired!'),t:0,T:2,big:true});sfx('horn');say(tr('Portas fechadas!','Gates shut!'),'pt-PT',true);
   }else if(k==='bell'){
-    if(S.cd.bell>0)return;S.cd.bell=ABIL.bell.cd*S.mods.cd;const g=25+5*S.wave;if(S.local)addGold('all',Math.ceil(g/2));else addGold(who||1,g);S.stats.bells++;
+    if(S.cd.bell>0)return;S.cd.bell=ABIL.bell.cd*S.mods.cd;const g=30;if(S.local)addGold('all',Math.ceil(g/2));else addGold(who||1,g);S.stats.bells++;
     const m=LV.marks[0];S.fx.push({k:'ring',x:m.x,y:m.y,r:60,t:0,T:1.2,c:'201,151,28'});
     S.texts.push({x:m.x,y:m.y-40,s:tr('Dlim-dlão! +','Ding-dong! +')+g+' ¤',t:0,T:1.8});sfx('bell');if(S.stats.bells>=10)unlock('sino');
   }
@@ -4170,7 +4170,7 @@ function showHelp(back){
     <p>A heroína bloqueia até três inimigos. Toca nela e depois no mapa para a mover. O poder especial está no painel dela.</p>
     <p>${ic('star')} A heroína ganha experiência a derrotar inimigos e sobe até ao nível 10. Nos níveis 3, 6 e 9 escolhes uma de duas melhorias no painel dela.</p>
     <p>${ic('arrows')} Chuva de flechas numa zona à escolha. ${ic('gate')} Fechar portas trava todos os que estão em terra e reconstrói as portas. Os poderes só se usam depois de começar a primeira vaga.</p>
-    <p>As portas das muralhas travam os inimigos, mas eles arrombam-nas: os aríetes num instante. Uma porta arrombada fica aberta até a mandares reconstruir. ${ic('bell')} O sino dá ouro.</p>
+    <p>As portas das muralhas travam os inimigos, mas eles arrombam-nas: os aríetes num instante. Uma porta arrombada fica aberta até a mandares reconstruir. ${ic('bell')} O sino dá 30 moedas de 30 em 30 segundos.</p>
     <p>Zoom: dois dedos no ecrã, a roda do rato ou os botões ${ic('zin')} e ${ic('zout')}. Com zoom, arrasta o mapa com um dedo.</p>
     <p>${ic('castle')} Cada inimigo que chega ao coração da praça (a igreja, o paiol ou a torre de menagem) tira vidas, e vê-se: as muralhas racham, a praça arde e a bandeira rasga-se.</p>
     <p>${ic('swords')} Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
