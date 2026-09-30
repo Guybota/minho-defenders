@@ -302,8 +302,18 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
   min-width:min(16rem,64vw);min-height:50px;border-radius:999px;font-size:1.05rem;box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 0 0 2px rgba(251,241,220,.35)}
 #bWave:not(:disabled):active{transform:translateX(-50%) translateY(1px) scale(.97)}
 #bWave:disabled{background:var(--glass);opacity:.92}
-#abil{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .5rem);top:50%;transform:translateY(-50%);
-  flex-direction:column;gap:.5rem;padding:0;border:0;background:none;box-shadow:none;transition:opacity .25s,transform .25s}
+#abil{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .6rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 72px);top:auto;transform:none;
+  flex-direction:column-reverse;align-items:center;gap:.5rem;padding:0;border:0;background:none;box-shadow:none;transition:opacity .25s;pointer-events:none}
+#abil .ab{transition:opacity .22s ease,transform .28s cubic-bezier(.2,1.3,.4,1),border-color .15s,background-color .15s}
+#abil:not(.open) .ab{opacity:0;transform:translateY(30px) scale(.5);pointer-events:none}
+#abil.open .ab{pointer-events:auto}
+#abil.open .ab:nth-child(2){transition-delay:.04s}#abil.open .ab:nth-child(3){transition-delay:.08s}#abil.open .ab:nth-child(4){transition-delay:.12s}
+#abilT{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);width:64px;height:64px;min-height:0;padding:0;border-radius:50%;
+  background:var(--bg);background:var(--glass);border:2px solid var(--line);box-shadow:0 4px 12px var(--shadow);transition:opacity .25s,transform .2s,border-color .15s}
+#abilT .ai{font-size:1.9rem;line-height:1;display:inline-block;transition:transform .3s cubic-bezier(.2,1.3,.4,1)}
+#abilT[aria-expanded="true"]{border-color:var(--red)}
+#abilT[aria-expanded="true"] .ai{transform:rotate(45deg) scale(.9)}
+#abilT .dot{position:absolute;top:3px;right:3px;width:13px;height:13px;border-radius:50%;background:var(--gold);border:2px solid var(--bg);animation:pulse 1.4s ease-out infinite}
 .ab{flex:0 0 auto;width:62px;height:62px;min-height:0;border-radius:50%;padding:.15rem;background:var(--bg);background:var(--glass);box-shadow:0 4px 12px var(--shadow)}
 .ab .ai{font-size:1.55rem}
 .ab .an{font-size:.58rem;letter-spacing:.02em}
@@ -319,7 +329,9 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
   #hud .stats{flex:1 1 100%;justify-content:space-around}
   .ab{width:54px;height:54px}.ab .ai{font-size:1.35rem}.ab .an{display:none}
   #zoomb button{width:34px;height:34px}
-  body.panel-open #abil,body.panel-open #zoomb{opacity:0;pointer-events:none}
+  body.panel-open #abil,body.panel-open #abilT,body.panel-open #zoomb{opacity:0;pointer-events:none}
+  body.panel-open #abil .ab{pointer-events:none}
+  #abilT{width:56px;height:56px}#abil{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 64px)}
   body.panel-open #bWave{opacity:0;pointer-events:none}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -349,6 +361,7 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 <div id="stage"><canvas id="c"></canvas>
   <div id="zoomb"><button data-z="in" aria-label="Aproximar">＋</button><button data-z="out" aria-label="Afastar">－</button><button data-z="reset" aria-label="Ver mapa inteiro">⤢</button></div>
   <div id="panel" aria-live="polite"></div></div>
+<button id="abilT" aria-label="Poderes" aria-expanded="false" aria-controls="abil"><span class="ai" data-ic="powers"></span><b class="dot" hidden></b></button>
 <nav id="abil" aria-label="Poderes">
   <button class="ab" data-ab="rain"><span class="ai" data-ic="arrows"></span><span class="an">Flechas</span><em></em><i></i></button>
   <button class="ab" data-ab="gate"><span class="ai" data-ic="gate"></span><span class="an">Portas</span><em></em><i></i></button>
@@ -456,6 +469,7 @@ const ICONS=(()=>{
     swim:c(12,7.5,3.3,'#e0b88a')+s('M4 13.5l3-2.5 3 2M20 13.5l-3-2.5-3 2',null,1.5)+`<path d="M2 16.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0M2 20.5c2.5-1.5 4.5 1.5 7 0s4.5 1.5 7 0 4.5 1.5 6 0" fill="none" stroke="${WA}" stroke-width="1.8" stroke-linecap="round"/>`,
     plus:s('M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',P)+f('M10.2 4.2h3.6v6h6v3.6h-6v6h-3.6v-6h-6v-3.6h6z',R),
     siege:s('M6 21.5V6l6-3.5L18 6v15.5z',WD)+s('M6 10h12M6 14.5h12M6 18.5h12M9 6v15.5M15 6v15.5',null,.8)+s('M10 21.5v-4h4v4',K,1)+c(7,21.5,1.6,ST,1)+c(17,21.5,1.6,ST,1),
+    powers:s('M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z',GL)+f('M11.4 5.5l-1 3.6-3.4 1.3 3.2.2z',P)+s('M19 2.8v3.4M17.3 4.5h3.4M5 17.8v3.4M3.3 19.5h3.4',null,1.3)+`<circle cx="12" cy="12" r="1.6" fill="${R}" stroke="${K}" stroke-width=".8"/>`,
     ram:s('M3.5 9.5h14l3 2.5-3 2.5h-14z',WD)+s('M17.5 9.5c1.5 0 3 1 3 2.5s-1.5 2.5-3 2.5',ST)+s('M7 9.5V4.5M13 9.5V4.5M5 4.5h10',null,1.5)+c(6,18,2.5,ST)+c(15,18,2.5,ST)+s('M6 14.5v1M15 14.5v1',null,1.2)
   };
   delete I.castleflag;
@@ -1819,6 +1833,8 @@ function hud(){
     const sec=cd>0?String(Math.ceil(cd)):'',em=el.querySelector('em');if(em.textContent!==sec)em.textContent=sec;
     const on=cd>0;if(el.classList.contains('cd')!==on){el.classList.toggle('cd',on);if(!on&&S.started)pop(el,'ready');}
     const pr=(k==='rain'&&S.aim==='rain')||(k==='hero'&&S.sel==='hero');if(el.getAttribute('aria-pressed')!==String(pr))el.setAttribute('aria-pressed',String(pr));});
+  // pontinho dourado no botão fechado quando há algum poder pronto
+  {const ready=S.started&&!S.over&&!$('abil').classList.contains('open')&&['rain','gate','bell','hero'].some(k=>S.cd[k]<=0),d=$('abilT').querySelector('.dot');if(d.hidden===ready)d.hidden=!ready;}
   const now=performance.now(),mg=myGold();
   // não reconstruir o painel (o botão debaixo do dedo seria substituído a meio do toque): só atualizar o que mudou
   if(mg!==lastGold||(S.sel==='hero'&&now-lastPanelTick>250)){lastGold=mg;lastPanelTick=now;if(S.sel!=null)refreshPanel();}
@@ -1886,6 +1902,10 @@ $('panel').addEventListener('click',ev=>{
   else if(a==='pri')act({a:'pri',i});
   else if(a==='sell')act({a:'sell',i});
 });
+// os poderes ficam escondidos atrás de um botão no canto inferior esquerdo; o estado aberto/fechado fica guardado
+function setAbilOpen(o){$('abil').classList.toggle('open',o);$('abilT').setAttribute('aria-expanded',String(o));LS.set('abil',o);}
+$('abilT').addEventListener('click',()=>{audio();setAbilOpen(!$('abil').classList.contains('open'));});
+setAbilOpen(!!LS.get('abil',false));
 document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
   if(!S||!S.started||S.over)return;audio();const k=el.dataset.ab;
   if(k==='hero'){S.sel=S.sel==='hero'?null:'hero';S.aim=null;renderPanel();}
@@ -2006,7 +2026,21 @@ function drawFlag(x,y,seed){
 const MBG_POS={moncao:[.77,.42],valenca:[.56,.47],cerveira:[.36,.52],ancora:[.13,.8]};
 const MBG={on:false,t:null};
 function menuSvg(){
-  const river='M1640,300 C1520,320 1470,380 1380,372 C1300,366 1270,430 1180,428 C1080,426 1040,470 950,470 C860,470 820,520 720,515 C620,510 590,548 500,552 C420,556 370,590 300,598 C250,604 215,615 175,622';
+  // rio: linha central suavizada (Catmull-Rom) e margens que alargam de nascente até à foz, onde entra no oceano
+  const RC=[[1660,292],[1520,330],[1380,372],[1270,410],[1180,428],[1060,446],[950,470],[830,500],[720,515],[610,528],[500,552],[400,576],[300,598],[210,614],[120,628],[40,640]];
+  const smooth=(P,n)=>{const o=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
+    for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;o.push([0,1].map(j=>0.5*(2*p1[j]+(-p0[j]+p2[j])*t+(2*p0[j]-5*p1[j]+4*p2[j]-p3[j])*t2+(-p0[j]+3*p1[j]-3*p2[j]+p3[j])*t3)));}}
+    o.push(P[P.length-1]);return o;};
+  const RP=smooth(RC,8);
+  const rw=i=>{const u=i/(RP.length-1);return 10+u*u*15+Math.sin(i*0.37)*1.2;};
+  const bankL=[],bankR=[];RP.forEach((p,i)=>{const a=RP[Math.max(0,i-1)],b=RP[Math.min(RP.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,w=rw(i);
+    bankL.push([p[0]-dy/L*w,p[1]+dx/L*w]);bankR.push([p[0]+dy/L*w,p[1]-dx/L*w]);});
+  const pts=a=>a.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
+  const riverShape='M'+pts(bankL)+' L'+pts(bankR.slice().reverse())+'Z';
+  const bankPath=b=>'M'+pts(b);
+  // pequenas ondas de corrente dentro do rio (curtas, desencontradas: nada de linha contínua a lembrar uma estrada)
+  const ripples=RP.filter((p,i)=>i%5===2&&i<RP.length-6).map((p,i)=>{const o=(i%2?1:-1)*rw(i*5)*0.35;return `<path d="M${(p[0]-9).toFixed(0)},${(p[1]+o).toFixed(0)} q5,-3 9,0 t9,0" fill="none" stroke="#dfe7e4" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>`;}).join('');
+  const coast='M190,0 C170,160 200,300 160,420 C140,520 175,610 150,700 C130,800 160,900 140,1000';
   const hill=(x,y,s)=>`<path d="M${x-26*s},${y} q${26*s},-${30*s} ${52*s},0 M${x-4*s},${y-4*s} q${16*s},-${18*s} ${32*s},0" fill="none" stroke="#7d8a4e" stroke-width="2" opacity=".55"/>`;
   const hills=[[1300,700,1.2],[1180,780,1],[1420,820,1.3],[980,720,1],[820,820,1.2],[640,760,1],[460,900,1.4],[350,780,1.1],[1250,180,1],[1050,150,1.2],[820,210,1],[620,170,1.1],[420,250,1],[1450,160,1.3],[1500,640,1]].map(h=>hill(...h)).join('');
   const star=(x,y,r,col)=>{let p='';for(let i=0;i<12;i++){const a=-Math.PI/2+i*Math.PI/6,rr=i%2?r*0.55:r;p+=(i?'L':'M')+(x+Math.cos(a)*rr).toFixed(1)+','+(y+Math.sin(a)*rr).toFixed(1);}return `<path d="${p}Z" fill="${col}" stroke="#2e2419" stroke-width="2"/>`;};
@@ -2015,26 +2049,32 @@ function menuSvg(){
     ${sub?`<text x="${x}" y="${y+64}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="18" fill="#6b5a42">${sub}</text>`:''}</g>`;
   const gal=(x,y,label)=>`<g><rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#a4583a" stroke="#2e2419"/><text x="${x}" y="${y-14}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="20" fill="#6b5a42">${label}</text></g>`;
   const boat=(x,y,rot)=>`<g class="boat" style="transform-box:fill-box;transform-origin:center"><g transform="translate(${x},${y}) rotate(${rot})"><path d="M-16,-6 L12,-6 L19,0 L12,6 L-16,6Z" fill="#6e4b2a" stroke="#2e2419" stroke-width="1.5"/><circle cx="-2" cy="0" r="4" fill="#b8302a"/></g></g>`;
-  const route=(x1,y1,x2,y2)=>`<path class="route" d="M${x1},${y1} Q${(x1+x2)/2+30},${(y1+y2)/2} ${x2},${y2}" fill="none" stroke="#9b2226" stroke-width="2.5" opacity=".75"/>`;
+  // rotas de ataque: saem da vila galega, atravessam o rio e acabam (com seta) à porta da praça portuguesa
+  const route=d=>`<path class="route" d="${d}" fill="none" stroke="#9b2226" stroke-width="3" opacity=".8" marker-end="url(#arr)"/>`;
   const waves=Array.from({length:14},(_,i)=>`<path class="wave" d="M${10+(i%2)*30},${120+i*62} q20,-8 40,0 t40,0 t40,0" fill="none" stroke="#4f6a73" stroke-width="2" opacity=".5"/>`).join('');
   const dots=Array.from({length:260},(_,i)=>{const x=(i*397)%1600,y=(i*613)%1000;return `<rect x="${x}" y="${y}" width="2" height="2" fill="#78603c" opacity=".12"/>`;}).join('');
   return `<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5Z" fill="#9b2226"/></marker></defs>
   <rect width="1600" height="1000" fill="#e9dcbc"/>${dots}
   <ellipse cx="1100" cy="780" rx="420" ry="160" fill="#7d8a4e" opacity=".14"/><ellipse cx="520" cy="820" rx="300" ry="140" fill="#7d8a4e" opacity=".14"/>
   <ellipse cx="900" cy="200" rx="480" ry="130" fill="#7d8a4e" opacity=".12"/>
-  <path d="M0,0 L190,0 C170,160 200,300 160,420 C140,520 175,610 150,700 C130,800 160,900 140,1000 L0,1000Z" fill="#8fa7ad" stroke="#4f6a73" stroke-width="3"/>
+  <path d="${riverShape}" fill="#8fa7ad"/>
+  <path d="${bankPath(bankL)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
+  <path d="${bankPath(bankR)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
+  <path d="${coast} L0,1000 L0,0Z" fill="#8fa7ad"/>
+  <path d="${coast}" fill="none" stroke="#4f6a73" stroke-width="3"/>
+  <ellipse cx="160" cy="624" rx="16" ry="24" fill="#8fa7ad"/>
+  ${ripples}
   ${waves}
-  <path d="${river}" fill="none" stroke="#4f6a73" stroke-width="46" stroke-linecap="round"/>
-  <path d="${river}" fill="none" stroke="#8fa7ad" stroke-width="40" stroke-linecap="round"/>
-  <path d="${river}" fill="none" stroke="#dfe7e4" stroke-width="2" stroke-dasharray="14 18" opacity=".7"/>
   ${hills}
   <text x="930" y="110" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="46" letter-spacing="10" fill="#6b5a42" opacity=".85">${tr('GALIZA · REINO DE CASTELA','GALICIA · KINGDOM OF CASTILE')}</text>
   <text x="930" y="950" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="46" letter-spacing="10" fill="#6b5a42" opacity=".85">${tr('PORTUGAL · ALTO MINHO','PORTUGAL · ALTO MINHO')}</text>
-  <text x="1010" y="455" text-anchor="middle" transform="rotate(-8 1010 455)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="34" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
-  <text x="80" y="560" text-anchor="middle" transform="rotate(-90 80 560)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="34" fill="#2f4a52">${tr('Oceano Atlântico','Atlantic Ocean')}</text>
+  <text x="1075" y="492" text-anchor="middle" transform="rotate(-7 1075 492)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="34" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
+  <text x="80" y="330" text-anchor="middle" transform="rotate(-90 80 330)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="34" fill="#2f4a52">${tr('Oceano Atlântico','Atlantic Ocean')}</text>
   ${gal(1235,345,'Salvaterra')}${gal(900,415,'Tui')}${gal(520,500,'Goián')}${gal(225,560,'A Guarda')}
-  ${route(1235,352,1232,420)}${route(900,422,896,462)}${route(520,507,505,545)}${route(40,300,190,780)}
-  ${boat(1225,392,80)}${boat(893,440,85)}${boat(512,522,95)}${boat(95,520,60)}
+  ${route('M1235,356 C1250,395 1225,425 1233,446')}${route('M900,426 C915,460 885,470 893,486')}${route('M520,511 C540,540 560,545 568,560')}
+  ${route('M218,570 C150,600 60,640 70,720 C78,780 140,800 186,801')}
+  ${boat(1238,408,95)}${boat(903,470,100)}${boat(545,546,55)}${boat(62,705,95)}
   ${town('moncao',1235,470,'Monção','Deu-la-Deu')}${town('valenca',895,510,'Valença',tr('Praça e Coroada','Praça & Coroada'))}
   ${town('cerveira',575,585,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,800,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}
   <g transform="translate(1470,850)"><circle r="46" fill="#e9dcbc" stroke="#2e2419" stroke-width="2"/><path d="M0,-66 L10,0 L0,66 L-10,0Z" fill="#2e2419"/><path d="M-58,0 L0,8 L58,0 L0,-8Z" fill="none" stroke="#2e2419" stroke-width="2"/><text y="-78" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="#2e2419">N</text></g>
@@ -2574,7 +2614,7 @@ function applyStaticLang(){
   A('.wxs','title','Weather');A('#gold2w','title','Partner’s gold');A('#stLives','title','Fortress lives');
   T('#bWaveT','Call wave');A('#bSpeed','aria-label','Speed');A('#bPause','aria-label','Pause');A('#bSound','aria-label','Sound');
   A('#zoomb [data-z="in"]','aria-label','Zoom in');A('#zoomb [data-z="out"]','aria-label','Zoom out');A('#zoomb [data-z="reset"]','aria-label','Show whole map');
-  T('[data-ab="rain"] .an','Arrows');T('[data-ab="gate"] .an','Gates');T('[data-ab="bell"] .an','Bell');T('#heroNm','Heroine');A('#cardsHud','title','Blessings & pacts');A('#abil','aria-label','Powers');
+  T('[data-ab="rain"] .an','Arrows');T('[data-ab="gate"] .an','Gates');T('[data-ab="bell"] .an','Bell');T('#heroNm','Heroine');A('#cardsHud','title','Blessings & pacts');A('#abil','aria-label','Powers');A('#abilT','aria-label','Powers');
 }
 applyStaticLang();
 new ResizeObserver(resize).observe($('stage'));
