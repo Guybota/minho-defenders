@@ -788,9 +788,9 @@ const TYPES={
   tra:{name:tr('Trabuco','Trebuchet'),icon:'stone',cost:130,up:[120,190,260,480],L5:[tr('Área maior e fogo mais forte','Bigger area and fiercer fire'),tr('Cada pedrada atordoa quem apanha','Every stone stuns whoever it hits')],dmg:[28,48],range:[150,165],rate:[2.4,2.2],splash:[45,52],col:'#6b4a2a',desc:tr('Pedras com dano em área.','Stones with area damage.'),
     br:[{name:tr('Pedras em chamas','Flaming stones'),desc:tr('Área que arde','Burning area'),dmg:72,range:180,rate:2.0,splash:62,burn:{dps:10,t:3}},
         {name:tr('Longo alcance','Long range'),desc:tr('Acerta em meio mapa','Hits half the map'),dmg:85,range:245,rate:2.1,splash:50}]},
-  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'cauldron',cost:80,up:[80,130,190,360],L5:[tr('Queima 60% mais','Burns 60% more'),tr('Cola-os ao chão e chega mais longe','Glues them to the ground and reaches further')],dmg:[6,10],range:[70,78],rate:[0.9,0.85],slow:[0.5,0.45],col:'#9b2226',desc:tr('Queima e abranda.','Burns and slows.'),
-    br:[{name:tr('Azeite fervente','Scalding oil'),desc:tr('Queima muito mais','Burns much more'),dmg:26,range:86,rate:0.8,slow:0.45},
-        {name:tr('Pez pegajoso','Sticky pitch'),desc:tr('Quase os cola ao chão','Nearly glues them to the ground'),dmg:12,range:96,rate:0.8,slow:0.2}]}
+  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'cauldron',cost:80,up:[80,130,190,360],L5:[tr('Queima 60% mais','Burns 60% more'),tr('Abranda ainda mais e chega mais longe','Slows even more and reaches further')],dmg:[6,10],range:[70,78],rate:[0.9,0.85],slow:[0.7,0.65],col:'#9b2226',desc:tr('Queima e abranda.','Burns and slows.'),
+    br:[{name:tr('Azeite fervente','Scalding oil'),desc:tr('Queima muito mais','Burns much more'),dmg:26,range:86,rate:0.8,slow:0.6},
+        {name:tr('Pez pegajoso','Sticky pitch'),desc:tr('Abranda muito mais','Slows them much more'),dmg:12,range:96,rate:0.8,slow:0.45}]}
 };
 const FOES={
   peao:{name:tr('Peão','Footman'),hp:38,spd:42,armor:0,gold:4,r:7,col:'#b8302a',leak:1},
@@ -1401,13 +1401,13 @@ function tstat(t){
   if(t.lv<3){const L=t.lv-1;s={dmg:T.dmg[L],range:T.range[L],rate:T.rate[L],splash:T.splash?T.splash[L]:0,slow:T.slow?T.slow[L]:1,pierce:!!T.pierce,burn:null};}
   else{const B=T.br[t.br];s={dmg:B.dmg,range:B.range,rate:B.rate,splash:B.splash||0,slow:B.slow||1,pierce:!!T.pierce,burn:B.burn||null};
     // nível 4: a especialização escolhida fica mais forte
-    if(t.lv>=4){s.dmg*=1.4;s.range*=1.08;s.rate*=0.9;if(s.splash)s.splash*=1.15;if(s.burn)s.burn={dps:s.burn.dps*1.3,t:s.burn.t};if(s.slow<1)s.slow=Math.max(0.1,1-(1-s.slow)*1.2);}
+    if(t.lv>=4){s.dmg*=1.4;s.range*=1.08;s.rate*=0.9;if(s.splash)s.splash*=1.15;if(s.burn)s.burn={dps:s.burn.dps*1.3,t:s.burn.t};if(s.slow<1)s.slow=Math.max(0.3,1-(1-s.slow)*1.15);}
     // nível 5: mais forte e com um efeito próprio de cada especialização
     if(t.lv>=5){s.dmg*=1.3;const k=t.k+t.br;
       if(k==='arq0')s.multi=3;else if(k==='arq1'){s.pierce=true;s.range*=1.15;}
       else if(k==='bes0')s.stun=0.6;else if(k==='bes1')s.multi=2;
       else if(k==='tra0'){s.splash*=1.3;if(s.burn)s.burn={dps:s.burn.dps*1.5,t:s.burn.t};}else if(k==='tra1')s.stun=0.8;
-      else if(k==='cal0')s.dmg*=1.6;else{s.slow=0.1;s.range*=1.15;}}}
+      else if(k==='cal0')s.dmg*=1.6;else{s.slow=0.3;s.range*=1.15;}}}
   const M=S.mods;s.dmg*=M.dmg;s.range*=M.range;s.rate*=M.rate;if(t.k==='cal'){s.dmg*=M.oil;if(S.works&&S.works.cisterna)s.rate*=0.75;}
   if(S.weather==='noite'&&!M.sight)s.range*=0.85;
   if(S.weather==='chuva'){if(t.k==='cal')s.dmg*=0.6;s.burn=null;}
@@ -1672,7 +1672,8 @@ function update(dt){
     t.cd-=dt;if(t.cd>0)continue;const st=tstat(t);
     if(t.k==='cal'){
       let any=false;
-      for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&!(e.hidden&&!S.mods.sight)&&Math.hypot(e.x-t.x,e.y-t.y)<=st.range){any=true;hurt(e,st.dmg,false,t,true);if(!e.f.noslow){e.slowT=1.2;e.slowF=Math.min(e.slowF,st.slow);}}}
+      // as lendas só sentem metade do abrandamento
+      for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&!(e.hidden&&!S.mods.sight)&&Math.hypot(e.x-t.x,e.y-t.y)<=st.range){any=true;hurt(e,st.dmg,false,t,true);if(!e.f.noslow){e.slowT=1;e.slowF=Math.min(e.slowF,e.f.boss?1-(1-st.slow)/2:st.slow);}}}
       if(any){t.cd=st.rate;S.fx.push({k:'oil',x:t.x,y:t.y,r:st.range,t:0,T:0.7});sfx('oil');}
       continue;
     }
