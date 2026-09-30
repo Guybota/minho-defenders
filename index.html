@@ -2741,7 +2741,7 @@ function drawPadeira(c,a){
   c.fillStyle='rgba(201,140,69,.5)';c.beginPath();c.arc(1.8+sway*0.6,5.4,0.7,0,Math.PI*2);c.arc(-0.8+sway*0.6,3.6,0.5,0,Math.PI*2);c.fill();// farinha e massa
   oval(c,0,0,4.6,3.6,'#8a3a22',0.9);c.fillStyle='#f2ead4';c.beginPath();c.ellipse(0.6,-2.2,2.6,1.1,0,0,Math.PI);c.fill();
   c.strokeStyle='#f2ead4';c.lineWidth=0.8;c.beginPath();c.moveTo(-4,1.3);c.lineTo(4,1.3);c.stroke();// laço do avental
-  oval(c,-4.6,1.8,1.5,2.3,SKIN,0.7);// braço de fora, arregaçado
+  oval(c,-4.6-(a.mv?Math.sin(a.ph)*0.7:0),1.8,1.5,2.3,SKIN,0.7);// braço de fora, arregaçado (abana a andar)
   oval(c,-3.6,-6.6,1.6,1.6,'#5a3a22',0.6);// carrapito
   head(c,-4.6);
   faceEyes(c,0.7,-5,fury?1:0,a.blink);heroMouth(c,fury);
@@ -2749,7 +2749,7 @@ function drawPadeira(c,a){
   c.beginPath();c.moveTo(-4,-6.4);c.lineTo(-6.6,-5.2+Math.sin(S.t*4)*0.4);c.lineTo(-5,-7.2);c.closePath();c.fill();c.stroke();
   c.fillStyle='rgba(155,34,38,.55)';[[-1.8,-8.4],[1,-8.7],[2.6,-7.2]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,0.45,0,Math.PI*2);c.fill();});
   // pá do forno: em descanso ao alto; no golpe vai atrás e desce com força; no especial dá uma volta inteira
-  let ang=-1.25;
+  let ang=-1.25+(a.mv?Math.sin(a.ph)*0.14:RM()?0:Math.sin(S.t*1.6)*0.04);
   if(a.sp>=0)ang=-1.25-a.sp*Math.PI*2;
   else if(a.atk>=0)ang=a.atk<0.3?-1.25-a.atk/0.3*1.1:a.atk<0.6?-2.35+(a.atk-0.3)/0.3*2.8:0.45-(a.atk-0.6)/0.4*1.7;
   c.save();c.translate(3.8,1.4);c.rotate(ang);
@@ -2760,20 +2760,24 @@ function drawPadeira(c,a){
     c.strokeStyle='rgba(90,50,20,.6)';c.beginPath();c.moveTo(16,-1.3);c.lineTo(16.6,0.8);c.moveTo(17.6,-1.3);c.lineTo(18.2,0.8);c.stroke();}
   oval(c,0,0,1.4,1.4,SKIN,0.6);c.restore();
   if(a.atk>0.5&&a.atk<0.8){c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=0.8;c.beginPath();c.arc(3.8,1.4,17,-1.9,0.4);c.stroke();}
+  if(a.atk<0&&a.sp<0&&!RM()){const bx=3.8+Math.cos(ang)*17,by=1.4+Math.sin(ang)*17;// vapor do pão acabado de sair do forno
+    for(let i=0;i<3;i++){const q=(S.t*0.6+i/3)%1;c.fillStyle=`rgba(255,255,255,${(1-q)*0.55})`;c.beginPath();c.arc(bx+Math.sin(q*6+i*2)*0.9,by-2-q*6,0.6+q*0.9,0,Math.PI*2);c.fill();}}
+  if(a.sp>=0){for(let i=0;i<6;i++){const q=i*1.05+a.sp*9,r=6+a.sp*12;c.fillStyle=`rgba(242,234,212,${1-a.sp})`;c.beginPath();c.arc(Math.cos(q)*r,-2+Math.sin(q)*r*0.6,0.9+a.sp,0,Math.PI*2);c.fill();}}// nuvem de farinha
 }
 function drawDeu(c,a){
   const sway=a.mv?Math.sin(a.ph)*0.7:0;
   heroFeet(c,a.ph,a.mv,8.8);
-  c.fillStyle='#f2ead4';c.strokeStyle=INK;c.lineWidth=0.8;c.beginPath();c.moveTo(-3,-8);c.quadraticCurveTo(-7.5,-4,-6.2+sway*0.4,3.2);c.lineTo(-2,1);c.closePath();c.fill();c.stroke();// véu
+  c.fillStyle='#f2ead4';c.strokeStyle=INK;c.lineWidth=0.8;c.beginPath();c.moveTo(-3,-8);c.quadraticCurveTo(-7.5-(a.mv?1+Math.sin(S.t*9)*0.6:0),-4,-6.2+sway*0.4-(a.mv?1.4:0),3.2-(a.mv?Math.abs(Math.sin(S.t*9))*0.8:0));c.lineTo(-2,1);c.closePath();c.fill();c.stroke();// véu (esvoaça a andar)
   heroSkirt(c,'#2f4a73',sway,8.8,'#e8c24a');
   c.strokeStyle='rgba(20,30,60,.35)';c.lineWidth=0.5;c.beginPath();[-2,1,3.6].forEach(x=>{c.moveTo(x*0.9,1.6);c.lineTo(x*1.3+sway,8.2);});c.stroke();// pregas
   oval(c,0,0,4.4,3.5,'#2f4a73',0.9);c.fillStyle='#e8c24a';c.fillRect(-4.1,1.4,8.2,1);c.beginPath();c.ellipse(0.5,-2.3,2.5,1,0,0,Math.PI);c.fill();
   // cesto de pão no braço de trás
+  const bj=a.mv?-Math.abs(Math.sin(a.ph))*0.7:0;c.save();c.translate(0,bj);// o cesto salta com os passos
   c.fillStyle='#b08850';c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.moveTo(-8.4,2);c.lineTo(-3,2);c.lineTo(-3.8,5.6);c.lineTo(-7.6,5.6);c.closePath();c.fill();c.stroke();
   c.strokeStyle='rgba(60,40,20,.5)';c.lineWidth=0.4;c.beginPath();for(let x=-7.6;x<-3.5;x+=1.2){c.moveTo(x,2.2);c.lineTo(x+0.3,5.4);}c.stroke();
   [[-7,1.6],[-4.7,1.3]].forEach(([x,y])=>{c.fillStyle='#c98c45';c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.ellipse(x,y,1.5,1,0.3,0,Math.PI*2);c.fill();c.stroke();});
   c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.arc(-5.7,2,2.7,Math.PI,0);c.stroke();
-  oval(c,-4.4,1.4,1.4,2,'#4a6a96',0.7);
+  oval(c,-4.4,1.4,1.4,2,'#4a6a96',0.7);c.restore();
   head(c,-4.6);
   c.lineCap='round';c.beginPath();c.ellipse(0.1,-4.5,3.9,3.8,0,0.25,Math.PI-0.25);c.strokeStyle=INK;c.lineWidth=2.1;c.stroke();c.strokeStyle='#f7f1e2';c.lineWidth=1.2;c.stroke();// barbicacho
   c.fillStyle='#f7f1e2';c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.moveTo(-4.1,-4);c.quadraticCurveTo(-4.8,-9.8,0.3,-9.6);c.quadraticCurveTo(4.9,-9.4,4.1,-5.6);c.quadraticCurveTo(0.4,-8,-4.1,-4);c.fill();c.stroke();// touca
@@ -2781,11 +2785,14 @@ function drawDeu(c,a){
   c.fillStyle='#9b2226';c.beginPath();c.arc(0.6,-8.4,0.7,0,Math.PI*2);c.fill();
   faceEyes(c,0.7,-5,a.atk>=0?3:0,a.blink);heroMouth(c,a.sp>=0);
   // braço que atira: recua, lança e volta
-  let ang=0.9;if(a.sp>=0)ang=-1.9+Math.sin(a.sp*Math.PI*6)*0.3;else if(a.atk>=0)ang=a.atk<0.4?0.9-a.atk/0.4*3.3:-2.4+(a.atk-0.4)/0.6*3.3;
+  const cy=RM()?9:(S.t*0.45)%3,toss=a.atk<0&&a.sp<0&&!a.mv&&cy<0.9,tq=toss?cy/0.9:0;// em repouso atira o pão ao ar e apanha-o
+  let ang=0.9+(a.mv?Math.sin(a.ph)*0.35:0)-(toss?Math.sin(Math.min(1,tq*4)*Math.PI)*0.5:0);if(a.sp>=0)ang=-1.9+Math.sin(a.sp*Math.PI*6)*0.3;else if(a.atk>=0)ang=a.atk<0.4?0.9-a.atk/0.4*3.3:-2.4+(a.atk-0.4)/0.6*3.3;
   c.save();c.translate(3.2,-0.4);c.rotate(ang);c.strokeStyle=INK;c.lineWidth=2.8;c.lineCap='round';c.beginPath();c.moveTo(0,0);c.lineTo(4.4,0);c.stroke();
   c.strokeStyle='#4a6a96';c.lineWidth=1.9;c.stroke();oval(c,5.2,0,1.2,1.2,SKIN,0.6);
-  if(a.atk<0.45||a.sp>=0){c.fillStyle='#c98c45';c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.ellipse(6.4,-0.4,1.8,1.2,0.4,0,Math.PI*2);c.fill();c.stroke();}
+  if((a.atk<0.45||a.sp>=0)&&!toss){c.fillStyle='#c98c45';c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.ellipse(6.4,-0.4,1.8,1.2,0.4,0,Math.PI*2);c.fill();c.stroke();}
   c.restore();
+  if(toss){const hx=3.2+Math.cos(0.9)*6.4,hy=-0.4+Math.sin(0.9)*6.4-Math.sin(tq*Math.PI)*7;c.save();c.translate(hx,hy);c.rotate(tq*Math.PI*2);// pão no ar, a rodar
+    c.fillStyle='#c98c45';c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.ellipse(0,0,1.8,1.2,0,0,Math.PI*2);c.fill();c.stroke();c.restore();}
   if(a.sp>=0){c.fillStyle=`rgba(232,194,74,${1-a.sp})`;for(let i=0;i<5;i++){const q=i*1.26+S.t*3,r=9+a.sp*4;c.beginPath();c.arc(Math.cos(q)*r,-4+Math.sin(q)*r*0.7,0.9,0,Math.PI*2);c.fill();}}
 }
 function drawHero(){
@@ -2802,7 +2809,8 @@ function drawHero(){
   c.save();c.translate(h.x,h.y);c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,9*U*0.95,7*U,2*U,0,0,Math.PI*2);c.fill();
   if(h.lv>=6){c.strokeStyle=`rgba(232,194,74,${h.lv>=HERO_MAX?0.9:0.55})`;c.lineWidth=1.4;c.beginPath();c.ellipse(0,9*U*0.95,9*U,2.8*U,0,0,Math.PI*2);c.stroke();}
   a.hot=hUp(h,'spBurn');a.lv=h.lv;
-  c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';
+  c.scale(U,U);c.translate(0,-bob);c.scale(fx,1);c.lineJoin='round';if(a.mv&&!h.D.boss)c.rotate(0.07);// inclina-se para a frente a andar
+  if(a.mv&&!h.D.fly&&h.id!=='cervo'&&Math.random()<0.14)S.parts.push({k:'smoke',x:h.x-fx*5,y:h.y+12,vx:-fx*10,vy:-6,r:1.4+Math.random()*1.4,t:0,T:0.5});// pó dos passos
   if(h.D.boss){c.restore();const e=h._fe||(h._fe={id:3,hero:1,f:FOES[h.D.boss]});
     Object.assign(e,{x:h.x,y:h.y,a:h.ang,r:h.D.r||10,col:FOES[h.D.boss].col,cur:a.mv?1:0,stunT:0,blocked:false,bcd:h.spT>0?4.5:0,atk:a.atk,sp:a.sp});drawBoss(e);}
   else{if(h.id==='padeira')drawPadeira(c,a);else drawDeu(c,a);
@@ -2823,6 +2831,7 @@ function worldT(c){const k=scale*dpr*VIEW.z;c.setTransform(k,0,0,k,-VIEW.ox*k,-V
 function drawBoss(e){
   const b=e.f.boss,c=ctx,u=e.r/8,rm=RM(),moving=!rm&&!(e.cur===0||e.stunT>0||e.blocked),t=rm?0:S.t,ph=t*8+e.id;
   const fx=Math.cos(e.a)<-0.15?-1:1,blink=!rm&&((t*0.6+e.id*0.3)%3.5)<0.09,mood=e.stunT>0?2:1;
+  const A=e.atk>=0?e.atk:-1,SP=e.sp>=0?e.sp:-1;// golpe e especial (só quando a lenda é herói)
   const pt=e.hero&&!(DUEL&&S.dside===1);// lenda a defender Portugal: troca as cores de Castela pelas portuguesas
   c.save();c.translate(e.x,e.y);c.scale(u,u);c.lineJoin='round';c.lineCap='round';
   if(b==='merc'){// Mercador das Toalhas: gordo, de chapéu, com uma pilha de toalhas às costas e uma bandeira-toalha na mão
@@ -2868,9 +2877,9 @@ function drawBoss(e){
       c.save();c.translate(Math.cos(a0)*d,-3+Math.sin(a0)*d*0.6);c.rotate(a0*2);c.globalAlpha=1-sp;c.fillStyle=TC[(i+1)%7];c.strokeStyle=INK;c.lineWidth=0.4;
       c.fillRect(-2.5,-1,5,2);c.strokeRect(-2.5,-1,5,2);c.restore();}c.globalAlpha=1;}
   }else if(b==='coca'){// a Coca: dragão que voa a bater as asas, com cauda aos esses e bafo de fogo
-    const fly=Math.sin(t*4+e.id)*1.2,flap=rm?0:Math.sin(t*9);
+    const fly=Math.sin(t*4+e.id)*1.2,flap=rm?0:Math.sin(t*(moving||SP>=0?15:9));
     c.fillStyle='rgba(46,36,25,.2)';c.beginPath();c.ellipse(0,10,8+flap*0.8,1.8,0,0,Math.PI*2);c.fill();
-    c.translate(0,-5+fly);c.scale(fx,1);
+    c.translate(0,-5+fly);c.scale(fx,1);if(moving)c.rotate(0.13);// a voar inclina-se para a frente
     const wing=(k,col)=>{c.save();c.translate(-1,-3);c.rotate(-0.2+k*flap*0.55);c.fillStyle=col;c.strokeStyle=INK;c.lineWidth=0.8;
       c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(-3,-9,-9,-11);c.quadraticCurveTo(-8,-7,-10,-5.5);c.quadraticCurveTo(-7.5,-4.5,-8,-2.5);c.quadraticCurveTo(-5,-2.5,-4.5,0.5);c.closePath();c.fill();c.stroke();
       c.strokeStyle='rgba(30,50,20,.6)';c.lineWidth=0.5;c.beginPath();c.moveTo(0,0);c.lineTo(-9,-11);c.moveTo(-1,-0.5);c.lineTo(-10,-5.5);c.moveTo(-2,0);c.lineTo(-8,-2.5);c.stroke();c.restore();};
@@ -2882,32 +2891,42 @@ function drawBoss(e){
     oval(c,0,0,7,4.6,'#3f7a3a',1);c.fillStyle='#c9d49a';c.beginPath();c.ellipse(0.5,2,5.5,2.2,0,0,Math.PI);c.fill();
     c.strokeStyle='rgba(30,50,20,.5)';c.lineWidth=0.4;c.beginPath();for(let x=-3;x<5;x+=1.6){c.moveTo(x,2.3);c.lineTo(x+0.4,3.9);}c.stroke();
     c.fillStyle='#9b2226';c.strokeStyle=INK;c.lineWidth=0.5;for(let i=0;i<4;i++){const x=-4+i*2.6;c.beginPath();c.moveTo(x-1,-4.2);c.lineTo(x,-6.2);c.lineTo(x+1,-4.2);c.closePath();c.fill();c.stroke();}
+    const lg=A>=0?Math.sin(A*Math.PI)*2:SP>=0?Math.sin(SP*Math.PI)*-1.5:0;c.save();c.translate(lg,lg*0.35);// a cabeça investe no golpe e recua no rugido
     c.fillStyle='#3f7a3a';c.strokeStyle=INK;c.lineWidth=1;c.beginPath();c.moveTo(4,-2.5);c.quadraticCurveTo(6,-6,8,-6.5);c.lineTo(9,-3.5);c.quadraticCurveTo(7,-2,5.5,1);c.closePath();c.fill();c.stroke();// pescoço
     oval(c,9,-6.2,3.6,2.8,'#3f7a3a',1);c.beginPath();c.moveTo(10.5,-7.8);c.quadraticCurveTo(14.2,-7.2,14,-5.2);c.quadraticCurveTo(12,-3.6,10,-4.2);c.fill();c.stroke();// focinho
     c.fillStyle='#e8dcc0';[[7.5,-8.4],[9.5,-8.8]].forEach(([x,y])=>{c.beginPath();c.moveTo(x-0.6,y+0.4);c.lineTo(x-1.4,y-2.4);c.lineTo(x+0.6,y+0.2);c.closePath();c.fill();c.stroke();});// cornos
     oval(c,9.4,-6.6,1.1,1.1,'#e8c24a',0.5);c.fillStyle=INK;c.beginPath();c.arc(9.7,-6.5,0.5,0,Math.PI*2);c.fill();
     c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.moveTo(8.2,-7.9);c.lineTo(10.4,-7.4);c.stroke();c.fillStyle=INK;c.beginPath();c.arc(13.2,-6,0.35,0,Math.PI*2);c.fill();
+    if(A>=0||SP>=0){c.fillStyle='#6b1f1f';c.beginPath();c.moveTo(11,-4.6);c.lineTo(14,-4.4);c.lineTo(12,-3.2);c.closePath();c.fill();}// boca aberta
+    const fire=e.hero?(A>=0?A*0.6:SP>=0?SP*0.6:9):(t*0.7+e.id*0.1)%2.4;if(fire<0.6){const k=fire/0.6,n=SP>=0?8:4;// bafo de fogo
+      for(let i=0;i<n;i++){const d=2+k*(SP>=0?14:8)+i*1.6,r=0.7+i*0.4+k;c.fillStyle=`rgba(${i<2?'250,200,70':'230,110,30'},${(1-k)*0.9})`;c.beginPath();c.arc(14+d,-5+Math.sin(t*20+i)*0.4+(i%2?0.6:-0.6)*k*i*0.3,r,0,Math.PI*2);c.fill();}}
+    c.restore();
+    if(SP>=0){c.strokeStyle=`rgba(232,194,74,${1-SP})`;c.lineWidth=0.8;c.beginPath();c.arc(0,-2,6+SP*14,0,Math.PI*2);c.stroke();}// rugido
     wing(-1,'#6fa85a');
-    const fire=(t*0.7+e.id*0.1)%2.4;if(fire<0.6){const k=fire/0.6;// bafo de fogo
-      for(let i=0;i<4;i++){const d=2+k*8+i*1.6,r=0.7+i*0.5+k;c.fillStyle=`rgba(${i<2?'250,200,70':'230,110,30'},${(1-k)*0.9})`;c.beginPath();c.arc(14+d,-5+Math.sin(t*20+i)*0.4,r,0,Math.PI*2);c.fill();}}
   }else if(b==='polvo'){// Polvo da Lagarteira: cabeça enorme com boina de pescador e oito tentáculos a ondular
     const water=inRiver(e.x,e.y),br=1+Math.sin(t*2+e.id)*0.04;
     if(water){for(let k=0;k<2;k++){const p=(t*0.8+k*0.5)%1;c.strokeStyle=`rgba(240,248,250,${0.8*(1-p)})`;c.lineWidth=0.5;c.beginPath();c.ellipse(0,4,9+p*6,2.5+p*1.6,0,0,Math.PI*2);c.stroke();}}
     else{c.fillStyle='rgba(46,36,25,.25)';c.beginPath();c.ellipse(0,7.5,11,2.2,0,0,Math.PI*2);c.fill();}
+    const tw=moving?6:3,pd=Math.cos(e.a)<0?-1:1;if(moving)c.translate(0,-Math.abs(Math.sin(ph))*1.1);// a andar salta e mexe os tentáculos mais depressa
     for(let i=0;i<8;i++){const a0=Math.PI*(0.02+0.96*i/7),bx=Math.cos(a0)*4.5,by=2+Math.sin(a0)*1.5,pts=[];
-      for(let k=0;k<=8;k++){const q=k/8,L=q*10,w=Math.sin(t*3+i*0.9+q*4)*q*2.4,dx=Math.cos(a0),dy=Math.sin(a0)*0.55+0.35;
+      for(let k=0;k<=8;k++){const q=k/8,L=q*10,w=Math.sin(t*tw+i*0.9+q*4)*q*2.4,dx=Math.cos(a0),dy=Math.sin(a0)*0.55+0.35;
         pts.push([bx+dx*L-dy*w,by+dy*L+dx*w*0.6+(q>0.8?-Math.sin(t*3+i)*q:0)]);}
       [[2.6,INK],[1.8,'#8a3f6e']].forEach(([lw,col])=>{for(let k=0;k<8;k++){c.strokeStyle=col;c.lineWidth=lw*(1-k/10);c.beginPath();c.moveTo(pts[k][0],pts[k][1]);c.lineTo(pts[k+1][0],pts[k+1][1]);c.stroke();}});
       c.fillStyle='#e6b8cf';for(let k=2;k<7;k+=2){c.beginPath();c.arc(pts[k][0],pts[k][1]+0.3,0.35,0,Math.PI*2);c.fill();}}
-    c.save();c.scale(1,br);oval(c,0,-3.5,7,7.2,'#8a3f6e',1);c.restore();
+    if(A>=0){const L=Math.sin(A*Math.PI)*13,pts=[];for(let k=0;k<=8;k++){const q=k/8;pts.push([pd*(3+q*L),2+Math.sin(q*Math.PI)*-3*A-q*1.5]);}// chicotada de tentáculo
+      [[2.8,INK],[2,'#8a3f6e']].forEach(([lw,col])=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(pts[0][0],pts[0][1]);pts.forEach(p=>c.lineTo(p[0],p[1]));c.stroke();});
+      if(A>0.4&&A<0.7){c.fillStyle='rgba(240,248,250,.9)';for(let i=0;i<4;i++){c.beginPath();c.arc(pts[8][0]+pd*(1+i*0.8),pts[8][1]-1+i*0.7-1.2,0.6,0,Math.PI*2);c.fill();}}}
+    if(SP>=0)for(let i=0;i<7;i++){const q=i*0.9+e.id,d=3+SP*16;c.fillStyle=`rgba(40,24,48,${(1-SP)*0.7})`;c.beginPath();c.arc(Math.cos(q)*d,-2+Math.sin(q)*d*0.6,1.5+SP*3,0,Math.PI*2);c.fill();}// nuvem de tinta
+    c.save();c.scale(1,br*(A>=0?1-Math.sin(A*Math.PI)*0.08:1));oval(c,0,-3.5,7,7.2,'#8a3f6e',1);c.restore();
     c.fillStyle='rgba(230,184,207,.55)';[[-3.5,-6.5,1],[3,-8,0.8],[4.5,-4,0.6],[-4.5,-2.5,0.6]].forEach(([x,y,r])=>{c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();});
     c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.ellipse(-2.5,-7.5,1.8,1,-0.5,0,Math.PI*2);c.fill();
     [-2.4,2.4].forEach((x,i)=>{if(blink){c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.moveTo(x-1.4,-2.4);c.lineTo(x+1.4,-2.4);c.stroke();return;}
       oval(c,x,-2.4,1.7,2.1,'#fff',0.6);c.fillStyle=INK;c.beginPath();c.arc(x+Math.cos(e.a)*0.5,-2.2+Math.sin(e.a)*0.4,0.8,0,Math.PI*2);c.fill();
       c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.moveTo(x-1.7*(i?-1:1),-5);c.lineTo(x+1.3*(i?-1:1),-4.2);c.stroke();});
     c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.arc(0,0.8,1.2,0.2,Math.PI-0.2);c.stroke();
+    const bj=SP>=0?-Math.sin(SP*Math.PI)*3:0;c.save();c.translate(0,bj);// a boina salta no especial
     c.fillStyle='#2f4a73';c.strokeStyle=INK;c.lineWidth=0.7;c.beginPath();c.ellipse(1,-10.2,5,1.6,0.12,0,Math.PI*2);c.fill();c.stroke();// boina de pescador
-    oval(c,1.4,-11.8,1,1,'#9b2226',0.5);
+    oval(c,1.4,-11.8,1,1,'#9b2226',0.5);c.restore();
   }else if(b==='arren'){// a Arrenegada: portuguesa vestida à castelhana, carrapito, roca em punho e cara de poucos amigos
     const sway=moving?Math.sin(ph)*0.8:0,bob=moving?Math.abs(Math.sin(ph))*0.8:Math.sin(t*2)*0.25,mad=e.bcd>4;
     c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.8,7,1.8,0,0,Math.PI*2);c.fill();
@@ -2921,25 +2940,30 @@ function drawBoss(e){
     head(c,-4.6);c.fillStyle='#1e1812';c.beginPath();c.arc(0,-5.9,3.9,Math.PI*1.08,-0.08);c.fill();// cabelo apanhado
     c.fillStyle='#9b2226';c.beginPath();c.arc(-2.6,-8.4,0.9,0,Math.PI*2);c.fill();// flor no cabelo, à castelhana
     faceEyes(c,0.7,-5,blink?0:1,blink);heroMouth(c,mad);
-    c.save();c.translate(3.8,1.2);c.rotate(-0.9+Math.sin(t*(mad?14:3))*(mad?0.5:0.15));// roca de fiar a abanar
+    let rr=-0.9+Math.sin(t*(mad?14:3))*(mad?0.5:0.15)+(moving?Math.sin(ph)*0.14:0);
+    if(SP>=0)rr=-0.9-SP*Math.PI*4;else if(A>=0)rr=-0.9+(A<0.35?-A/0.35*0.9:A<0.6?-0.9+(A-0.35)/0.25*2.6:1.7-(A-0.6)/0.4*1.7);// golpe de roca; no especial gira-a
+    c.save();c.translate(3.8,1.2);c.rotate(rr);// roca de fiar
     c.strokeStyle=INK;c.lineWidth=1.9;c.beginPath();c.moveTo(0,0);c.lineTo(0,-11);c.stroke();c.strokeStyle='#9a6a3a';c.lineWidth=1;c.stroke();
-    oval(c,0,-11.8,1.9,2.6,'#efe3c6',0.6);c.strokeStyle='rgba(120,100,70,.6)';c.lineWidth=0.4;c.beginPath();c.moveTo(-1.2,-12.5);c.lineTo(1.2,-11);c.moveTo(-1.2,-11);c.lineTo(1.2,-12.8);c.stroke();
+    oval(c,0,-11.8,1.9,2.6,'#efe3c6',0.6);const sw=Math.sin(t*5)*0.6;c.strokeStyle='rgba(120,100,70,.6)';c.lineWidth=0.4;c.beginPath();c.moveTo(-1.2,-12.5+sw);c.lineTo(1.2,-11-sw);c.moveTo(-1.2,-11-sw);c.lineTo(1.2,-12.8+sw);c.stroke();// lã a enrolar
     oval(c,0,0,1.3,1.3,SKIN,0.6);c.restore();
+    if(A>0.4&&A<0.75){c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=0.8;c.beginPath();c.arc(3.8,1.2,12,-1.8,0.5);c.stroke();}
+    if(SP>=0)for(let i=0;i<6;i++){const q=i*1.05+SP*8,d=5+SP*12;c.strokeStyle=`rgba(239,227,198,${1-SP})`;c.lineWidth=0.7;c.beginPath();c.arc(Math.cos(q)*d,-4+Math.sin(q)*d*0.6,1.2,0,Math.PI*1.5);c.stroke();}// fios de lã a voar
   }else{// Cervo Gigante: de perfil, a galopar, com uma armação enorme
-    const g=moving?Math.sin(ph*1.2):0,bob=moving?Math.abs(Math.sin(ph*1.2))*0.9:Math.sin(t*1.8)*0.2;
+    const g=moving?Math.sin(ph*1.2):0,bob=moving?Math.abs(Math.sin(ph*1.2))*0.9:Math.sin(t*1.8)*0.2,gz=!moving&&A<0&&SP<0?(t*0.3+e.id*0.4)%5:9,graze=gz<1.4?Math.sin(gz/1.4*Math.PI):0;
     c.fillStyle='rgba(46,36,25,.28)';c.beginPath();c.ellipse(0,8.4,9,1.9,0,0,Math.PI*2);c.fill();
     c.translate(0,-bob);c.scale(fx,1);
+    if(SP>=0){const r=Math.sin(SP*Math.PI);c.translate(-5,7);c.rotate(-0.45*r);c.translate(5,-7);}// empina-se no especial
     const leg=(x,o,far)=>{c.save();c.translate(x,2.5);c.rotate(o*0.5);c.fillStyle=far?'#5e4128':'#7a5530';c.strokeStyle=INK;c.lineWidth=0.6;
       c.beginPath();c.rect(-0.7,0,1.4,5.2);c.fill();c.stroke();c.fillStyle='#2e2419';c.fillRect(-0.8,5,1.6,1);c.restore();};
     leg(-4.5,-g,1);leg(4,g,1);
-    c.fillStyle='#f2ead4';c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.moveTo(-7,-1.5);c.quadraticCurveTo(-9.5,-4+g*0.5,-8.5,-4.5);c.quadraticCurveTo(-7,-3,-6.5,-1);c.fill();c.stroke();// rabo
+    c.fillStyle='#f2ead4';c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();const tl=moving?g*0.5:Math.sin(t*7)*0.5;c.moveTo(-7,-1.5);c.quadraticCurveTo(-9.5,-4+tl,-8.5,-4.5+tl*0.6);c.quadraticCurveTo(-7,-3,-6.5,-1);c.fill();c.stroke();// rabo
     oval(c,0,0,7.8,4.2,e.col,1);c.fillStyle='#d8b98a';c.beginPath();c.ellipse(0.5,1.8,6,2,0,0,Math.PI);c.fill();
     c.fillStyle='#f2ead4';c.beginPath();c.ellipse(-6.6,-0.5,1.3,2,0,0,Math.PI*2);c.fill();
     c.fillStyle='rgba(30,20,10,.3)';[[-3,-2],[0,-2.8],[3,-2.2],[-1.5,-0.8]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,0.5,0,Math.PI*2);c.fill();});
     leg(-3,g,0);leg(5.5,-g,0);
     c.fillStyle=e.col;c.strokeStyle=INK;c.lineWidth=1;c.beginPath();c.moveTo(4,-2.5);c.quadraticCurveTo(5.5,-6.5,7.5,-7.8);c.lineTo(9.3,-5.8);c.quadraticCurveTo(7.5,-3,6.8,0.5);c.closePath();c.fill();c.stroke();// pescoço
     c.fillStyle='#e8dcc0';c.beginPath();c.moveTo(6.2,-4.2);c.quadraticCurveTo(7,-2.5,6.6,-1);c.lineTo(5.4,-1.5);c.closePath();c.fill();// peito claro
-    c.save();c.translate(8.8,-8);c.rotate(moving?Math.sin(ph*1.2)*0.08:0);
+    const hb=A>=0?Math.sin(A*Math.PI):0;c.save();c.translate(8.8+hb*1.8-graze*0.5,-8+hb*1.5+graze*4.5);c.rotate((moving?Math.sin(ph*1.2)*0.08:0)+hb*0.7+graze*0.9);// marrada; em repouso baixa a cabeça a pastar
     // armação: dois ramos com pontas, em osso
     [[-0.5,1],[0.8,0.8]].forEach(([dx,k])=>{const br=(pts)=>{c.beginPath();c.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(p=>c.lineTo(p[0],p[1]));};
       const main=[[dx,-1.5],[dx-1.5,-5],[dx-1,-8.5],[dx-3,-11.5]],tines=[[[dx-1.2,-4],[dx+1.8,-6.5]],[[dx-1.2,-7],[dx+1.4,-9.8]],[[dx-1.6,-6],[dx-4.5,-8]],[[dx-1.1,-9],[dx+0.2,-12.5]]];
@@ -2950,6 +2974,7 @@ function drawBoss(e){
     if(blink){c.strokeStyle=INK;c.lineWidth=0.5;c.beginPath();c.moveTo(0.4,-0.6);c.lineTo(2,-0.6);c.stroke();}
     else{oval(c,1.2,-0.6,0.9,0.9,'#fff',0.4);c.fillStyle=INK;c.beginPath();c.arc(1.5,-0.5,0.45,0,Math.PI*2);c.fill();}
     c.strokeStyle=INK;c.lineWidth=0.6;c.beginPath();c.moveTo(0.1,-1.8);c.lineTo(2.2,-1.2);c.stroke();c.restore();
+    if(SP>0.5&&Math.random()<0.5)S.parts.push({k:'smoke',x:e.x+(Math.random()-0.5)*14,y:e.y+e.r*0.8,vx:(Math.random()-0.5)*20,vy:-10,r:2+Math.random()*2,t:0,T:0.6});
     if(moving&&Math.random()<0.25)S.parts.push({k:'smoke',x:e.x-fx*e.r*0.6,y:e.y+e.r*0.8,vx:-fx*12,vy:-8,r:2+Math.random()*2,t:0,T:0.6});
   }
   c.restore();
