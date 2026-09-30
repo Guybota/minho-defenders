@@ -1301,9 +1301,10 @@ function newGame(lvl,di,heroId){
   drawBG();renderPanel();if(leftDuel)resize();
 }
 function mkFoe(t,p,d){
-  const f=FOES[t],m=hpMult(Math.max(1,S.wave));
-  const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:f.spd,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
-    d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:f.spd,blocked:false};
+  // todos com +20% de vida e +10% de velocidade
+  const f=FOES[t],m=hpMult(Math.max(1,S.wave))*1.2,sp=f.spd*1.1;
+  const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:sp,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
+    d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:sp,blocked:false};
   // elites: a partir da vaga 15 alguns vêm com mais vida, mais armadura e o dobro do ouro (contorno dourado)
   if(S.wave>=15&&!f.boss&&t!=='mini'&&Math.random()<Math.min(0.45,(S.wave-14)*0.05)){e.elite=1;e.hp=e.max=e.max*1.8;e.armor+=2;e.gold*=2;}
   if(t==='pereg')e.hidden=1;
