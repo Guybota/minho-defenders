@@ -826,10 +826,11 @@ FOES.arren={name:tr('A Arrenegada','The Arrenegada'),hp:2600,spd:26,armor:6,gold
 const FSZ={peao:1,mini:1,arqc:1,cont:1,cura:1,cav:2,esc:2,sap:2,band:1,gait:1,pereg:1,cap:4,bomb:4,ari:5,torre:6,merc:12,arren:6};
 // from: vaga a partir da qual aparece; w: peso na escolha (cresce com as vagas)
 const BOATS={
-  batel:{name:tr('Batel','Rowboat'),cap:3,spd:46,L:40,B:15,oars:2,masts:0,from:1,w:w=>Math.max(1,5-w*0.25)},
-  barca:{name:tr('Barca','Barge'),cap:6,spd:38,L:56,B:19,oars:3,masts:1,from:3,w:w=>3+w*0.1},
-  galeota:{name:tr('Galeota','Galliot'),cap:10,spd:31,L:70,B:23,oars:5,masts:1,from:8,w:w=>1+(w-8)*0.45},
-  nau:{name:tr('Nau','Carrack'),cap:16,spd:25,L:86,B:30,oars:0,masts:2,castle:true,from:14,w:w=>1+(w-14)*0.45}};
+  batel:{name:tr('Batel','Rowboat'),cap:5,spd:46,L:42,B:15,oars:2,masts:0,from:1,w:w=>Math.max(1,5-w*0.25)},
+  barca:{name:tr('Barca','Barge'),cap:9,spd:38,L:60,B:19,oars:3,masts:1,from:3,w:w=>3+w*0.1},
+  galeota:{name:tr('Galeota','Galliot'),cap:14,spd:31,L:76,B:23,oars:5,masts:1,from:7,w:w=>1+(w-7)*0.45},
+  nau:{name:tr('Nau','Carrack'),cap:22,spd:25,L:92,B:30,oars:0,masts:2,castle:true,from:12,w:w=>1+(w-12)*0.45},
+  galeao:{name:tr('Galeão','Galleon'),cap:30,spd:21,L:108,B:36,oars:0,masts:3,castle:true,from:17,w:w=>1+(w-17)*0.6}};
 const BK=Object.keys(BOATS);
 const DIFFS=[
   {id:'turista',name:tr('Turista','Tourist'),desc:tr('Mais ouro, mais vidas','More gold, more lives'),hp:0.75,gold:250,lives:30,dmg:0.7},
@@ -1320,7 +1321,7 @@ function launchBoat(pp){
   if(BOATS[k].cap<first)k=BK.find(kk=>BOATS[kk].cap>=first)||'nau';
   // carrega o que couber entre os próximos da fila (assim os barcos vêm mistos)
   const B=BOATS[k],load=[];let used=0,gap=0;
-  for(let i=0;i<S.queue.length&&i<14&&used<B.cap;){const q=S.queue[i],z=FSZ[q.t];
+  for(let i=0;i<S.queue.length&&i<32&&used<B.cap;){const q=S.queue[i],z=FSZ[q.t];
     if(z&&used+z<=B.cap){load.push(q.t);used+=z;gap+=q.gap;S.queue.splice(i,1);}else i++;}
   const land=PATHS[p].seg[0].L,b={id:++EID,k,p,d:0,stop:Math.max(4,land-B.L/2+5),st:'go',al:0,uT:0,mv:true,x:0,y:0,a:0,o:0,
     lane:[0,1,-1,2,-2].find(l=>!S.boats.some(o=>o.p===p&&o.lane===l))||0};// faixa: com a margem ocupada, atraca ao lado
@@ -2515,10 +2516,10 @@ function drawBoat(b){
   c.save();c.globalAlpha=al;c.lineJoin='round';
   if(!B.masts){const[px,py]=at(-h+4);c.strokeStyle=INK;c.lineWidth=1;c.beginPath();c.moveTo(px,py);c.lineTo(px,py-12);c.stroke();
     const f=Math.sin(t*7+b.id);c.fillStyle='#b8302a';c.beginPath();c.moveTo(px,py-12);c.lineTo(px+7,py-10.5+f);c.lineTo(px,py-8.5);c.closePath();c.fill();c.stroke();}
-  else (B.masts===2?[h*0.25,-h*0.35]:[h*0.05]).forEach((mx,i)=>{const[px,py]=at(mx),H=B.L*(B.masts===2?0.62:0.6)*(i?0.82:1),sw=B.B*(i?0.85:1.05),st=py-H+3,sb=py-H*0.38,bil=(mv?1:0.5)*(2+Math.sin(t*2+b.id+i)*0.7);
+  else (B.masts===3?[h*0.4,-h*0.05,-h*0.5]:B.masts===2?[h*0.25,-h*0.35]:[h*0.05]).forEach((mx,i)=>{const[px,py]=at(mx),H=B.L*(B.masts===3?0.52:B.masts===2?0.62:0.6)*(i?0.82:1),sw=B.B*(i?0.85:1.05),st=py-H+3,sb=py-H*0.38,bil=(mv?1:0.5)*(2+Math.sin(t*2+b.id+i)*0.7);
     c.strokeStyle=INK;c.lineWidth=1.6;c.beginPath();c.moveTo(px,py);c.lineTo(px,py-H);c.stroke();
     const sail=()=>{c.beginPath();c.moveTo(px-sw/2,st);c.lineTo(px+sw/2,st);c.quadraticCurveTo(px+sw/2+bil,(st+sb)/2,px+sw/2-0.5,sb);c.quadraticCurveTo(px,sb+bil*1.4,px-sw/2+0.5,sb);c.quadraticCurveTo(px-sw/2-bil,(st+sb)/2,px-sw/2,st);c.closePath();};
-    sail();c.fillStyle='#e8c24a';c.fill();c.save();c.clip();c.fillStyle='#b8302a';const n=B.masts===2?5:4;for(let k=0;k<n;k+=2)c.fillRect(px-sw/2+k*sw/n,st-2,sw/n,sb-st+6);
+    sail();c.fillStyle='#e8c24a';c.fill();c.save();c.clip();c.fillStyle='#b8302a';const n=B.masts>=2?5:4;for(let k=0;k<n;k+=2)c.fillRect(px-sw/2+k*sw/n,st-2,sw/n,sb-st+6);
     c.strokeStyle='rgba(60,30,10,.35)';c.lineWidth=0.5;c.beginPath();c.moveTo(px-sw/2,(st+sb)/2+bil*0.5);c.quadraticCurveTo(px,(st+sb)/2+bil*1.6,px+sw/2,(st+sb)/2+bil*0.5);c.stroke();c.restore();
     sail();c.strokeStyle=INK;c.lineWidth=1;c.stroke();
     c.strokeStyle='#5a3d20';c.lineWidth=1.5;c.beginPath();c.moveTo(px-sw/2-2,st);c.lineTo(px+sw/2+2,st);c.stroke();
@@ -4395,7 +4396,7 @@ function showHelp(back){
     <p>${ic('swords')} Matança: abates seguidos, sem pausas de mais de 2,5 s, dão mais ouro, até ×2. A série acaba se alguém chegar à praça.</p>
     <p>${ic('cross')} A cada 3 vagas o povo oferece ajuda: escolhe uma de três bênçãos ou pactos. Os pactos dão muito, mas cobram alguma coisa.</p>
     <p>Nas vagas 10 e 20 aparece a lenda de cada praça: o Mercador das Toalhas em Valença, a Coca em Monção, o Polvo da Lagarteira em Âncora e o Cervo Gigante em Cerveira. A Coca voa e o Polvo e a Coca deixam torres fora de combate por uns segundos.</p>
-    <p>Os castelhanos atravessam o rio de barco: batéis pequenos, barcas, galeotas e, mais tarde, naus enormes. Cada barco leva vários inimigos, e os maiores ocupam mais lugares (um cavaleiro vale dois peões, um aríete ou uma torre de cerco enchem uma barca). Quanto mais avanças, maiores são os barcos.</p>
+    <p>Os castelhanos atravessam o rio de barco: batéis pequenos, barcas, galeotas e, mais tarde, naus e galeões enormes, que despejam uma vaga inteira de uma vez. Cada barco leva vários inimigos, e os maiores ocupam mais lugares (um cavaleiro vale dois peões, um aríete ou uma torre de cerco enchem uma barca). Quanto mais avanças, maiores são os barcos.</p>
     <p>Nadadores vêm pelo meio e esbarram no postigo, que também tem porta. Contrabandistas roubam ouro. Curandeiros tratam dos outros. Torres de cerco libertam soldados. Archeiros e bombardas param longe e atacam as portas à distância: as bombardas são lentas mas arrombam uma porta em poucos tiros. Na vaga 10 rebentam o postigo e passam a usar três caminhos; podes voltar a fechá-lo com Fechar portas.</p>
     <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão '+ic('fit')+' alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The '+ic('fit')+' button switches between your fortress and the whole map.')}</p>
     <p>${ic('crown')} ${tr('Ganha um mapa pela primeira vez e a lenda desse mapa muda de lado: o Mercador das Toalhas (Valença), a Coca (Monção), o Polvo da Lagarteira (Âncora), o Cervo Gigante (Cerveira) e a Arrenegada (Melgaço) passam a poder ser escolhidos como heróis, cada um com o seu especial e as suas melhorias. A Coca voa por cima do rio, o Polvo nada e segura nadadores, o Cervo carrega contra o inimigo mais adiantado, o Mercador faz mais ouro e a Arrenegada desafia o inimigo mais forte.','Win a map for the first time and its legend switches sides: the Towel Merchant (Valença), the Coca (Monção), the Lagarteira Octopus (Âncora), the Giant Stag (Cerveira) and the Arrenegada (Melgaço) can then be picked as heroes, each with its own special and upgrades. The Coca flies over the river, the Octopus swims and holds swimmers, the Stag charges the most advanced enemy, the Merchant makes more gold and the Arrenegada duels the strongest enemy.')}</p>
