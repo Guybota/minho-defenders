@@ -890,7 +890,7 @@ const WORKS=[
 const workCost=w=>w.once?w.cost:w.cost*(1+((S.works||{})[w.k]||0));
 // treino da heroína com ouro: meio nível de experiência; no nível 10, oferendas (+8% de vida e dano, até 5)
 const trainCost=h=>80+h.lv*30,giftCost=h=>300*((h.gift||0)+1);
-const heroLocked=k=>!!(HEROES[k]&&HEROES[k].map&&!LS.get('wins',{})[HEROES[k].map]);
+const heroLocked=k=>!LS.get('allheroes',0)&&!!(HEROES[k]&&HEROES[k].map&&!LS.get('wins',{})[HEROES[k].map]);
 // níveis da heroína: ganha experiência a derrotar inimigos (e um pouco com os que caem perto dela); nos níveis 3, 6 e 9 escolhe uma melhoria
 const HERO_MAX=10,HERO_TIERS=[3,6,9],xpNeed=lv=>30+lv*22;
 const hUp=(h,k)=>(h.ups||[]).some((b,i)=>h.D.ups[i]&&h.D.ups[i][b]&&h.D.ups[i][b].k===k);
@@ -3683,6 +3683,14 @@ function menuBgLeave(){
   bg.classList.remove('show');pop(bg,'leave');MBG.t=setTimeout(()=>{bg.hidden=true;bg.classList.remove('leave');},980);
 }
 // sai sozinho quando o jogo começa (janela fechada e partida em curso)
+// segredo: três toques em Melgaço no mapa do menu desbloqueiam todos os heróis
+const CHEAT={n:0,t:0};
+$('modal').addEventListener('pointerdown',e=>{if(e.target!==$('modal')||!MBG.on)return;const sv=$('menubg').querySelector('svg'),m=sv&&sv.getScreenCTM();if(!m)return;
+  const pt=sv.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(m.inverse()),[mx,my]=MBG_XY.melgaco;
+  if(Math.hypot(q.x-mx,q.y-(my+30))>90){CHEAT.n=0;return;}
+  const now=performance.now();CHEAT.n=now-CHEAT.t<1500?CHEAT.n+1:1;CHEAT.t=now;audio();sfx('coin');
+  if(CHEAT.n>=3){CHEAT.n=0;if(LS.get('allheroes',0)){toast(ic('crown')+' '+tr('Os heróis já estão todos às ordens.','All heroes are already at your command.'));return;}
+    LS.set('allheroes',1);sfx('horn');toast(ic('crown')+' '+tr('A Inês Negra abriu as portas: todos os heróis desbloqueados!','Inês Negra opened the gates: all heroes unlocked!'));}});
 function menuBgCheck(){if(MBG.on&&S&&S.started&&!S.over&&$('modal').hidden&&!$('modal').classList.contains('closing'))menuBgLeave();}
 
 /* ---- 09-guardar-coop.js ---- */

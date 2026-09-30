@@ -59,6 +59,7 @@ O jogo também está alojado no GitHub Pages.
 - **Heroína:** bloqueia até 3 inimigos, move-se tocando nela e depois no mapa, e tem um poder especial. Ganha experiência (`heroXP`) até ao nível 10; nos níveis 3, 6 e 9 escolhe uma de duas melhorias (`HEROES[id].ups`, `hUp(h,k)`), no painel dela.
 - **Postigo:** a porta da estrada dos nadadores é destrutível como as outras; na vaga 10 rebenta e abre o terceiro caminho, mas pode voltar a ser fechada.
 - **Modos:** campanha, jogo livre, infinito e cooperativo. Há três dificuldades: Turista, Castelhano e Capitão Paco.
+- **Segredo:** três toques seguidos em Melgaço no mapa do menu (`CHEAT`) guardam `cerco-allheroes` e desbloqueiam todos os heróis (`heroLocked`).
 
 ## Testes (Playwright com o Chromium pré-instalado)
 
