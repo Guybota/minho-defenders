@@ -3934,7 +3934,7 @@ async function joinCoop(code){
   R.on('tw',m=>{if(NET.started&&m.peer===NET.host&&S&&S.remote)applyTw(m.data);});
   R.on('end',m=>{if(NET.started&&m.peer===NET.host&&S&&S.remote&&!S.over)guestEnd(m.data||{});});
   R.onPeers(ch=>{if(NET.host&&ch.left.some(p=>p.peer===NET.host)&&S&&!S.over){S.over=true;
-    showModal(tr('<h2>O anfitrião saiu</h2><p>A partida cooperativa terminou.</p>','<h2>The host left</h2><p>The co-op game has ended.</p>'),[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]);}});
+    endCard(tr('Cooperativo','Co-op'),LV.full||LV.name,tr('O anfitrião saiu','The host left'),false,tr('<p>A partida cooperativa terminou.</p>','<p>The co-op game has ended.</p>'),[{l:ic('map')+' Menu',main:1,fn:()=>{netLeave();showMenu();}}]);}});
   const hi=()=>R.emit('hello',{}).catch(()=>{});hi();NET.helloT=setInterval(()=>{if(!NET.started)hi();},1000);
   const myNet=NET;setTimeout(()=>{if(NET!==myNet||NET.started)return;const c=$('mcard'),q=c&&c.querySelector('p');
     if(q)q.textContent=tr('Ainda não há resposta. Confirma o código e que o anfitrião tem a sala aberta, no mesmo link do jogo.','No answer yet. Check the code and that the host has the room open, on the same game link.');},12000);
@@ -4127,9 +4127,9 @@ function showDuelEnd(win){
       :tr('{m} caiu na vaga {w}. Os portugueses entraram, comeram o jamón todo e deixaram bacalhau no lugar. Pede a desforra.','{m} fell on wave {w}. The Portuguese marched in, ate all the jamón and left salt cod in its place. Ask for a rematch.'));
   const stats=`<div class="stats-end"><span>${tr('Vagas aguentadas','Waves held')}</span><span>${M.S.wave}</span><span>${tr('Inimigos despachados','Enemies dispatched')}</span><span>${st.kills}</span>
     <span>${tr('Tropas mandadas','Troops sent')}</span><span>${st.sent||0}</span><span>${tr('Renda final','Final income')}</span><span>+${M.S.eco}</span><span>${tr('Tempo','Time')}</span><span>${mm}:${ss}</span></div>`;
-  const btns=DUEL.net?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]
-    :[{label:tr('Desforra','Rematch'),main:true,fn:()=>{defeatFx(false);startDuel(DUEL.opts);}},{label:'Menu',keep:true,fn:()=>{defeatFx(false);showMenu();}}];
-  showModal(`<h2>${title}</h2><p>${fill(msg)}</p>${stats}`,btns);
+  const it=DUEL.net?[{l:ic('map')+' Menu',main:1,fn:()=>{netLeave();showMenu();}}]
+    :[{l:ic('swords')+' '+tr('Desforra','Rematch'),main:1,close:1,fn:()=>{defeatFx(false);startDuel(DUEL.opts);}},{l:ic('map')+' Menu',fn:()=>{defeatFx(false);showMenu();}}];
+  endCard(win?tr('Vitória','Victory'):tr('Derrota','Defeat'),tr('Duelo','Duel')+' · '+M.LV.name+' × '+F.LV.name,title,win,`<p>${fill(msg)}</p>${stats}`,it);
 }
 /* ---- interface: estado do adversário, renda e o botão das tropas no canto inferior direito ---- */
 function duelUI(on){
@@ -4500,12 +4500,15 @@ function showEnd(win){
       {l:ic('trophy')+' '+tr('Recordes','Leaderboard'),fn:()=>showBoard(S.lvl,()=>showEnd(win))},
       {l:ic('map')+' Menu',fn:showMenu}];
   }
-  // mesmo cartão do menu principal e da pausa, por cima do mapa desfocado
+  endCard(tag,where,title,win&&!S.infinite,body,it);
+}
+// cartão de fim (vitória/derrota, também no duelo): o mesmo do menu principal e da pausa, por cima do mapa desfocado
+function endCard(tag,where,title,good,body,it){
   document.body.classList.add('inpause');
   const big=it.filter(x=>x.main),small=it.filter(x=>!x.main),rows=[];for(let k=0;k<small.length;k+=2)rows.push(small.slice(k,k+2));
   const btn=x=>`<button data-e="${it.indexOf(x)}"${x.main?' class="main"':''}>${x.l}</button>`;
   showModal(`<div class="menu endm"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tag} · ${where}</p>
-    <h3 class="etitle ${win&&!S.infinite?'win':'lose'}">${title}</h3>${body}
+    <h3 class="etitle ${good?'win':'lose'}">${title}</h3>${body}
     <div class="mlist">${big.map(btn).join('')}${rows.map(r=>r.length>1?`<div class="row">${r.map(btn).join('')}</div>`:btn(r[0])).join('')}</div></div>`,[]);
   $('mcard').querySelectorAll('[data-e]').forEach(b=>b.addEventListener('click',()=>{audio();const x=it[+b.dataset.e];if(x.close)closeModal();x.fn();}));
 }
