@@ -2023,12 +2023,52 @@ function peerJoin(code,role){
     });
   }));
 }
+/* Na sala do claude.ai só quem tem acesso de Contributor ou mais pode emitir eventos; quem só vê (Viewer) pode apenas mudar a
+   sua presença. Cada lado tenta emit e, se for recusado, passa a mandar as mensagens pela presença: uma fila numerada que
+   os outros leem em onPeers. Os tópicos de estado (st, tw) guardam só a última versão; os outros caducam ao fim de 4 s. */
+function claudeRoom(NR){
+  const hs={},seen={},STATE={st:1,tw:1};let mode='ev',seq=0,q=[],cleanT=null;
+  const me=()=>{const p=NR.peers().find(x=>x.sameTab);return p?p.peer:null;};
+  const deliver=(t,m)=>(hs[t]||[]).forEach(h=>{try{h(m);}catch(e){console.error(e);}});
+  const flush=()=>{
+    const now=Date.now();q=q.filter(x=>STATE[x.t]||x.x>now);
+    const arr=q.map(x=>[x.s,x.t,x.d]);let s=JSON.stringify(arr);
+    while(s.length>3700&&arr.length>1){let i=arr.findIndex(a=>STATE[a[1]]);if(i<0||i===arr.length-1)i=0;arr.splice(i,1);s=JSON.stringify(arr);}
+    NR.presence({q:arr}).catch(()=>{});
+    clearTimeout(cleanT);if(q.some(x=>!STATE[x.t]))cleanT=setTimeout(flush,1000);
+  };
+  const viaPresence=(t,d)=>{
+    const p=me();deliver(t,{data:JSON.parse(JSON.stringify(d==null?null:d)),peer:p,isMe:true,sameTab:true});
+    seq++;if(STATE[t])q=q.filter(x=>x.t!==t);q.push({s:seq,t,d,x:Date.now()+4000});flush();
+  };
+  NR.onPeers(ch=>{
+    ch.left.forEach(p=>{delete seen[p.peer];});
+    [...ch.joined,...ch.updated].forEach(p=>{
+      if(p.sameTab)return;const arr=p.presence&&p.presence.q;if(!Array.isArray(arr))return;
+      let last=seen[p.peer]||0;
+      arr.filter(a=>Array.isArray(a)&&typeof a[0]==='number'&&typeof a[1]==='string').sort((a,b)=>a[0]-b[0]).forEach(a=>{
+        if(a[0]<=last)return;last=a[0];deliver(a[1],{data:a[2],peer:p.peer,by:p.by,isMe:p.isMe,sameTab:false,guest:p.guest});});
+      seen[p.peer]=last;
+    });
+  });
+  return{
+    get small(){return mode==='pr';},
+    emit(t,d){
+      if(mode==='pr'){viaPresence(t,d);return Promise.resolve();}
+      return NR.emit(t,d).catch(e=>{if(e&&e.code==='not_permitted'){mode='pr';viaPresence(t,d);}});
+    },
+    on(t,h){(hs[t]=hs[t]||[]).push(h);return NR.on(t,h);},
+    onPeers:h=>NR.onPeers(h),
+    leave(){clearTimeout(cleanT);return NR.leave();}
+  };
+}
 async function joinRoom(code,role){
-  if(IN_CLAUDE){for(let i=0;i<20&&!ROOM;i++)await new Promise(r=>setTimeout(r,100));
-    if(!ROOM)throw {code:'room'};return ROOM.join('md-'+code);}
+  if(IN_CLAUDE){for(let i=0;i<30&&!ROOM;i++)await new Promise(r=>setTimeout(r,100));
+    if(!ROOM)throw {code:'room'};return claudeRoom(await ROOM.join('md-'+code));}
   return peerJoin(code,role);
 }
 function netErr(e){const c=e&&e.code||'';
+  if(c==='room')return tr('Esta vista não consegue ligar-se à sala. É preciso ter sessão iniciada no claude.ai; quem abre o link sem sessão (link público) não pode jogar em cooperativo.','This view can’t connect to the room. You need to be signed in to claude.ai; someone opening a public link without signing in can’t play co-op.');
   if(c==='peer-unavailable')return tr('Não há nenhuma sala com esse código (ou o anfitrião ainda não a abriu).','There is no room with that code (or the host hasn’t opened it yet).');
   if(c==='unavailable-id')return tr('Esse código já está em uso. Tenta criar a sala outra vez.','That code is already in use. Try creating the room again.');
   if(c==='peerjs'||c==='network'||c==='server-error'||c==='socket-error')return tr('Não foi possível ligar ao servidor de ligação (PeerJS). Verifica a internet.','Could not reach the connection server (PeerJS). Check your internet.');
@@ -2047,10 +2087,10 @@ async function hostCoop(){
   const code=Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*31)]).join('');
   showModal(tr(`<h2>Sala cooperativa</h2><p>A abrir a sala…</p>`,`<h2>Co-op room</h2><p>Opening the room…</p>`),[{label:tr('Cancelar','Cancel'),fn:()=>{netLeave();showMenu();}}]);
   let R;try{R=await joinRoom(code,'host');}catch(e){return coopUnavailable(netErr(e));}
-  NET={R,role:'host',code,partner:null,twDirty:true,lastSt:0,lastTw:0};
+  NET={R,role:'host',code,partner:null,waiting:true,twDirty:true,lastSt:0,lastTw:0};
   R.on('hello',m=>{
-    if(m.isMe)return;
-    if(!NET.partner&&!(S&&S.coop&&S.started)){NET.partner=m.peer;startCoopHost();}
+    if(m.sameTab||!m.peer)return;
+    if(!NET.partner&&NET.waiting){NET.partner=m.peer;NET.waiting=false;startCoopHost();}
     if(m.peer===NET.partner)R.emit('start',{to:m.peer,lvl:S.lvl,di:S.di,hero:S.hero.id}).catch(()=>{});
   });
   R.on('act',m=>{if(m.peer===NET.partner&&S&&S.coop&&!S.remote&&m.data&&typeof m.data==='object')doAct(m.data,2);});
@@ -2073,7 +2113,7 @@ async function joinCoop(code){
   NET={R,role:'guest',code,host:null,myPeer:null,started:false,emap:new Map(),snapT:0};
   R.on('hello',m=>{if(m.isMe&&m.sameTab)NET.myPeer=m.peer;});
   R.on('start',m=>{
-    const d=m.data||{};if(NET.started||m.isMe)return;if(NET.myPeer&&d.to!==NET.myPeer)return;if(!LEVELS[d.lvl])return;
+    const d=m.data||{};if(NET.started||m.sameTab)return;if(NET.myPeer&&d.to!==NET.myPeer)return;if(!LEVELS[d.lvl])return;
     NET.started=true;NET.host=m.peer;clearInterval(NET.helloT);
     newGame(d.lvl,d.di|0,HEROES[d.hero]?d.hero:'padeira');
     S.coop=true;S.remote=true;S.me=2;S.started=true;closeModal();toast(tr('<b>Ligado!</b> Defendam juntos.','<b>Connected!</b> Defend together.'));sfx('horn');
@@ -2084,10 +2124,12 @@ async function joinCoop(code){
   R.onPeers(ch=>{if(NET.host&&ch.left.some(p=>p.peer===NET.host)&&S&&!S.over){S.over=true;
     showModal(tr('<h2>O anfitrião saiu</h2><p>A partida cooperativa terminou.</p>','<h2>The host left</h2><p>The co-op game has ended.</p>'),[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]);}});
   const hi=()=>R.emit('hello',{}).catch(()=>{});hi();NET.helloT=setInterval(()=>{if(!NET.started)hi();},1000);
+  const myNet=NET;setTimeout(()=>{if(NET!==myNet||NET.started)return;const c=$('mcard'),q=c&&c.querySelector('p');
+    if(q)q.textContent=tr('Ainda não há resposta. Confirma o código e que o anfitrião tem a sala aberta, no mesmo link do jogo.','No answer yet. Check the code and that the host has the room open, on the same game link.');},12000);
 }
 function coopUnavailable(msg){
   showModal(`<h2>${tr('Cooperativo indisponível','Co-op unavailable')}</h2><p>${msg||tr('Não foi possível ligar.','Could not connect.')}</p>
-    <p class="small">${IN_CLAUDE?tr('Os dois jogadores abrem o mesmo link do artefacto. Quem entra como convidado precisa de acesso de Contributor ou superior na partilha.','Both players open the same artifact link. The guest needs Contributor access or higher in the sharing settings.'):tr('Os dois jogadores abrem o mesmo endereço do jogo. A ligação é direta entre os dois aparelhos; em algumas redes muito fechadas pode não funcionar.','Both players open the same game address. The connection is direct between both devices; it may not work on some very restricted networks.')}</p>`,
+    <p class="small">${IN_CLAUDE?tr('Os dois jogadores abrem o mesmo link do artefacto no claude.ai, com sessão iniciada.','Both players open the same artifact link on claude.ai, signed in.'):tr('Os dois jogadores abrem o mesmo endereço do jogo. A ligação é direta entre os dois aparelhos; em algumas redes muito fechadas pode não funcionar.','Both players open the same game address. The connection is direct between both devices; it may not work on some very restricted networks.')}</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:showMenu}]);
 }
 function snapshot(){
@@ -2103,8 +2145,9 @@ function snapshot(){
     cd:[S.cd.rain,S.cd.gate,S.cd.bell,S.cd.hero].map(v=>Math.ceil(v)),h:[r(h.x),r(h.y),r(h.hp/h.max*100),h.dead?1:0,h.lv,h.kills,Math.ceil(h.respawn),r(h.ang*10),h.swing>0?1:0],
     n:S.towers.length,e,p,x,f,ta,v:S.voiceQ.splice(0,2),cb:[S.combo,Math.ceil(S.comboT*10)]};
   let s=JSON.stringify(d);
-  if(s.length>3800){d.p=[];s=JSON.stringify(d);}
-  while(s.length>3800&&d.e.length>10){d.e=d.e.slice(0,Math.floor(d.e.length*0.8));s=JSON.stringify(d);}
+  const cap=NET.R&&NET.R.small?2600:3800;
+  if(s.length>cap){d.p=[];s=JSON.stringify(d);}
+  while(s.length>cap&&d.e.length>10){d.e=d.e.slice(0,Math.floor(d.e.length*0.8));s=JSON.stringify(d);}
   return d;
 }
 function netSend(now){
