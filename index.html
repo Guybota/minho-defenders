@@ -2100,8 +2100,13 @@ function loadPeer(){
 function peerJoin(code,role){
   return loadPeer().then(()=>new Promise((res,rej)=>{
     const hs={},conns={},leaveHs=[],hostId='minhodef-'+code;let myId=null,done=false;
-    const peer=role==='host'?new window.Peer(hostId,{debug:0}):new window.Peer({debug:0});
-    const fail=e=>{if(done)return;done=true;try{peer.destroy();}catch(_){}rej(e);};
+    // STUN para descobrir o endereço público; TURN (servidores do PeerJS) para quando a ligação direta é bloqueada
+    const opts={debug:0,config:{iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},
+      {urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}]}};
+    const peer=role==='host'?new window.Peer(hostId,opts):new window.Peer(opts);
+    const fail=e=>{if(done)return;done=true;clearTimeout(sigT);try{peer.destroy();}catch(_){}rej(e);};
+    // sem resposta do servidor de sinalização: não ficar à espera para sempre
+    const sigT=setTimeout(()=>fail({code:'signal-timeout'}),15000);
     const R={
       emit:(t,d)=>{const msg={t,d};Object.values(conns).forEach(c=>{try{if(c.open)c.send(msg);}catch(_){}});
         (hs[t]||[]).forEach(h=>h({data:JSON.parse(JSON.stringify(d)),peer:myId,isMe:true,sameTab:true}));return Promise.resolve();},
@@ -2112,12 +2117,17 @@ function peerJoin(code,role){
     const wire=c=>{conns[c.peer]=c;
       c.on('data',m=>{if(!m||typeof m!=='object'||typeof m.t!=='string')return;(hs[m.t]||[]).forEach(h=>h({data:m.d,peer:c.peer,isMe:false,sameTab:false}));});
       c.on('close',()=>{delete conns[c.peer];leaveHs.forEach(h=>h({joined:[],left:[{peer:c.peer}]}));});};
+    // o anfitrião fica a saber quando alguém tenta entrar mas a ligação direta não abre
+    const watchIn=c=>{const t=setTimeout(()=>{if(!c.open)toast(tr('<b>Alguém tentou entrar</b>, mas a ligação entre os dois aparelhos falhou. Experimentem estar na mesma rede Wi-Fi.','<b>Someone tried to join</b>, but the connection between the two devices failed. Try being on the same Wi-Fi network.'));},12000);
+      c.on('open',()=>clearTimeout(t));};
     peer.on('error',e=>fail({code:e&&e.type||'erro'}));
-    peer.on('open',id=>{myId=id;
-      if(role==='host'){peer.on('connection',c=>c.on('open',()=>wire(c)));done=true;res(R);}
+    peer.on('open',id=>{myId=id;clearTimeout(sigT);
+      if(role==='host'){peer.on('connection',c=>{watchIn(c);c.on('open',()=>wire(c));});done=true;res(R);}
       else{const c=peer.connect(hostId,{reliable:true,serialization:'json'});
-        c.on('open',()=>{wire(c);done=true;res(R);});
-        setTimeout(()=>fail({code:'peer-unavailable'}),12000);}
+        c.on('open',()=>{if(done)return;wire(c);done=true;res(R);});
+        c.on('error',()=>fail({code:'conn-failed'}));
+        // o servidor encontrou a sala (senão dava peer-unavailable), mas a ligação direta não abriu
+        setTimeout(()=>fail({code:'conn-failed'}),15000);}
     });
   }));
 }
@@ -2168,6 +2178,8 @@ async function joinRoom(code,role){
 function netErr(e){const c=e&&e.code||'';
   if(c==='room')return tr('Esta vista não consegue ligar-se à sala. É preciso ter sessão iniciada no claude.ai; quem abre o link sem sessão (link público) não pode jogar em cooperativo.','This view can’t connect to the room. You need to be signed in to claude.ai; someone opening a public link without signing in can’t play co-op.');
   if(c==='peer-unavailable')return tr('Não há nenhuma sala com esse código (ou o anfitrião ainda não a abriu).','There is no room with that code (or the host hasn’t opened it yet).');
+  if(c==='conn-failed')return tr('A sala existe, mas não foi possível ligar os dois aparelhos. Algumas redes (dados móveis, redes de empresa ou escola) bloqueiam ligações diretas. Experimentem os dois na mesma rede Wi-Fi.','The room exists, but the two devices couldn’t connect. Some networks (mobile data, work or school networks) block direct connections. Try both being on the same Wi-Fi network.');
+  if(c==='signal-timeout')return tr('O servidor de ligação (PeerJS) não respondeu. Verifica a internet e tenta outra vez.','The connection server (PeerJS) didn’t respond. Check your internet and try again.');
   if(c==='unavailable-id')return tr('Esse código já está em uso. Tenta criar a sala outra vez.','That code is already in use. Try creating the room again.');
   if(c==='peerjs'||c==='network'||c==='server-error'||c==='socket-error')return tr('Não foi possível ligar ao servidor de ligação (PeerJS). Verifica a internet.','Could not reach the connection server (PeerJS). Check your internet.');
   return tr('Erro de ligação','Connection error')+' ('+(c||'?')+').';}
