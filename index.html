@@ -2462,8 +2462,11 @@ function drawTowerBuilding(c,t){
 }
 // torre deitada abaixo: monte de pedras, cotos de parede e, se estiver em obras, andaime e barra de progresso
 function drawRuin(t){
-  const c=ctx;c.save();c.translate(t.x,t.y);c.lineJoin='round';
-  c.fillStyle='rgba(46,36,25,.22)';c.beginPath();c.ellipse(0,6,17,7,0,0,Math.PI*2);c.fill();
+  const c=ctx,R=15;c.save();c.translate(t.x,t.y);c.lineJoin='round';
+  // o mesmo chão de pedra das bandeiras por construir, mas sem bandeira
+  c.fillStyle='rgba(46,36,25,.22)';c.beginPath();c.ellipse(2,3,R+1,R*0.72,0,0,Math.PI*2);c.fill();
+  sprite(c,'slotP',-R-2,-R-2,2*R+4,2*R+4,g=>slotPlat(g,0,0,R,false));
+  c.save();c.rotate((RM()?0:S.t*0.5)+t.si*0.9);c.setLineDash([2.6,2.8]);c.lineWidth=1.4;c.strokeStyle='rgba(46,36,25,.55)';c.beginPath();c.arc(0,0,R-8,0,Math.PI*2);c.stroke();c.restore();
   c.strokeStyle=INK;c.lineWidth=1;c.fillStyle='#a8977a';
   c.beginPath();c.moveTo(-12,6);c.lineTo(-12,-6);c.lineTo(-8,-9);c.lineTo(-6,-3);c.lineTo(-6,6);c.closePath();c.fill();c.stroke();
   c.beginPath();c.moveTo(6,6);c.lineTo(6,-2);c.lineTo(9,-5);c.lineTo(12,-1);c.lineTo(12,6);c.closePath();c.fill();c.stroke();

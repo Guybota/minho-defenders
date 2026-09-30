@@ -9,7 +9,7 @@ Jogo de *tower defense* no browser, passado nas praças-fortes do Alto Minho: Va
 
 Depois de cada alteração pedida:
 1. Fazer commit e push para o ramo `claude/commit-push-github-zu2taj`, com uma mensagem em português.
-2. Voltar a publicar o artefacto do claude.ai **https://claude.ai/artifact/BpRsw1eb1qDMCaUzEdR8tW**. Usar a ferramenta Artifact com `file_path=index.html` e esse `url`. As capacidades (`room`, `db`, `user`) mantêm-se sozinhas, por isso não se passa `capabilities`.
+2. **Nunca publicar nem atualizar o artefacto do claude.ai** (https://claude.ai/artifact/BpRsw1eb1qDMCaUzEdR8tW). O utilizador pediu para deixar de o fazer.
 
 O jogo também está alojado no GitHub Pages.
 
