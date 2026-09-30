@@ -251,8 +251,25 @@ th{color:var(--soft)}
 @keyframes waves{to{transform:translateX(-14px)}}
 #menubg .pin{animation:pin 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes pin{50%{transform:scale(1.18)}}
-body.inmenu #modal{background:rgba(30,22,14,.22)}
-body.inmenu #modal .card{box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 0 0 4px var(--bg),inset 0 0 0 5px var(--line)}
+/* no menu o painel é pergaminho translúcido e desfocado: vê-se o mapa do Alto Minho por trás (sobretudo no telemóvel) */
+body.inmenu #modal{background:rgba(30,22,14,.1)}
+body.inmenu #modal .card{background:color-mix(in srgb,var(--bg) 58%,transparent);-webkit-backdrop-filter:blur(1.5px) saturate(1.1);backdrop-filter:blur(1.5px) saturate(1.1);border-radius:12px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 0 0 4px color-mix(in srgb,var(--bg) 55%,transparent),inset 0 0 0 5px var(--line);text-shadow:0 0 5px color-mix(in srgb,var(--bg) 85%,transparent)}
+body.inmenu .card button:not(.main):not([aria-pressed="true"]){background:color-mix(in srgb,var(--btn) 62%,transparent)}
+body.inmenu .card button[aria-pressed="true"]{background:color-mix(in srgb,var(--sel) 80%,transparent)}
+body.inmenu .card button:disabled{background:color-mix(in srgb,var(--btn) 38%,transparent)}
+body.inmenu .card button.main{text-shadow:none}
+body.inmenu .coopbox input{background:color-mix(in srgb,var(--btn) 78%,transparent)}
+body.inmenu .menu .status{border-top-color:color-mix(in srgb,var(--line) 60%,transparent)}
+/* em retrato o painel encosta ao fundo: o rio e as vilas ficam à vista no terço de cima (o mapa do menu sobe em menuVB) */
+@media (orientation:portrait){body.inmenu #modal{align-items:flex-end;padding-bottom:calc(env(safe-area-inset-bottom,0px) + .8rem)}
+  body.inmenu .mlist>button{min-height:46px}body.inmenu .menu .logo{font-size:2rem}}
+/* telemóvel: menu principal compacto para sobrar mapa à vista */
+@media (orientation:portrait) and (max-width:520px){
+  body.inmenu .menu .logo{font-size:1.75rem;margin:0}body.inmenu .menu .logo span{display:inline;margin-left:.3rem}
+  body.inmenu .menu .tag{font-size:.9rem;margin:.1rem 0 0}body.inmenu .menu .status{font-size:.72rem;margin:.4rem 0 .5rem;padding-top:.4rem}
+  body.inmenu .mlist{gap:.35rem}body.inmenu .mlist>button{min-height:42px;font-size:1.02rem;padding:.3rem .8rem}body.inmenu .mlist .row button{min-height:38px}
+  body.inmenu #modal .card{padding:.9rem 1rem}}
 /* --- animações extra --- */
 button{position:relative;overflow:hidden}
 .ripple{position:absolute;border-radius:50%;background:rgba(255,248,230,.45);transform:scale(0);animation:ripple .55s ease-out forwards;pointer-events:none}
@@ -1224,7 +1241,7 @@ function scoreTxt(sc){return tr('Vaga ','Wave ')+Math.floor(sc/10)+' · '+DIFFS[
 let S=null,EID=0,BZ=1;
 const VIEW={z:1,ox:0,oy:0};
 const OPT=Object.assign({big:false,cb:false},LS.get('opt',{}));
-const CAMP=['moncao','valenca','cerveira','ancora'];
+const CAMP=['moncao','melgaco','valenca','cerveira','ancora'];
 let menuSel={mode:LS.get('mode','livre'),lvl:LEVELS[LS.get('lvl','valenca')]?LS.get('lvl','valenca'):'valenca',di:LS.get('di',1),hero:(k=>HEROES[k]&&!heroLocked(k)?k:'padeira')(LS.get('hero','padeira')),chap:0,dside:LS.get('dside',0)?1:0};
 function newGame(lvl,di,heroId){
   // sair de um duelo: o mundo volta a ter uma só praça
@@ -3441,15 +3458,16 @@ function drawFlag(x,y,seed){
 
 /* ================= Mapa do Alto Minho por trás do menu ================= */
 // posições (0..1) das praças no mapa, usadas para "mergulhar" na praça escolhida ao entrar no jogo
-const MBG_XY={melgaco:[1375,432],moncao:[1235,470],valenca:[895,510],cerveira:[575,585],ancora:[215,800]};
+const MBG_XY={melgaco:[1440,425],moncao:[1030,485],valenca:[690,555],cerveira:[465,650],ancora:[215,810]};
 const MBG={on:false,t:null};
 // área visível do mapa do menu: em paisagem é o mapa 1600×1000 (cortado para encher); em retrato estica-se na vertical
-// (mais Galiza em cima, mais Portugal em baixo) para o mapa encher o ecrã sem faixas vazias
+// (mais Galiza em cima e bem mais Portugal em baixo) para o mapa encher o ecrã sem faixas vazias
 function menuVB(vw,vh){const ar=vw/vh;if(ar>=1.25)return{x:0,y:0,w:1600,h:1000,fs:1,port:false};
-  const w=ar<0.9?1560:1600,h=w/ar;return{x:0,y:540-h/2,w,h,fs:ar<0.9?1.65:1.25,port:true};}
+  // o centro desce: o rio e as vilas ficam no terço de cima, por cima do painel do menu (que em retrato encosta ao fundo)
+  const w=ar<0.9?1560:1600,h=w/ar;return{x:0,y:540+h*0.3-h/2,w,h,fs:ar<0.9?1.65:1.25,port:true};}
 function menuSvg(V){
   // rio: linha central suavizada (Catmull-Rom) e margens que alargam de nascente até à foz, onde entra no oceano
-  const RC=[[1660,292],[1520,330],[1380,372],[1270,410],[1180,428],[1060,446],[950,470],[830,500],[720,515],[610,528],[500,552],[400,576],[300,598],[210,614],[120,628],[40,640]];
+  const RC=[[1660,330],[1560,352],[1480,378],[1390,396],[1280,412],[1160,428],[1040,448],[930,468],[820,495],[700,520],[610,548],[530,578],[450,612],[370,635],[290,648],[210,655],[120,660],[40,665]];
   const smooth=(P,n)=>{const o=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
     for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;o.push([0,1].map(j=>0.5*(2*p1[j]+(-p0[j]+p2[j])*t+(2*p0[j]-5*p1[j]+4*p2[j]-p3[j])*t2+(-p0[j]+3*p1[j]-3*p2[j]+p3[j])*t3)));}}
     o.push(P[P.length-1]);return o;};
@@ -3465,12 +3483,12 @@ function menuSvg(V){
   const Y0=Math.min(0,V.y),Y1=Math.max(1000,V.y+V.h),fs=V.fs,R=rng(2024);
   const coast=`M190,${Y0} L190,0 C170,160 200,300 160,420 C140,520 175,610 150,700 C130,800 160,900 140,1000 L140,${Y1}`;
   // longe do rio, das vilas, do mar e dos títulos: onde se pode pôr colinas e árvores
-  const TOWNS=[[1375,432],[1400,318],[1235,470],[895,510],[575,585],[215,800],[1235,345],[900,415],[520,500],[225,560]];
+  const TOWNS=[[1440,425],[1390,322],[1030,485],[690,555],[465,650],[215,810],[1000,372],[675,455],[440,560],[230,585]];
   const dRiver=(x,y)=>{let m=1e9;for(const q of RP)m=Math.min(m,Math.hypot(q[0]-x,q[1]-y));return m;};
   const tY1=V.port?V.y+(330-V.y)*0.42:110,tY2=V.port?V.y+V.h-(V.y+V.h-900)*0.42:950;
   const cx=V.port?V.x+V.w-150:1470,cy=V.port?Math.min(V.y+V.h-150,1300):850,tX=V.port?V.x+V.w/2+80:930,tW=V.port?340:520;
   const KEEP=[[tX-tW,tY1-(V.port?95:45),tX+tW,tY1+(V.port?85:25)],[tX-tW,tY2-(V.port?95:45),tX+tW,tY2+(V.port?85:25)],[cx-120,cy-130,cx+120,cy+110],
-    [V.port?640:960,V.port?430:430,V.port?820:1180,V.port?520:520]];
+    [740,395,980,485]];
   const placed=[];
   const freeLand=(x,y,rad)=>x>230+rad&&x<V.x+V.w-40-rad&&y>V.y+40+rad&&y<V.y+V.h-40-rad&&dRiver(x,y)>45+rad&&TOWNS.every(t=>Math.hypot(t[0]-x,t[1]-y)>95+rad)&&!KEEP.some(b=>x>b[0]-rad&&x<b[2]+rad&&y>b[1]-rad&&y<b[3]+rad)
     &&placed.every(q=>Math.hypot(q[0]-x,q[1]-y)>q[2]+rad);
@@ -3488,9 +3506,9 @@ function menuSvg(V){
   for(let i=0;i<Math.round((Y1-Y0-1000)/60);i++){const x=V.x+60+R()*(V.w-120),y=R()<0.5?Y0+40+R()*(-Y0-20):1020+R()*(Y1-1060);if(freeLand(x,y,30))HL.push([x,y,0.9+R()*0.6]);}
   const hills=HL.map(h=>hill(...h)).join('');
   const star=(x,y,r,col)=>{let p='';for(let i=0;i<12;i++){const a=-Math.PI/2+i*Math.PI/6,rr=i%2?r*0.55:r;p+=(i?'L':'M')+(x+Math.cos(a)*rr).toFixed(1)+','+(y+Math.sin(a)*rr).toFixed(1);}return `<path d="${p}Z" fill="${col}" stroke="#2e2419" stroke-width="2"/>`;};
-  const town=(k,x,y,label,sub,dx=0)=>`<g><g class="pin">${star(x,y,17*Math.min(fs,1.35),'#b9ab8c')}<circle cx="${x}" cy="${y}" r="${5*Math.min(fs,1.35)}" fill="#9b2226"/></g>
-    <text x="${x+dx}" y="${y+22+18*fs}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="${30*fs}" fill="#2e2419" stroke="#e9dcbc" stroke-width="${6*fs}" paint-order="stroke">${label}</text>
-    ${sub?`<text x="${x+dx}" y="${y+22+42*fs}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${18*fs}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="${4*fs}" paint-order="stroke">${sub}</text>`:''}</g>`;
+  const town=(k,x,y,label,sub)=>`<g><g class="pin">${star(x,y,17*Math.min(fs,1.35),'#b9ab8c')}<circle cx="${x}" cy="${y}" r="${5*Math.min(fs,1.35)}" fill="#9b2226"/></g>
+    <text x="${x}" y="${y+22+18*fs}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="${30*fs}" fill="#2e2419" stroke="#e9dcbc" stroke-width="${6*fs}" paint-order="stroke">${label}</text>
+    ${sub?`<text x="${x}" y="${y+22+42*fs}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${18*fs}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="${4*fs}" paint-order="stroke">${sub}</text>`:''}</g>`;
   const gal=(x,y,label)=>`<g><rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#a4583a" stroke="#2e2419"/><text x="${x}" y="${y-14}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${20*Math.min(fs,1.4)}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="4" paint-order="stroke">${label}</text></g>`;
   const boat=(x,y,rot)=>`<g class="boat" style="transform-box:fill-box;transform-origin:center"><g transform="translate(${x},${y}) rotate(${rot})"><path d="M-16,-6 L12,-6 L19,0 L12,6 L-16,6Z" fill="#6e4b2a" stroke="#2e2419" stroke-width="1.5"/><circle cx="-2" cy="0" r="4" fill="#b8302a"/></g></g>`;
   // rotas de ataque: saem da vila galega, atravessam o rio e acabam (com seta) à porta da praça portuguesa
@@ -3510,21 +3528,20 @@ function menuSvg(V){
   <path d="${bankPath(bankR)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
   <path d="${coast} L-40,${Y1} L-40,${Y0}Z" fill="#8fa7ad"/>
   <path d="${coast}" fill="none" stroke="#4f6a73" stroke-width="3"/>
-  <ellipse cx="160" cy="624" rx="16" ry="24" fill="#8fa7ad"/>
+  <ellipse cx="160" cy="658" rx="16" ry="24" fill="#8fa7ad"/>
   ${ripples}
   ${waves}
   ${hills}${groves}
   ${title(tY1,tr('GALIZA','GALICIA'),tr('REINO DE CASTELA','KINGDOM OF CASTILE'))}
   ${title(tY2,'PORTUGAL','ALTO MINHO')}
-  <text x="${V.port?730:1075}" y="${V.port?478:492}" text-anchor="middle" transform="rotate(-7 ${V.port?730:1075} ${V.port?478:492})" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.4)}" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
+  <text x="860" y="452" text-anchor="middle" transform="rotate(-12 860 452)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.4)}" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
   <text x="80" y="330" text-anchor="middle" transform="rotate(-90 80 330)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.3)}" fill="#2f4a52">${tr('Oceano Atlântico','Atlantic Ocean')}</text>
-  ${gal(1400,318,'Arbo')}${route('M1400,329 C1415,365 1380,392 1377,412')}${boat(1395,370,100)}
-  ${gal(1235,345,'Salvaterra')}${gal(900,415,'Tui')}${gal(520,500,'Goián')}${gal(225,560,'A Guarda')}
-  ${route('M1235,356 C1250,395 1225,425 1233,446')}${route('M900,426 C915,460 885,470 893,486')}${route('M520,511 C540,540 560,545 568,560')}
-  ${route('M218,570 C150,600 60,640 70,720 C78,780 140,800 186,801')}
-  ${boat(1238,408,95)}${boat(903,470,100)}${boat(545,546,55)}${boat(62,705,95)}
-  ${town('moncao',1235,470,'Monção','Deu-la-Deu')}${town('valenca',895,510,'Valença',tr('Praça e Coroada','Praça & Coroada'))}
-  ${town('cerveira',575,585,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,800,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}${town('melgaco',1375,432,'Melgaço','Inês Negra',V.port?70:0)}
+  ${gal(1390,322,'Arbo')}${gal(1000,372,'Salvaterra')}${gal(675,455,'Tui')}${gal(440,560,'Goián')}${gal(230,585,'A Guarda')}
+  ${route('M1390,333 C1405,370 1435,380 1438,401')}${route('M1000,383 C1015,420 1030,440 1029,461')}${route('M675,466 C690,500 680,515 688,531')}${route('M440,571 C455,600 470,610 464,626')}
+  ${route('M223,595 C150,620 60,660 70,730 C78,790 140,810 186,811')}
+  ${boat(1412,384,100)}${boat(1014,441,95)}${boat(683,513,100)}${boat(453,598,60)}${boat(62,715,95)}
+  ${town('moncao',1030,485,'Monção','Deu-la-Deu')}${town('valenca',690,555,'Valença',tr('Praça e Coroada','Praça & Coroada'))}
+  ${town('cerveira',465,650,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,810,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}${town('melgaco',1440,425,'Melgaço','Inês Negra')}
   <g transform="translate(${cx},${cy}) scale(${V.port?1.3:1})"><circle r="46" fill="#e9dcbc" stroke="#2e2419" stroke-width="2"/><path d="M0,-66 L10,0 L0,66 L-10,0Z" fill="#2e2419"/><path d="M-58,0 L0,8 L58,0 L0,-8Z" fill="none" stroke="#2e2419" stroke-width="2"/><text y="-78" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="#2e2419">N</text></g>
   <rect x="${V.x+12}" y="${V.y+12}" width="${V.w-24}" height="${V.h-24}" fill="none" stroke="#3e3222" stroke-width="${4*fs}"/><rect x="${V.x+12+12*fs}" y="${V.y+12+12*fs}" width="${V.w-24-24*fs}" height="${V.h-24-24*fs}" fill="none" stroke="#3e3222" stroke-width="1.5"/>
 </svg>`;
@@ -4004,12 +4021,15 @@ function showModal(html,buttons){
 function bestTxt(lvl){const b=LS.get('best-'+lvl,null);return b?scoreTxt(b.sc):tr('Ainda por defender','Not yet defended');}
 const CAMP_TXT={
   moncao:[tr('Capítulo I · Monção','Chapter I · Monção'),tr('Ano de 1368. As hostes de Castela cercam Monção pela margem do Minho. Lá dentro há pouco pão e muita teimosia. Deu-la-Deu Martins já tem um plano, mas primeiro é preciso aguentar as muralhas. E dizem que a Coca anda acordada.','Year 1368. The armies of Castile besiege Monção from the banks of the Minho. Inside there is little bread and plenty of stubbornness. Deu-la-Deu Martins already has a plan, but first the walls must hold. And they say the Coca is awake.')],
-  valenca:[tr('Capítulo II · Valença','Chapter II · Valença'),tr('Expulsos de Monção, os castelhanos descem o rio até Tui e olham para as muralhas de Valença do outro lado. Dizem que lá dentro se vendem as melhores toalhas do reino, e um mercador castelhano jura que as vai levar todas.','Driven out of Monção, the Castilians sail down to Tui and stare at the walls of Valença across the river. Word is the finest towels in the kingdom are sold inside, and a Castilian merchant swears he will take them all.')],
-  cerveira:[tr('Capítulo III · Cerveira','Chapter III · Cerveira'),tr('Sem sorte em Valença, as barcas seguem rio abaixo até Goián. Do outro lado está o castelo de Cerveira, com os seus três recintos. Cada porta é uma nova batalha, e no monte há um veado enorme que não gosta de visitas.','Out of luck at Valença, the boats drift downriver to Goián. Across the water stands the castle of Cerveira, with its three enclosures. Every gate is a new battle, and up on the hill lives a huge stag that does not like visitors.')],
-  ancora:[tr('Capítulo IV · Âncora','Chapter IV · Âncora'),tr('Última cartada de Castela: sem conseguir atravessar o Minho, a frota contorna a foz e ataca por mar o Forte da Lagarteira. Se Âncora aguentar, o Alto Minho fica livre. Os pescadores avisam que há qualquer coisa com tentáculos nas rochas.','Castile’s last gamble: unable to cross the Minho, the fleet rounds the river mouth and attacks the Forte da Lagarteira from the sea. If Âncora holds, the Alto Minho is free. The fishermen warn there is something with tentacles among the rocks.')]
+  melgaco:[tr('Capítulo II · Melgaço','Chapter II · Melgaço'),tr('Expulsos de Monção, os castelhanos sobem o rio até Arbo, mesmo em frente a Melgaço. Lá dentro há presunto, fumeiro e Alvarinho que cheguem para um cerco inteiro, e desta vez Castela traz uma guia: a Arrenegada, uma portuguesa que se passou para o outro lado. Felizmente, em Melgaço ainda se lembram da Inês Negra.','Driven out of Monção, the Castilians row upriver to Arbo, right across from Melgaço. Inside there is ham, smoked sausage and enough Alvarinho for a whole siege, and this time Castile brings a guide: the Arrenegada, a Portuguese woman who went over to the other side. Luckily, Melgaço still remembers Inês Negra.')],
+  valenca:[tr('Capítulo III · Valença','Chapter III · Valença'),tr('Sem sorte em Melgaço, os castelhanos descem o rio até Tui e olham para as muralhas de Valença do outro lado. Dizem que lá dentro se vendem as melhores toalhas do reino, e um mercador castelhano jura que as vai levar todas.','Out of luck at Melgaço, the Castilians sail down to Tui and stare at the walls of Valença across the river. Word is the finest towels in the kingdom are sold inside, and a Castilian merchant swears he will take them all.')],
+  cerveira:[tr('Capítulo IV · Cerveira','Chapter IV · Cerveira'),tr('Sem sorte em Valença, as barcas seguem rio abaixo até Goián. Do outro lado está o castelo de Cerveira, com os seus três recintos. Cada porta é uma nova batalha, e no monte há um veado enorme que não gosta de visitas.','Out of luck at Valença, the boats drift downriver to Goián. Across the water stands the castle of Cerveira, with its three enclosures. Every gate is a new battle, and up on the hill lives a huge stag that does not like visitors.')],
+  ancora:[tr('Capítulo V · Âncora','Chapter V · Âncora'),tr('Última cartada de Castela: sem conseguir atravessar o Minho, a frota contorna a foz e ataca por mar o Forte da Lagarteira. Se Âncora aguentar, o Alto Minho fica livre. Os pescadores avisam que há qualquer coisa com tentáculos nas rochas.','Castile’s last gamble: unable to cross the Minho, the fleet rounds the river mouth and attacks the Forte da Lagarteira from the sea. If Âncora holds, the Alto Minho is free. The fishermen warn there is something with tentacles among the rocks.')]
 };
-const EPILOGO=tr('O Alto Minho está livre! De Monção a Âncora, nem uma muralha caiu. O Capitão Paco volta para Castela a remar, sem toalhas, sem Alvarinho e sem Cervo. Os cronistas vão escrever sobre isto… se alguém lhes pagar o vinho verde.','The Alto Minho is free! From Monção to Âncora, not a single wall fell. Captain Paco rows home to Castile without towels, without Alvarinho and without the Stag. The chroniclers will write about this… if someone buys them the vinho verde.');
-function campProg(){return Math.max(0,Math.min(4,LS.get('camp',0)|0));}
+const EPILOGO=tr('O Alto Minho está livre! De Melgaço a Âncora, nem uma muralha caiu. O Capitão Paco volta para Castela a remar, sem toalhas, sem Alvarinho, sem presunto e sem Cervo. Os cronistas vão escrever sobre isto… se alguém lhes pagar o vinho verde.','The Alto Minho is free! From Melgaço to Âncora, not a single wall fell. Captain Paco rows home to Castile without towels, without Alvarinho, without ham and without the Stag. The chroniclers will write about this… if someone buys them the vinho verde.');
+// a campanha passou a ter Melgaço como capítulo II: quem já tinha passado Valença não perde o progresso
+if((LS.get('campv',0)|0)<2){const c=LS.get('camp',0)|0;if(c>=2)LS.set('camp',c+1);LS.set('campv',2);}
+function campProg(){return Math.max(0,Math.min(CAMP.length,LS.get('camp',0)|0));}
 function showChapter(i){
   menuBgShow();
   const lvl=CAMP[i],[t,txt]=CAMP_TXT[lvl];
@@ -4062,7 +4082,7 @@ function showSetup(){
   if(heroLocked(menuSel.hero))menuSel.hero='padeira';
   const hr=Object.entries(HEROES).map(([k,h])=>{const lk=heroLocked(k);return`<button data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}" ${lk?'disabled':''} title="${h.pass||''}">${ic(lk?'lock':h.icon)} ${h.short}<small>${lk?tr('Ganha em ','Win at ')+LEVELS[h.map].name:h.sp.name}</small></button>`;}).join('');
   let body='';
-  if(m==='campanha')body=`<h3>${tr('Capítulo','Chapter')}</h3><div class="seg">${ch}</div><p class="small">${prog>=4?tr('Campanha terminada. Podes voltar a jogar qualquer capítulo.','Campaign complete. You can replay any chapter.'):tr('Ganha um capítulo para abrir o seguinte.','Win a chapter to unlock the next.')}</p>`;
+  if(m==='campanha')body=`<h3>${tr('Capítulo','Chapter')}</h3><div class="seg">${ch}</div><p class="small">${prog>=CAMP.length?tr('Campanha terminada. Podes voltar a jogar qualquer capítulo.','Campaign complete. You can replay any chapter.'):tr('Ganha um capítulo para abrir o seguinte.','Win a chapter to unlock the next.')}</p>`;
   else if(m==='livre')body=`<h3>${tr('Mapa','Map')}</h3><div class="seg">${lv}</div>`;
   else if(m==='duelo')body=`<h3>${tr('A tua praça','Your fortress')}</h3><div class="seg">${lv}</div><h3>${tr('O teu reino','Your kingdom')}</h3>
     <div class="seg"><button data-m="dside" data-v="0" aria-pressed="${!menuSel.dside}">${ic('castle')} Portugal<small>${tr('Margem sul','South bank')}</small></button><button data-m="dside" data-v="1" aria-pressed="${!!menuSel.dside}">${ic('foe')} ${tr('Castela','Castile')}<small>${tr('Margem norte','North bank')}</small></button></div>
@@ -4080,7 +4100,7 @@ function showSetup(){
   else{btns.push({label:tr('Criar sala ▶','Create room ▶'),main:true,keep:true,fn:()=>{saveSel();hostCoop();}});
     btns.push({label:tr('Mesmo ecrã ▶','Same screen ▶'),fn:()=>{saveSel();netLeave();startLocalCoop();}});}
   btns.push({label:tr('← Voltar','← Back'),keep:true,fn:showMenu});
-  const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Quatro capítulos, de Monção a Âncora, em 1368.','Four chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')],
+  const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Cinco capítulos, de Monção a Âncora, em 1368.','Five chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')],
     duelo:[ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel'),tr('Portugal contra Castela, com o Minho pelo meio.','Portugal against Castile, with the Minho in between.')]}[m];
   showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Herói','Hero')}</h3><div class="seg">${hr}</div>`,btns);
   const mc=$('mcard');
@@ -4199,7 +4219,7 @@ function endGame(win){
     const wins=LS.get('wins',{}),nh=!wins[S.lvl]&&Object.keys(HEROES).find(k=>HEROES[k].map===S.lvl);
     wins[S.lvl]=1;LS.set('wins',wins);if(LEVEL_ORDER.every(k=>wins[k]))unlock('minho');
     if(nh)setTimeout(()=>{toast(tr(`<b>Nova lenda do teu lado!</b> ${ic(HEROES[nh].icon)} ${HEROES[nh].name} mudou de lado e já pode ser escolhido como herói.`,`<b>A legend joins you!</b> ${ic(HEROES[nh].icon)} ${HEROES[nh].name} switched sides and can now be picked as a hero.`));sfx('ach');},1200);
-    if(S.campaign!=null&&!S.infinite){LS.set('camp',Math.max(campProg(),S.campaign+1));if(S.campaign>=3)unlock('campanha');}
+    if(S.campaign!=null&&!S.infinite){LS.set('camp',Math.max(campProg(),S.campaign+1));if(S.campaign>=CAMP.length-1)unlock('campanha');}
   }else{sfx('lose');setTimeout(()=>say('¡Campeones, campeones!','es-ES',true),900);}
   if(win&&S.local)unlock('amigos');
   S.endWin=win;showEnd(win);
@@ -4254,7 +4274,7 @@ function showEnd(win){
   if(win&&!S.infinite){
     showModal(`<h2>${tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse')}</h2>${M.win.map(t=>'<p>'+t+'</p>').join('')}${stats}<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`,
       S.coop&&!S.local?[{label:'Menu',main:true,keep:true,fn:()=>{netLeave();showMenu();}}]:
-      [...(S.campaign!=null?[S.campaign<3?{label:tr('Próximo capítulo ▶','Next chapter ▶'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
+      [...(S.campaign!=null?[S.campaign<CAMP.length-1?{label:tr('Próximo capítulo ▶','Next chapter ▶'),main:true,keep:true,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
           :{label:tr('Epílogo ▶','Epilogue ▶'),main:true,keep:true,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
        {label:tr('Continuar em modo infinito','Keep going in endless mode'),main:S.campaign==null,fn:()=>{S.over=false;S.infinite=true;S.nextT=18;}},
        {label:tr('Outra vez, que isto soube bem','Again, that was fun'),fn:restartGame},
