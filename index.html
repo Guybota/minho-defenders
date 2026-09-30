@@ -328,6 +328,15 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 #zoomb{left:auto;right:calc(env(safe-area-inset-right,0px) + .5rem);top:50%;transform:translateY(-50%)}
 #zoomb button{background:var(--bg);background:var(--glass)}
 #panel{z-index:7}
+/* pausa: etiqueta discreta por cima do botão da vaga e moldura à volta do ecrã; o mapa fica limpo para escolher torres */
+#pausedTag{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 60px);transform:translateX(-50%);display:flex;align-items:center;gap:.4rem;
+  padding:.3rem .9rem;border-radius:999px;background:var(--glass);border:1.5px solid var(--red);color:var(--red);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;
+  box-shadow:0 3px 10px var(--shadow);pointer-events:none;animation:pausedPulse 1.8s ease-in-out infinite}
+#pausedTag .ico{width:1em;height:1em}
+@keyframes pausedPulse{50%{opacity:.6}}
+#stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(155,34,38,0);transition:box-shadow .3s;z-index:1}
+body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0 0 40px rgba(46,36,25,.25)}
+@media (orientation:portrait),(max-width:699px){body.panel-open #pausedTag{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem)}}
 @media (orientation:landscape) and (min-width:700px){
   #panel{top:4.2rem;bottom:.6rem;right:.6rem}
   body.panel-open #zoomb{opacity:0;pointer-events:none}
@@ -377,6 +386,7 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 </nav>
 <div id="menubg" hidden aria-hidden="true"></div>
 <div id="toast"></div>
+<div id="pausedTag" hidden><span data-ic="pause"></span><span id="pausedTxt">Em pausa</span></div>
 <div id="modal" hidden><div class="card" id="mcard"></div></div>
 
 <script>
@@ -1877,7 +1887,7 @@ function draw(){
     ctx.fillStyle='rgba(155,34,38,.12)';ctx.fillRect(rx,ry,rw,rh);ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.strokeRect(rx,ry,rw,rh);
     S.enemies.forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':'#b8302a';ctx.fillRect(x0+(en.x+MX)/ew*vw2-1.5,y0+(en.y+MY)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
     ctx.restore();}
-  if(S.paused&&!S.over&&$('modal').hidden){ctx.fillStyle='rgba(46,36,25,.35)';ctx.fillRect(-MX,-MY,W+2*MX,H+2*MY);label(ctx,tr('Em pausa','Paused'),W/2,H/2,34,true);}
+
 }
 
 /* ---- 08-zoom-acoes-interface.js ---- */
@@ -1980,6 +1990,7 @@ function hud(){
     if(S.wave!==hudPrev.w)pop($('stWave'),'bump');
     if(S.wave>hudPrev.w&&S.wave>0)waveBanner(S.wave);}
   hudPrev=cur;
+  {const pz=!!(S.paused&&!S.over&&$('modal').hidden);if(document.body.classList.contains('paused')!==pz){document.body.classList.toggle('paused',pz);$('pausedTag').hidden=!pz;}}
   setTxt('lives',String(S.lives));setTxt('wave',S.wave+(S.infinite?' ∞':'/'+MAXW));if(last.wx!==S.weather){last.wx=S.weather;$('wx').innerHTML=ic(WEATHER[S.weather].ic);$('wx').parentNode.title=WEATHER[S.weather].name;}
   setW('mLives',S.lives/S.startLives);setW('mWave',S.infinite?1:S.wave/MAXW);
   const low=S.lives/S.startLives<=0.25;if($('stLives').classList.contains('low')!==low)$('stLives').classList.toggle('low',low);
@@ -2850,7 +2861,7 @@ function applyStaticLang(){
   const A=(sel,at,txt)=>{const e=document.querySelector(sel);if(e)e.setAttribute(at,txt);};
   T('#stWave small','Wave');T('#stGold small','Gold');T('#gold2w small','Partner');T('#stLives small','Fortress');
   A('.wxs','title','Weather');A('#gold2w','title','Partner’s gold');A('#stLives','title','Fortress lives');
-  T('#bWaveT','Call wave');A('#bSpeed','aria-label','Speed');A('#bPause','aria-label','Pause');A('#bSound','aria-label','Sound');
+  T('#bWaveT','Call wave');T('#pausedTxt','Paused');A('#bSpeed','aria-label','Speed');A('#bPause','aria-label','Pause');A('#bSound','aria-label','Sound');
   A('#zoomb [data-z="in"]','aria-label','Zoom in');A('#zoomb [data-z="out"]','aria-label','Zoom out');A('#zoomb [data-z="reset"]','aria-label','Show whole map');
   T('[data-ab="rain"] .an','Arrows');T('[data-ab="gate"] .an','Gates');T('[data-ab="bell"] .an','Bell');T('#heroNm','Heroine');A('#cardsHud','title','Blessings & pacts');A('#abil','aria-label','Powers');A('#abilT','aria-label','Powers');
 }
