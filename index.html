@@ -1558,6 +1558,7 @@ function drawFoe(e){
 function drawHeart(){
   const g=LV.heart;if(!g)return;const m=g.m;
   const st=S.lives<=0?4:heartStage(),hit=S.heartHit/0.45;
+  if(/Igreja/.test(m.label||''))return drawChurch(g,st,hit);
   const w=Math.max(26,m.w*1.2),h=Math.max(22,m.h*1.25),tw=12,th=14;
   ctx.save();ctx.translate(g.x+(hit>0?Math.sin(S.t*95)*2.5*hit:0),g.y);
   ctx.fillStyle='rgba(46,36,25,.28)';ctx.fillRect(-w/2+3,-h/2+3,w,h);
@@ -1592,6 +1593,73 @@ function drawHeart(){
   ctx.restore();
   // anel de perigo na última fase (as vidas em número estão no topo, junto a 🏰)
   if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-4,w*0.9+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
+}
+// Igreja Matriz em alçado, como nos mapas antigos: campanário com sino, nave de telha com janelas em arco e abside.
+// Mostra as vidas da praça: racha, perde telhas, arde, o telhado do campanário cai e a bandeira rasga-se.
+function flame(x,y,s){const f=Math.sin(S.t*18+x)*0.25+1;ctx.fillStyle='rgba(230,110,30,.85)';ctx.beginPath();ctx.moveTo(x-s,y);ctx.quadraticCurveTo(x,y-s*2.6*f,x+s,y);ctx.fill();
+  ctx.fillStyle='rgba(250,200,70,.9)';ctx.beginPath();ctx.moveTo(x-s*0.5,y);ctx.quadraticCurveTo(x,y-s*1.5*f,x+s*0.5,y);ctx.fill();}
+function drawChurch(g,st,hit){
+  const ink='#2e2419',tint=(r,gg,b)=>hit>0?`rgb(${Math.min(255,r+50*hit)|0},${gg-50*hit|0},${b-50*hit|0})`:`rgb(${r},${gg},${b})`;
+  const wall=tint(216,201,164),wallD=tint(190,172,134),tile='#b5563a',tileD='#8a3a22';
+  ctx.save();ctx.translate(g.x+(hit>0?Math.sin(S.t*95)*2.5*hit:0),g.y-2);ctx.lineJoin='round';ctx.lineWidth=1.2;ctx.strokeStyle=ink;
+  ctx.fillStyle='rgba(46,36,25,.25)';ctx.beginPath();ctx.ellipse(4,11,26,5,0,0,Math.PI*2);ctx.fill();
+  if(st>=4){// ruínas
+    ctx.fillStyle='#8d7f66';[[-18,6,9,5],[-8,7,12,4],[5,6,10,5],[14,8,7,3],[-14,2,5,4],[1,3,6,3]].forEach(([x,y,w,h])=>{ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);});
+    ctx.fillStyle=wallD;ctx.beginPath();ctx.moveTo(-20,10);ctx.lineTo(-20,-6);ctx.lineTo(-17,-9);ctx.lineTo(-14,-4);ctx.lineTo(-11,-8);ctx.lineTo(-10,10);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.restore();return;}
+  // abside (ponta direita)
+  ctx.fillStyle=wall;ctx.beginPath();ctx.moveTo(14,-1);ctx.lineTo(20,-1);ctx.quadraticCurveTo(22,5,20,10);ctx.lineTo(14,10);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=tile;ctx.beginPath();ctx.moveTo(13,-8);ctx.quadraticCurveTo(21,-7,21.5,-1);ctx.lineTo(13,-1);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=ink;ctx.beginPath();ctx.moveTo(17,7);ctx.lineTo(17,3.5);ctx.arc(18,3.5,1,Math.PI,0);ctx.lineTo(19,7);ctx.fill();
+  // nave: parede com pedras e janelas em arco
+  ctx.fillStyle=wall;ctx.fillRect(-10,-4,24,14);ctx.strokeRect(-10,-4,24,14);
+  ctx.strokeStyle='rgba(46,36,25,.28)';ctx.lineWidth=0.6;ctx.beginPath();[-1,3,7].forEach(y=>{ctx.moveTo(-10,y);ctx.lineTo(14,y);});
+  [[-6,-1],[2,-1],[10,-1],[-2,3],[6,3],[-6,7],[2,7],[10,7]].forEach(([x,y])=>{ctx.moveTo(x,y);ctx.lineTo(x,y+4);});ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  [-4,2,8].forEach(x=>{ctx.fillStyle='#3a3025';ctx.beginPath();ctx.moveTo(x-1.4,5);ctx.lineTo(x-1.4,1);ctx.arc(x,1,1.4,Math.PI,0);ctx.lineTo(x+1.4,5);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(232,194,74,.55)';ctx.fillRect(x-0.5,1,1,3);});
+  // telhado de telha da nave
+  ctx.fillStyle=tile;ctx.beginPath();ctx.moveTo(-11,-4);ctx.lineTo(15,-4);ctx.lineTo(12,-12);ctx.lineTo(-8,-12);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(60,20,10,.5)';ctx.lineWidth=0.6;ctx.beginPath();[-6.5,-9].forEach((y,j)=>{const k=(y+4)/-8;ctx.moveTo(-11+3*k,y);ctx.lineTo(15-3*k,y);});
+  for(let x=-7;x<13;x+=2.5){ctx.moveTo(x,-4);ctx.lineTo(x+1,-12);}ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(-8,-12);ctx.lineTo(12,-12);ctx.lineWidth=1.8;ctx.stroke();ctx.lineWidth=1.2;
+  // cruz no topo da nave
+  ctx.strokeStyle='#5a4630';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(11,-12);ctx.lineTo(11,-19);ctx.moveTo(8.5,-16.5);ctx.lineTo(13.5,-16.5);ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  // telhas partidas
+  if(st>=2){ctx.fillStyle='#3a2a1a';[[0,-8,3.5,2.2],[6,-6,2.5,1.6]].forEach(([x,y,a,b])=>{ctx.beginPath();ctx.ellipse(x,y,a,b,0.2,0,Math.PI*2);ctx.fill();});}
+  // campanário (esquerda)
+  const roofOn=st<3,tTop=-24;
+  ctx.fillStyle=wall;ctx.fillRect(-21,tTop,11,34);ctx.strokeRect(-21,tTop,11,34);
+  ctx.fillStyle=wallD;ctx.fillRect(-13,tTop+1,2.4,32);
+  ctx.beginPath();ctx.moveTo(-22,tTop+9);ctx.lineTo(-9,tTop+9);ctx.moveTo(-22,tTop+17);ctx.lineTo(-9,tTop+17);ctx.stroke();
+  // sineira com sino (abana quando a praça é atingida)
+  ctx.fillStyle='#2e2419';ctx.beginPath();ctx.moveTo(-18,tTop+8);ctx.lineTo(-18,tTop+3.5);ctx.arc(-15.5,tTop+3.5,2.5,Math.PI,0);ctx.lineTo(-13,tTop+8);ctx.closePath();ctx.fill();
+  ctx.save();ctx.translate(-15.5,tTop+3);ctx.rotate(hit>0?Math.sin(S.t*30)*0.5*hit:Math.sin(S.t*1.5)*0.05);
+  ctx.fillStyle='#e8c24a';ctx.strokeStyle='#5a3d10';ctx.lineWidth=0.7;ctx.beginPath();ctx.moveTo(-1.8,3.6);ctx.quadraticCurveTo(-1.6,0.4,0,0.2);ctx.quadraticCurveTo(1.6,0.4,1.8,3.6);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+  // óculo e porta
+  ctx.fillStyle='#3a3025';ctx.beginPath();ctx.arc(-15.5,tTop+13,1.6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#8d7f66';ctx.lineWidth=0.6;ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  ctx.fillStyle='#6e4b2a';ctx.beginPath();ctx.moveTo(-18,10);ctx.lineTo(-18,4.5);ctx.arc(-15.5,4.5,2.5,Math.PI,0);ctx.lineTo(-13,10);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(46,36,25,.6)';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(-15.5,2.2);ctx.lineTo(-15.5,10);ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;
+  // telhado piramidal do campanário (cai na última fase)
+  let py;
+  if(roofOn){ctx.fillStyle=tileD;ctx.beginPath();ctx.moveTo(-22.5,tTop);ctx.lineTo(-15.5,tTop-11);ctx.lineTo(-8.5,tTop);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.strokeStyle='rgba(20,8,4,.5)';ctx.lineWidth=0.6;ctx.beginPath();ctx.moveTo(-15.5,tTop-11);ctx.lineTo(-13,tTop);ctx.stroke();ctx.strokeStyle=ink;ctx.lineWidth=1.2;py=tTop-11;}
+  else{ctx.fillStyle=wallD;ctx.beginPath();ctx.moveTo(-21,tTop);ctx.lineTo(-19,tTop-3);ctx.lineTo(-17,tTop-0.5);ctx.lineTo(-14,tTop-4);ctx.lineTo(-12,tTop-1);ctx.lineTo(-10,tTop);ctx.closePath();ctx.fill();ctx.stroke();py=tTop-2;}
+  // rachas
+  ctx.strokeStyle='rgba(30,22,14,.9)';ctx.lineWidth=0.9;ctx.beginPath();
+  if(st>=1){ctx.moveTo(-7,-4);ctx.lineTo(-5,0);ctx.lineTo(-7,4);ctx.lineTo(-5,10);}
+  if(st>=2){ctx.moveTo(12,-4);ctx.lineTo(9.5,1);ctx.lineTo(11,5);ctx.moveTo(-20,tTop+19);ctx.lineTo(-17.5,tTop+23);ctx.lineTo(-19,tTop+27);}
+  if(st>=3){ctx.moveTo(-12,tTop+3);ctx.lineTo(-14,tTop+8);ctx.lineTo(-12.5,tTop+12);}ctx.stroke();
+  // bandeira (branca com as quinas azuis) no topo do campanário
+  {const px=-15.5,PH=18;ctx.strokeStyle=ink;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-PH);ctx.stroke();
+    const fw=st>=3?11:17,fh=st>=3?8:11,wv=k=>Math.sin(S.t*6-k*0.45)*2*(k/fw);
+    ctx.beginPath();ctx.moveTo(px,py-PH);for(let k=0;k<=fw;k+=2)ctx.lineTo(px+k,py-PH+wv(k));
+    for(let k=fw;k>=0;k-=2)ctx.lineTo(px+k,py-PH+fh+wv(k)-(st>=3&&k>=fw-2?4:0));ctx.closePath();
+    ctx.fillStyle=st>=3?'#cfc6b0':'#f4efe2';ctx.fill();ctx.stroke();
+    if(st<3){ctx.fillStyle='#2f4a9e';const cx=px+fw/2,cy=py-PH+fh/2+wv(fw/2);ctx.fillRect(cx-1.1,cy-3.8,2.2,7.6);ctx.fillRect(cx-3.8,cy-1.1,7.6,2.2);}}
+  // fogo
+  if(st>=2){flame(0,-7,3.5);flame(-4,6,3);if(st>=3){flame(8,-6,4.5);flame(-15,tTop+1,3.5);flame(17,-2,3);}}
+  ctx.restore();
+  if(st===3){ctx.strokeStyle=`rgba(155,34,38,${0.35+0.3*Math.sin(S.t*6)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(g.x,g.y-6,32+Math.sin(S.t*6)*2,0,Math.PI*2);ctx.stroke();}
 }
 // portas de madeira com ferragens: racham com o dano, ficam em estilhaços quando arrombadas
 function drawGates(){
