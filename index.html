@@ -3559,14 +3559,15 @@ function renderPanel(){
     if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('arde','burns'));return a.join(' · ');};
   // destruída: só se repara; as melhorias voltam depois da reparação
   let up='';
-  if(t.broken)up=`<p class="hint" style="flex:1 1 100%">${ic('hammer')} ${tr('Repara a torre antes de a melhorar','Repair the tower before upgrading it')}</p>`;
+  if(t.broken)up=t.fixT>0?`<p class="hint" style="flex:1 1 100%">${ic('hammer')} ${tr('Em reparação; depois já se pode melhorar','Being repaired; it can be upgraded afterwards')}</p>`
+    :`<button class="main br up" data-a="fix" data-cost="${fixCost(t)}" ${g<fixCost(t)?'disabled':''}>${ic('hammer')} ${tr('Reparar','Repair')} · ${fixCost(t)} ${ic('coin')}<small>${fixDur(t)} s · ${tr('só depois se pode melhorar','upgrades come after the repair')}</small></button>`;
   else if(t.lv===1){const c=T.up[0];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:2,br:0}))}</small></button>`;}
   else if(t.lv===3){const c=T.up[2];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${tr('Melhorar','Upgrade')} ${T.br[t.br].name} · ${c} ${ic('coin')}<small>${delta(tstat({k:t.k,lv:4,br:t.br}))}</small></button>`;}
   else if(t.lv===4){const c=T.up[3];up=`<button class="main br up" data-a="up" data-cost="${c}" ${g<c?'disabled':''}>${ic('star')} ${tr('Nível 5','Level 5')} · ${c} ${ic('coin')}<small>${T.L5[t.br]}. ${delta(tstat({k:t.k,lv:5,br:t.br}))}</small></button>`;}
   else if(t.lv>=5){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}: ${T.L5[t.br]}</p>`;}
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
   p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/5${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
-    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída: repara-a no botão do mapa','destroyed: repair it with the map button')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
+    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
     <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
@@ -3580,6 +3581,7 @@ $('panel').addEventListener('click',ev=>{
   if(i==null)return;
   if(a==='build')act({a:'build',i,k:b.dataset.k});
   else if(a==='up')act({a:'up',i});
+  else if(a==='fix')act({a:'fix',i});
   else if(a==='br')act({a:'br',i,b:+b.dataset.i});
   else if(a==='pri')act({a:'pri',i});
   else if(a==='sell')act({a:'sell',i});
