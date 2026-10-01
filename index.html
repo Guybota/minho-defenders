@@ -576,6 +576,7 @@ const ICONS=(()=>{
     siege:s('M6 21.5V6l6-3.5L18 6v15.5z',WD)+s('M6 10h12M6 14.5h12M6 18.5h12M9 6v15.5M15 6v15.5',null,.8)+s('M10 21.5v-4h4v4',K,1)+c(7,21.5,1.6,ST,1)+c(17,21.5,1.6,ST,1),
     cannon:s('M3.5 15.5L16 8.5l2.4 4.2-12.5 7z','#4a4038')+c(18.6,10.4,1.6,K,1)+s('M8.5 12.8l1.6 2.8M12.5 10.6l1.6 2.8',null,.9)+s('M5 20.5h11',WD,2.2)+c(9,19.5,3,'#8a5a32',1.3)+c(9,19.5,.9,K,.8)+`<circle cx="21" cy="6" r="1.4" fill="#c8541e"/><circle cx="22.5" cy="3.8" r=".9" fill="#e8c24a"/>`,
     powers:s('M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z',GL)+f('M11.4 5.5l-1 3.6-3.4 1.3 3.2.2z',P)+s('M19 2.8v3.4M17.3 4.5h3.4M5 17.8v3.4M3.3 19.5h3.4',null,1.3)+`<circle cx="12" cy="12" r="1.6" fill="${R}" stroke="${K}" stroke-width=".8"/>`,
+    boot:s('M9 3h6v9.5l4.5 2.2c1 .5 1.5 1.3 1.5 2.3v3.5H9z',WD)+s('M9 6.5h6M9 18h12',null,1.1)+s('M2.5 7h4M4 12h2.5M2.5 17h4',null,1.3),
     ram:s('M3.5 9.5h14l3 2.5-3 2.5h-14z',WD)+s('M17.5 9.5c1.5 0 3 1 3 2.5s-1.5 2.5-3 2.5',ST)+s('M7 9.5V4.5M13 9.5V4.5M5 4.5h10',null,1.5)+c(6,18,2.5,ST)+c(15,18,2.5,ST)+s('M6 14.5v1M15 14.5v1',null,1.2)
   };
   delete I.castleflag;
@@ -4587,11 +4588,16 @@ const FOE_INFO={
   arren:[tr('Melgaço, vagas 10 e 20','Melgaço, waves 10 and 20'),tr('Apressa os castelhanos à volta e puxa os cabelos à heroína.','Speeds up nearby Castilians and pulls the heroine’s hair.')]};
 function showFoes(back){
   // vida e passo como entram em campo (mkFoe) na vaga 1, em Castelhano
-  showModal(`<h2>${tr('Inimigos','Enemies')}</h2><p class="small">${tr('Vida na vaga 1 em Castelhano: cresce a cada vaga, e é ×0,75 em Turista e ×1,35 em Capitão Paco. A armadura desconta-se a cada golpe (os besteiros ignoram-na).','Health at wave 1 on Castilian: it grows every wave, and is ×0.75 on Tourist and ×1.35 on Captain Paco. Armour is taken off every hit (crossbowmen ignore it).')}</p>`+
+  // cada número com o seu ícone; o nome fica no title e no aria-label
+  const st=(i,l,v)=>`<span role="img" aria-label="${l} ${v}" title="${l}" style="white-space:nowrap;margin-right:.6rem">${ic(i)} ${v}</span>`;
+  const L={hp:tr('Vida','Health'),spd:tr('Velocidade','Speed'),arm:tr('Armadura','Armour'),gold:tr('Ouro','Gold'),leak:tr('Vidas que tira à praça','Lives taken from the fortress'),dmg:tr('Dano do tiro','Shot damage'),rate:tr('Tempo entre tiros','Time between shots'),rng:tr('Alcance','Range')};
+  showModal(`<h2>${tr('Inimigos','Enemies')}</h2>
+    <p class="small">${[['heart',L.hp],['boot',L.spd],['shield',L.arm],['coin',L.gold],['castle',L.leak],['swords',L.dmg],['hourglass',L.rate],['target',L.rng]].map(([i,l])=>`<span style="white-space:nowrap">${ic(i)} ${l}</span>`).join(' · ')}</p>
+    <p class="small">${tr('Vida na vaga 1 em Castelhano: cresce a cada vaga, e é ×0,75 em Turista e ×1,35 em Capitão Paco. A armadura desconta-se a cada golpe (os besteiros ignoram-na).','Health at wave 1 on Castilian: it grows every wave, and is ×0.75 on Tourist and ×1.35 on Captain Paco. Armour is taken off every hit (crossbowmen ignore it).')}</p>`+
     Object.keys(FOE_INFO).map(k=>{const f=FOES[k],[w,d]=FOE_INFO[k],r=f.ranged;
       return `<div class="ach"><canvas data-f="${k}" width="168" height="168" style="flex:none;width:3.5rem;height:3.5rem" aria-hidden="true"></canvas><span><b>${ic(E_IC[k]||'dagger')} ${f.name} <small>· ${w}</small></b>
-        ${tr('Vida','Health')} ${Math.round(f.hp*0.96)} · ${tr('Velocidade','Speed')} ${Math.round(f.spd*0.9)} · ${tr('Armadura','Armour')} ${f.armor} · ${tr('Ouro','Gold')} ${f.gold} · ${tr('Tira','Takes')} ${f.leak} ${tr(f.leak===1?'vida':'vidas',f.leak===1?'life':'lives')}${
-        r?` · ${tr('Tiro','Shot')} ${r.dmg} ${tr('a cada','every')} ${r.rate} s, ${tr('alcance','range')} ${r.range}`:''}<small style="display:block">${d}</small></span></div>`;}).join('')+
+        ${st('heart',L.hp,Math.round(f.hp*0.96))}${st('boot',L.spd,Math.round(f.spd*0.9))}${st('shield',L.arm,f.armor)}${st('coin',L.gold,f.gold)}${st('castle',L.leak,f.leak)}${
+        r?st('swords',L.dmg,r.dmg)+st('hourglass',L.rate,r.rate+' s')+st('target',L.rng,r.range):''}<small style="display:block">${d}</small></span></div>`;}).join('')+
     `<p class="small">${ic('crown')} ${tr('Elites (a partir da vaga 15, contorno dourado): vida ×1,8, +2 de armadura e o dobro do ouro. Também a partir da vaga 15, todos ganham +15% de vida e +12% de dano a cada 2 vagas.','Elites (from wave 15, gold outline): health ×1.8, +2 armour and double gold. Also from wave 15, everyone gains +15% health and +12% damage every 2 waves.')}</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
   // retratos: os desenhos do jogo (parados) num canvas por linha; ctx e S são emprestados só enquanto se pinta
