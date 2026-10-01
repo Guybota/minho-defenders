@@ -138,6 +138,8 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .ph button{min-height:32px;width:32px;padding:0;border-radius:50%}
 /* painel da heroína minimizado: fica só o cabeçalho, para se ver o mapa e escolher onde a pôr */
 #panel.min>:not(.ph){display:none}#panel.min .ph{margin-bottom:0}
+.ph b small{display:block;font-size:.85em;color:var(--soft)}
+.ph button.hsp{width:auto;padding:0 .6rem;border-radius:999px;gap:.3rem;font-variant-numeric:tabular-nums}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
 .build{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem .4rem;line-height:1.15;border-radius:6px;box-shadow:0 2px 0 var(--shadow)}
 .build .ic{font-size:1.55rem}
@@ -387,6 +389,9 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
   body.panel-open #abil .ab{pointer-events:none}
   #abilT{width:56px;height:56px}#abil{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 64px)}
   body.panel-open #bWave{opacity:0;pointer-events:none}
+  /* painel da heroína minimizado: poderes e zoom à mão, por cima da barra */
+  body.panel-min #abil,body.panel-min #abilT{opacity:1;transform:translateY(-4.7rem)}
+  body.panel-min #abilT,body.panel-min #abil.open .ab,body.panel-min #zoomb{pointer-events:auto}body.panel-min #zoomb{opacity:1}
 }
 /* ---------- Duelo: botão das tropas no canto inferior direito, como o dos poderes ---------- */
 #sendT{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);width:64px;height:64px;min-height:0;padding:0;border-radius:50%;
@@ -3533,12 +3538,12 @@ function refreshPanel(){
     set('st',h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her'));
     const st=p.querySelector('[data-h="st"]');if(st&&st.classList.contains('warn')!==h.dead)st.classList.toggle('warn',h.dead);
     set('sp',sp.name+(cd>0?' ('+cd+'s)':''));
-    const b=p.querySelector('[data-a="special"]'),d=cd>0||h.dead||S.wave<1;if(b&&b.disabled!==d)b.disabled=d;
+    set('spc',cd>0?cd+'s':'');const d=cd>0||h.dead||S.wave<1;p.querySelectorAll('[data-a="special"]').forEach(b=>{if(b.disabled!==d)b.disabled=d;});
   }
 }
 function renderPanel(){
-  const p=$('panel');if(!S||S.sel==null||(typeof S.sel==='number'&&!SLOTS[S.sel].tower)){p.classList.remove('open');document.body.classList.remove('panel-open');panelSel='none';return;}
-  p.classList.add('open');document.body.classList.add('panel-open');p.classList.toggle('min',S.sel==='hero'&&heroMin);
+  const p=$('panel');if(!S||S.sel==null||(typeof S.sel==='number'&&!SLOTS[S.sel].tower)){p.classList.remove('open');document.body.classList.remove('panel-open','panel-min');panelSel='none';return;}
+  p.classList.add('open');document.body.classList.add('panel-open');{const mn=S.sel==='hero'&&heroMin;p.classList.toggle('min',mn);document.body.classList.toggle('panel-min',mn);}
   // a folha do painel só "entra" quando a seleção muda (não a cada moeda ganha)
   const key=S.sel==null?'none':S.sel==='hero'||S.sel==='works'?S.sel:S.sel+':'+(SLOTS[S.sel].tower?SLOTS[S.sel].tower.lv:0);
   if(key!==panelSel){panelSel=key;pop(p,'in');}
@@ -3554,7 +3559,7 @@ function renderPanel(){
     const got=(h.ups||[]).map((b,i)=>h.D.ups[i]&&h.D.ups[i][b]?`<span title="${h.D.ups[i][b].desc}">${ic('star')} ${h.D.ups[i][b].name}</span>`:'').join('');
     const choose=pend>0&&h.D.ups[ti]?`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Melhoria do nível','Level')} ${HERO_TIERS[ti]}${tr(': escolhe uma',' upgrade: pick one')}</p>`+
       h.D.ups[ti].map((U,b)=>`<button class="main br" data-a="hup" data-b="${b}">${U.name}<small>${U.desc}</small></button>`).join(''):'';
-    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}/${HERO_MAX}${heroMin&&pend>0?' '+ic('star'):''}</b><button data-a="min" aria-expanded="${!heroMin}" aria-label="${heroMin?tr('Abrir painel','Expand panel'):tr('Minimizar painel','Minimise panel')}">${ic(heroMin?'zin':'zout')}</button><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
+    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name}<small>${tr('Nível','Level')} ${h.lv}/${HERO_MAX}${heroMin&&pend>0?' '+ic('star'):''}</small></b>${heroMin?`<button class="main hsp" data-a="special" title="${sp.name}" aria-label="${sp.name}" ${cd>0||h.dead||S.wave<1?'disabled':''}>${ic('powers')}<span data-h="spc">${cd>0?cd+'s':''}</span></button>`:''}<button data-a="min" aria-expanded="${!heroMin}" aria-label="${heroMin?tr('Abrir painel','Expand panel'):tr('Minimizar painel','Minimise panel')}">${ic(heroMin?'zin':'zout')}</button><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
       <div class="tinfo"><span>${ic('star')} <span data-h="xp">${heroXpTxt(h)}</span></span>${got}</div>${h.D.pass?`<p class="hint">${h.D.pass}</p>`:''}
       ${choose?`<div class="acts">${choose}</div>`:''}
       <div class="tinfo"><span>${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span><span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
