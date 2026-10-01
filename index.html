@@ -849,7 +849,7 @@ const FOES={
   ari:{name:tr('Aríete','Battering ram'),hp:320,spd:22,armor:6,gold:18,r:13,col:'#6e4b2a',leak:3},
   cap:{name:tr('Capitão Paco','Captain Paco'),hp:1100,spd:28,armor:8,gold:80,r:14,col:'#7b0f0f',leak:5},
   merc:{name:tr('Mercador das Toalhas','The Towel Merchant'),hp:2400,spd:22,armor:9,gold:60,r:17,col:'#e9dcc0',leak:8,boss:'merc',intro:tr('Chegou o Mercador das Toalhas!','The Towel Merchant has arrived!'),death:'«¡Mis toallas de oferta!»'},
-  coca:{name:tr('A Coca','The Coca'),hp:2700,spd:26,armor:6,gold:120,r:18,col:'#3f7a3a',leak:8,boss:'coca',fly:true,noslow:true,intro:tr('A Coca atravessa o Minho!','The Coca is crossing the Minho!'),death:tr('A Coca caiu! Nem São Jorge fazia melhor.','The Coca is down! Not even Saint George did better.')},
+  coca:{name:tr('A Coca','The Coca'),hp:2700,spd:26,armor:6,gold:120,r:18,col:'#3f7a3a',leak:5,boss:'coca',fly:true,noslow:true,intro:tr('A Coca atravessa o Minho!','The Coca is crossing the Minho!'),death:tr('A Coca caiu! Nem São Jorge fazia melhor.','The Coca is down! Not even Saint George did better.')},
   polvo:{name:tr('Polvo da Lagarteira','Lagarteira Octopus'),hp:3200,spd:18,armor:5,gold:120,r:18,col:'#8a3f6e',leak:8,boss:'polvo',swim:true,intro:tr('Sai das rochas o Polvo da Lagarteira!','The Lagarteira Octopus rises from the rocks!'),death:tr('Polvo à lagareiro para o jantar!','Octopus à lagareiro for dinner!')},
   cervo:{name:tr('Cervo Gigante','Giant Stag'),hp:2300,spd:40,armor:4,gold:120,r:17,col:'#7a5530',leak:8,boss:'cervo',noslow:true,intro:tr('Desce do monte o Cervo Gigante!','The Giant Stag charges down the hill!'),death:tr('O Cervo volta para o monte, envergonhado.','The Stag slinks back up the hill, ashamed.')},
   // vagas avançadas: o sapador passa por baixo das portas, o porta-estandarte dá armadura, o gaiteiro dá pressa, o peregrino é um espião
@@ -1796,7 +1796,7 @@ function update(dt){
     if(p.k==='stone'){
       p.t+=dt;
       if(p.t>=p.T){p.done=true;
-        for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&Math.hypot(e.x-p.tx,e.y-p.ty)<=p.sr){hurt(e,p.dmg,false,p.src,true);if(p.burn&&!e.dead){e.burnT=p.burn.t;e.burnD=p.burn.dps;e.burnSrc=p.src;}
+        for(const e of S.enemies){if(!e.dead&&!e.under&&Math.hypot(e.x-p.tx,e.y-p.ty)<=p.sr){hurt(e,p.dmg,false,p.src,true);if(p.burn&&!e.dead){e.burnT=p.burn.t;e.burnD=p.burn.dps;e.burnSrc=p.src;}
           if(p.stun&&!e.dead)e.stunT=Math.max(e.stunT,e.f.boss?p.stun/2:p.stun);}}
         S.fx.push({k:'boom',x:p.tx,y:p.ty,r:p.sr,t:0,T:0.45});chips(p.tx,p.ty,5,p.burn?'#c0561e':'#6d624e');sfx('boom');jolt(0.8);}
     }else{
