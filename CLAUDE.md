@@ -77,7 +77,7 @@ O jogo também está alojado no GitHub Pages.
 Corre o jogo verdadeiro sem desenhar, com um bot a jogar: cola o bot dentro do script do `index.html` (numa cópia temporária), troca `Math.random` por um gerador com semente e chama `update(0.02)` em ciclo até a partida acabar. Não altera o `index.html`.
 
 - **Correr:** `NODE_PATH=$(npm root -g) node sim.js --n 10` (todos os mapas, Castelhano, Padeira, todas as estratégias). Serve `playwright` ou `playwright-core` com o Chrome/Edge do sistema.
-- **Opções:** `--mapas`, `--dif 0,1,2`, `--herois`, `--estr`, `--n` (sementes por combinação), `--par` (browsers em paralelo; 2 por omissão, em prioridade baixa), `--detalhe` (quem passa, por que estrada, que torres caem), `--curto` (só o resumo), `--csv ficheiro`.
+- **Opções:** `--mapas`, `--dif 0,1,2`, `--herois`, `--estr`, `--n` (sementes por combinação), `--par` (browsers em paralelo; 2 por omissão, em prioridade baixa), `--detalhe` (quem passa, por que estrada, que torres caem, em que vaga fica tudo no nível 5, dano por ouro), `--ondas 30` (modo infinito até essa vaga), `--curto` (só o resumo), `--csv ficheiro`.
 - **Experimentar números sem mexer no jogo:** `--patch "TYPES.bes.cost=110;FOES.arqc.hp=60"`.
 - **Experimentar estratégias:** `--def '{"teste":{"hero":"caca","mix":{"bes":2,"cal":1}}}' --estr teste` (os campos estão explicados no topo do `sim.js`).
 - **Autoteste:** `node sim.js --teste` (a mesma semente tem de dar a mesma partida). `node sim.js --geo` mostra o que cada bandeira alcança.

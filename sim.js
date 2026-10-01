@@ -14,7 +14,8 @@ let pw;try{pw=require('playwright');}catch(_){pw=require('playwright-core');}
    place: 'cov' (onde passa mais estrada a 125, igual para todos os tipos, como o bot do duelo), 'alc' (estrada dentro do alcance
           de cada tipo) ou 'papel' (alc + azeite junto às portas, peso gateW, + trabuco e besteiros recuados, peso backW)
    bal: reparte as torres pelas estradas (a dos nadadores só pesa a sério a partir da vaga post, antes de o postigo rebentar)
-   upg: 'barato' (a melhoria mais barata) ou 'dano' (a torre que mais dano fez por ouro gasto)
+   upg: 'barato' (a melhoria mais barata) ou 'dano' (a torre que mais dano fez por ouro gasto); upP: tipo a melhorar primeiro
+   res: quantas bandeiras, das que têm mais estrada ao alcance do azeite, ficam guardadas para ele (0 = nenhuma)
    base/wide: quantas torres quer antes de melhorar (base+vaga*wide)
    hero: 'casa' (fica na praça, como o bot do duelo) ou 'caca' (vai pôr-se à frente do inimigo mais adiantado)
    Testado e sem ganho (retirado): fugir das bandeiras ao alcance dos archeiros, melhorar primeiro as torres mais recuadas ou as que
@@ -60,6 +61,8 @@ function PAGE(){
   function mkBot(st){
     const info=scout(),h=S.hero,prog=e=>e.d/PATHS[e.p].len;
     let D=[];// estrada já coberta pelas torres de pé, por caminho
+    // res: as bandeiras com mais estrada ao alcance do azeite ficam guardadas para ele (e o azeite só vai para essas)
+    const resv=st.res?SLOTS.map((s,i)=>i).sort((a,b)=>info[b].cal.cov-info[a].cal.cov).slice(0,st.res):[];
     const score=(i,k)=>{const I=info[i],c=st.place==='cov'?I.P:I[k].P;
       // bal: cada caminho vale menos quanto mais coberto já está; o dos nadadores só pesa a sério perto da vaga 10, quando o postigo rebenta
       let v=c.reduce((a,n,p)=>a+(st.bal?n*(p===2&&S.wave<st.post?0.3:1)/(30+D[p]):n),0);
@@ -70,11 +73,13 @@ function PAGE(){
       const cnt={};D=PATHS.map(()=>0);S.towers.forEach(t=>{cnt[t.k]=(cnt[t.k]||0)+1;if(!t.broken)(st.place==='cov'?info[t.si]:info[t.si][t.k]).P.forEach((n,p)=>D[p]+=n);});
       // o tipo mais em falta face à proporção pedida, no melhor lugar livre para ele
       const ks=Object.keys(st.mix).sort((a,b)=>((cnt[a]||0)+1)/st.mix[a]-((cnt[b]||0)+1)/st.mix[b]);
-      for(const k of ks){const i=free.reduce((a,b)=>score(b,k)>score(a,k)?b:a);if(score(i,k)>0)return{c:TYPES[k].cost,go:()=>doAct({a:'build',i,k},1)};}
+      for(const k of ks){const f=free.filter(i=>!resv.length||(k==='cal')===resv.includes(i));if(!f.length)continue;
+        const i=f.reduce((a,b)=>score(b,k)>score(a,k)?b:a);if(score(i,k)>0)return{c:TYPES[k].cost,go:()=>doAct({a:'build',i,k},1)};}
       return null;
     }
     function upgrade(){
-      const ups=S.towers.filter(t=>t.lv<5&&!t.broken);if(!ups.length)return null;
+      let ups=S.towers.filter(t=>t.lv<5&&!t.broken);if(!ups.length)return null;
+      if(ups.some(t=>t.k===st.upP))ups=ups.filter(t=>t.k===st.upP);
       const cost=t=>TYPES[t.k].up[t.lv-1],key=st.upg==='dano'?t=>-(t.dmgDone||0)/t.spent:cost;
       const t=ups.reduce((a,b)=>key(b)<key(a)?b:a),b=st.br[t.k]!=null?st.br[t.k]:Math.random()<0.5?0:1;
       return{c:cost(t),go:()=>doAct(t.lv===2?{a:'br',i:t.si,b}:{a:'up',i:t.si},1)};
@@ -118,17 +123,24 @@ function PAGE(){
     geo(lvl){loadLevel(lvl);return{slots:scout(),gates:LV.gates.map(g=>({x:Math.round(g.x),y:Math.round(g.y),post:!!g.post})),paths:PATHS.map(P=>Math.round(P.len))};},
     run(c){
       sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
-      const think=mkBot(c.st),lives=[S.lives],idle=[];
+      const think=mkBot(c.st),lives=[S.lives],idle=[],top=SLOTS.map(()=>0),end=c.ondas||0;if(end)S.infinite=true;// --ondas: modo infinito até essa vaga
+      // ouro que custa pôr todas as bandeiras no nível 5 com esta mistura (sem reparações)
+      const full=k=>TYPES[k].cost+TYPES[k].up.reduce((a,b)=>a+b,0),mx=Object.keys(c.st.mix),need=SLOTS.length*mx.reduce((a,k)=>a+c.st.mix[k]*full(k),0)/mx.reduce((a,k)=>a+c.st.mix[k],0);
+      let maxW=0,goldW=0;
       think();startWave(false);
-      for(let n=1,w=1;!S.over&&S.t<5000;n++){update(0.02);if(n%25===0)think();
+      for(let n=1,w=1;!S.over&&S.t<12000&&!(end&&S.wave>end);n++){update(0.02);
+        if(n%25===0){think();
+          // nível mais alto a que cada bandeira já chegou: as quedas não contam
+          if(!maxW){S.towers.forEach(t=>{if(t.lv>top[t.si])top[t.si]=t.lv;});if(top.every(v=>v>=5))maxW=S.wave;}
+          if(!goldW&&S.diff.gold+S.stats.gold>=need)goldW=S.wave;}
         if(S.wave>w){w=S.wave;lives.push(S.lives);idle.push(Math.round(S.gold));}}
-      lives.push(S.lives);
-      const dmg={},cnt={};let broke=0;
-      S.towers.forEach(t=>{dmg[t.k]=(dmg[t.k]||0)+(t.dmgDone||0);cnt[t.k]=(cnt[t.k]||0)+1;broke+=t.deaths||0;});
-      return{lvl:c.lvl,di:c.di,hero:c.hero,estr:c.name,seed:c.seed,win:S.win?1:0,wave:S.wave,lives:S.lives,t:Math.round(S.t),kills:S.stats.kills,
+      lives.push(S.lives);if(end&&!S.over){S.win=true;S.wave=end;}
+      const dmg={},cnt={},spent={};let broke=0;
+      S.towers.forEach(t=>{dmg[t.k]=(dmg[t.k]||0)+(t.dmgDone||0);cnt[t.k]=(cnt[t.k]||0)+1;spent[t.k]=(spent[t.k]||0)+t.spent;broke+=t.deaths||0;});
+      return{lvl:c.lvl,di:c.di,hero:c.hero,estr:c.name,seed:c.seed,win:S.win?1:0,wave:S.wave,spent,maxW,goldW,need:Math.round(need),lvPct:top.reduce((a,b)=>a+b,0)/(5*top.length),lives:S.lives,t:Math.round(S.t),kills:S.stats.kills,
         earned:S.stats.gold,gold:Math.round(S.gold),dmg,cnt,broke,gates:nGate,heroLv:S.hero.lv,heroK:S.hero.kills,leakT,leakP,brokeS,
         // vidas perdidas em cada vaga e ouro parado no início de cada vaga
-        leak:lives.slice(1).map((v,i)=>Math.max(0,lives[i]-v)),idle,timeout:!S.over};
+        leak:lives.slice(1).map((v,i)=>Math.max(0,lives[i]-v)),idle,timeout:!S.over&&!end};
     }};
 }
 
@@ -187,7 +199,12 @@ function report(R){
       const sum=f=>{const o={};g.forEach(r=>Object.entries(f(r)).forEach(([k,v])=>o[k]=(o[k]||0)+(v||0)/g.length));
         return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>k+' '+v.toFixed(1)).join(', ');};
       console.log('     passam: '+sum(r=>r.leakT)+' | estrada: '+sum(r=>r.leakP)+'\n     caem (bandeira): '+sum(r=>r.brokeS)+'\n     torres no fim: '+sum(r=>r.cnt)
-        +' | ouro ganho '+avg(g,r=>r.earned).toFixed(0)+', parado no fim '+avg(g,r=>r.gold).toFixed(0)+' | heroína nível '+avg(g,r=>r.heroLv).toFixed(1)+', '+avg(g,r=>r.heroK).toFixed(0)+' abates');}}
+        +' | ouro ganho '+avg(g,r=>r.earned).toFixed(0)+', parado no fim '+avg(g,r=>r.gold).toFixed(0)+' | heroína nível '+avg(g,r=>r.heroLv).toFixed(1)+', '+avg(g,r=>r.heroK).toFixed(0)+' abates');
+      // quando fica tudo no nível 5 (as quedas não contam) e quando o ouro ganho já chegava para isso; dano por ouro investido em cada tipo
+      const mw=g.filter(r=>r.maxW),gw=g.filter(r=>r.goldW);
+      console.log('     tudo no nível 5: '+(mw.length?`vaga ${avg(mw,r=>r.maxW).toFixed(1)} (${mw.length} de ${g.length} partidas)`:'nunca')+', níveis atingidos '+(avg(g,r=>r.lvPct)*100).toFixed(0)+'%'
+        +' | ouro para isso ('+g[0].need+'): '+(gw.length?`vaga ${avg(gw,r=>r.goldW).toFixed(1)} (${gw.length} de ${g.length})`:'nunca')
+        +' | dano por ouro: '+['arq','bes','tra','cal'].filter(k=>g.some(r=>r.spent[k])).map(k=>k+' '+(avg(g,r=>r.dmg[k]||0)/(avg(g,r=>r.spent[k]||0)||1)).toFixed(0)).join(', '));}}
 }
 (async()=>{
   if(A.geo){const {br,page}=await open();
@@ -205,7 +222,7 @@ function report(R){
   const jobs=[];
   for(const lvl of list(A.mapas,['valenca','moncao','ancora','cerveira','melgaco']))for(const di of list(A.dif,[1]))for(const hero of list(A.herois,['padeira']))
     for(const name of list(A.estr,Object.keys(ESTR))){if(!ESTR[name])throw new Error('estratégia desconhecida: '+name);
-      for(let s=1;s<=(+A.n||10);s++)jobs.push({lvl,di:+di,hero,name,seed:s,st:{...BASE,...ESTR[name]}});}
+      for(let s=1;s<=(+A.n||10);s++)jobs.push({lvl,di:+di,hero,name,seed:s,ondas:+A.ondas||0,st:{...BASE,...ESTR[name]}});}
   // prioridade baixa (os browsers herdam-na) e só 2 em paralelo, para não prender a máquina; --par sobe isto
   try{os.setPriority(os.constants.priority.PRIORITY_LOW);}catch(_){}
   const t0=Date.now(),R=await runAll(jobs,+A.par||2);
