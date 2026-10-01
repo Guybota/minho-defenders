@@ -4541,6 +4541,7 @@ function applyOpt(){document.documentElement.classList.toggle('big',!!OPT.big);d
 if(RM_Q.addEventListener)RM_Q.addEventListener('change',applyOpt);
 function showHelp(back){
   showModal(`<h2>Como jogar</h2>
+    <div class="mlist"><button data-go="foes">${ic('helmet')} ${tr('Inimigos e os seus números','Enemies and their stats')}</button></div>
     <p>Toca numa bandeira para pôr defensores. No nível 3 escolhes uma especialização. Em cada torre podes mudar o alvo preferido.</p>
     <p>A heroína bloqueia até três inimigos. Toca nela e depois no mapa para a mover. O poder especial está no painel dela.</p>
     <p>${ic('star')} A heroína ganha experiência a derrotar inimigos e sobe até ao nível 10. Nos níveis 3, 6 e 9 escolhes uma de duas melhorias no painel dela.</p>
@@ -4558,6 +4559,40 @@ function showHelp(back){
     <p>${ic('crown')} ${tr('Nas vagas altas chegam o sapador (passa por baixo das portas), o porta-estandarte (dá armadura a quem está perto), o gaiteiro galego (faz os outros andar mais depressa) e o peregrino de Santiago, que as torres ignoram até ele se revelar como espião. A partir da vaga 15 há elites, com contorno dourado: mais fortes, mas dão o dobro do ouro.','In the late waves come the sapper (digs under the gates), the standard-bearer (gives armour to those nearby), the Galician piper (makes the others walk faster) and the Santiago pilgrim, whom the towers ignore until he turns out to be a spy. From wave 15 there are elites, outlined in gold: tougher, but worth double gold.')}</p>
     <p>${ic('hammer')} ${tr('Onde gastar o ouro no fim: as torres têm um nível 5 com um efeito próprio de cada especialização; tocar na igreja, no paiol ou na torre de menagem abre as obras na praça (muralhas, cisterna, fosso, reconstruir); e no painel da heroína podes pagar treino e, no nível 10, oferendas que a tornam mais forte.','Where to spend gold late on: towers have a level 5 with an effect unique to each specialisation; tapping the church, powder store or keep opens the works in the fortress (walls, cistern, moat, rebuild); and in the heroine’s panel you can pay for training and, at level 10, offerings that make her stronger.')}</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
+    [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
+  $('mcard').querySelector('[data-go="foes"]').addEventListener('click',()=>{audio();showFoes(()=>showHelp(back));});
+}
+// inimigos pela ordem em que aparecem: [quando aparece, o que faz]
+const FOE_INFO={
+  peao:[tr('Vaga 1','Wave 1'),tr('O soldado raso. Vem aos montes.','The rank and file. Comes in droves.')],
+  cav:[tr('Vaga 3','Wave 3'),tr('Rápido. Ocupa dois lugares no barco.','Fast. Takes two seats on the boat.')],
+  arqc:[tr('Vaga 3','Wave 3'),tr('Para longe de uma porta fechada e atira-lhe flechas; sem porta ao alcance, atira às torres.','Stops short of a closed gate and shoots it; with no gate in range, shoots your towers.')],
+  torre:[tr('Vaga 4','Wave 4'),tr('Quando cai, saem de lá 5 soldadinhos.','When it falls, 5 little soldiers pour out.')],
+  mini:[tr('Vaga 4','Wave 4'),tr('Sai das torres de cerco.','Comes out of siege towers.')],
+  esc:[tr('Vaga 5','Wave 5'),tr('Lento e bem couraçado: pede besteiros.','Slow and well armoured: calls for crossbowmen.')],
+  nad:[tr('Vaga 6','Wave 6'),tr('Atravessa o rio a nado, sem barco, e vai ao postigo.','Swims across the river, no boat, and heads for the postern.')],
+  bomb:[tr('Vaga 6','Wave 6'),tr('Lenta, mas arromba uma porta de longe em poucos tiros.','Slow, but breaks a gate from afar in a few shots.')],
+  cont:[tr('Vaga 6','Wave 6'),tr('Não tira vidas: se chega à praça, rouba ouro.','Takes no lives: if he reaches the fortress, he steals gold.')],
+  ari:[tr('Vaga 7','Wave 7'),tr('Arromba as portas num instante.','Smashes gates in an instant.')],
+  cura:[tr('Vaga 8','Wave 8'),tr('Trata dos feridos à volta dele.','Heals the wounded around him.')],
+  sap:[tr('Vaga 12','Wave 12'),tr('Cava por baixo da primeira porta fechada.','Digs under the first closed gate.')],
+  band:[tr('Vaga 13','Wave 13'),tr('Dá +4 de armadura a quem está perto.','Gives +4 armour to those nearby.')],
+  gait:[tr('Vaga 14','Wave 14'),tr('Faz andar mais depressa quem está perto.','Makes those nearby walk faster.')],
+  pereg:[tr('Vaga 15','Wave 15'),tr('As torres ignoram-no até se revelar como espião.','Towers ignore him until he turns out to be a spy.')],
+  cap:[tr('Vagas 5, 15, 25…','Waves 5, 15, 25…'),tr('O chefe da hoste. Cada vez vêm mais.','The leader of the host. More of them each time.')],
+  merc:[tr('Valença, vagas 10 e 20','Valença, waves 10 and 20'),tr('Cura quem está à volta com toalhas em saldo. Derrotado, dá mais 150 de ouro.','Heals those around him with discount towels. Beaten, he gives 150 extra gold.')],
+  coca:[tr('Monção, vagas 10 e 20','Monção, waves 10 and 20'),tr('Voa por cima de tudo, não abranda e queima uma torre, que fica 3 s fora de combate.','Flies over everything, cannot be slowed and burns a tower out of action for 3 s.')],
+  polvo:[tr('Âncora, vagas 10 e 20','Âncora, waves 10 and 20'),tr('Vem a nado e agarra uma torre, que fica 4 s fora de combate.','Swims in and grabs a tower, out of action for 4 s.')],
+  cervo:[tr('Cerveira, vagas 10 e 20','Cerveira, waves 10 and 20'),tr('Não abranda e investe para a frente de tempos a tempos.','Cannot be slowed and charges ahead every so often.')],
+  arren:[tr('Melgaço, vagas 10 e 20','Melgaço, waves 10 and 20'),tr('Apressa os castelhanos à volta e puxa os cabelos à heroína.','Speeds up nearby Castilians and pulls the heroine’s hair.')]};
+function showFoes(back){
+  // vida e passo como entram em campo (mkFoe) na vaga 1, em Castelhano
+  showModal(`<h2>${tr('Inimigos','Enemies')}</h2><p class="small">${tr('Vida na vaga 1 em Castelhano: cresce a cada vaga, e é ×0,75 em Turista e ×1,35 em Capitão Paco. A armadura desconta-se a cada golpe (os besteiros ignoram-na).','Health at wave 1 on Castilian: it grows every wave, and is ×0.75 on Tourist and ×1.35 on Captain Paco. Armour is taken off every hit (crossbowmen ignore it).')}</p>`+
+    Object.keys(FOE_INFO).map(k=>{const f=FOES[k],[w,d]=FOE_INFO[k],r=f.ranged;
+      return `<div class="ach"><span class="ai" style="flex:none"><i style="display:inline-block;width:1rem;height:1rem;border-radius:50%;background:${f.col};border:1.5px solid #2e2419"></i></span><span><b>${f.name} <small>· ${w}</small></b>
+        ${tr('Vida','Health')} ${Math.round(f.hp*0.96)} · ${tr('Velocidade','Speed')} ${Math.round(f.spd*0.9)} · ${tr('Armadura','Armour')} ${f.armor} · ${tr('Ouro','Gold')} ${f.gold} · ${tr('Tira','Takes')} ${f.leak} ${tr(f.leak===1?'vida':'vidas',f.leak===1?'life':'lives')}${
+        r?` · ${tr('Tiro','Shot')} ${r.dmg} ${tr('a cada','every')} ${r.rate} s, ${tr('alcance','range')} ${r.range}`:''}<small style="display:block">${d}</small></span></div>`;}).join('')+
+    `<p class="small">${ic('crown')} ${tr('Elites (a partir da vaga 15, contorno dourado): vida ×1,8, +2 de armadura e o dobro do ouro. Também a partir da vaga 15, todos ganham +15% de vida e +12% de dano a cada 2 vagas.','Elites (from wave 15, gold outline): health ×1.8, +2 armour and double gold. Also from wave 15, everyone gains +15% health and +12% damage every 2 waves.')}</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
 }
 function showAch(back){
