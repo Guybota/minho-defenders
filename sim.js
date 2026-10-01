@@ -120,7 +120,17 @@ function PAGE(){
 
   window.SIM={
     patch(js){eval(js);},// eval de propósito: é o --patch de quem corre o simulador, numa página local sem rede
-    geo(lvl){loadLevel(lvl);return{slots:scout(),gates:LV.gates.map(g=>({x:Math.round(g.x),y:Math.round(g.y),post:!!g.post})),paths:PATHS.map(P=>Math.round(P.len))};},
+    geo(lvl,sug){loadLevel(lvl);const slots=scout(),out={slots,gates:LV.gates.map(g=>({x:Math.round(g.x),y:Math.round(g.y),post:!!g.post})),paths:PATHS.map(P=>Math.round(P.len)),sug:[]};
+      if(sug==null)return out;
+      // sítios livres onde cabia uma bandeira (mesmas regras do loadLevel) e que mais estrada `sug` apanham com arqueiros
+      const R=TYPES.arq.range[1],pts=[];PATHS.forEach((P,p)=>{for(let d=P.seg[0].L;d<P.len;d+=8){const q=posAt(P,d);pts.push({x:q.x,y:q.y,p});}});
+      const c=[];for(let x=40;x<=560;x+=8)for(let y=250;y<=840;y+=8){const ins=inPoly(x,y,LV.wall);
+        if(SLOTS.some(s=>hyp(s.x-x,s.y-y)<36)||LV.marks.some(m=>hyp(m.x-x,m.y-y)<34))continue;
+        if(ins?dPath(x,y)<30:(dPath(x,y)<32||dPoly(x,y,LV.wall)<(LV.style==='medieval'?26:16)||nearWater(x,y,18)||(LV.southRiver&&y>785)))continue;
+        const P=PATHS.map((_,p)=>pts.filter(q=>q.p===p&&hyp(q.x-x,q.y-y)<=R).length);if(P[sug])c.push({x,y,ins:ins?1:0,P});}
+      c.sort((a,b)=>b.P[sug]-a.P[sug]||b.P.reduce((s,n)=>s+n,0)-a.P.reduce((s,n)=>s+n,0));
+      for(const q of c){if(out.sug.length>=10)break;if(!out.sug.some(o=>hyp(o.x-q.x,o.y-q.y)<50))out.sug.push(q);}
+      return out;},
     run(c){
       sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
       const think=mkBot(c.st),lives=[S.lives],idle=[],top=SLOTS.map(()=>0),end=c.ondas||0;if(end)S.infinite=true;// --ondas: modo infinito até essa vaga
@@ -208,10 +218,13 @@ function report(R){
 }
 (async()=>{
   if(A.geo){const {br,page}=await open();
-    for(const m of list(A.mapas,['valenca','moncao','ancora','cerveira','melgaco'])){const g=await page.evaluate(m=>SIM.geo(m),m);
+    for(const m of list(A.mapas,['valenca','moncao','ancora','cerveira','melgaco'])){const g=await page.evaluate(([m,s])=>SIM.geo(m,s),[m,A.sugere==null?null:+A.sugere]);
       console.log(`\n${m}: ${g.slots.length} bandeiras, portas ${JSON.stringify(g.gates)}, estradas ${g.paths}`);
-      g.slots.forEach((s,i)=>console.log(pad(i,3)+pad(s.kind,4)+pad(s.x+','+s.y,9)+' fundo '+s.depth.toFixed(2)+' cov125 '+pad(s.cov,4)
-        +['arq','bes','tra','cal'].map(k=>`${k} ${pad(s[k].cov,3)}/${s[k].stall}`).join('  ')));}
+      // por tipo: estrada ao alcance em cada caminho (0+1+2) / portas ao alcance
+      g.slots.forEach((s,i)=>console.log(pad(i,3)+pad(s.kind,4)+pad(s.x+','+s.y,9)+' fundo '+s.depth.toFixed(2)+'  '
+        +['arq','bes','tra','cal'].map(k=>`${k} ${pad(s[k].P.join('+'),9)}/${s[k].stall}`).join('  ')));
+      console.log('estrada ao alcance, somando as bandeiras: '+['arq','bes','tra','cal'].map(k=>k+' '+g.paths.map((_,p)=>g.slots.reduce((a,s)=>a+s[k].P[p],0)).join('+')).join('  '));
+      if(g.sug.length)console.log(`sítios livres que mais apanham a estrada ${A.sugere} (arqueiros):\n`+g.sug.map(q=>`  ${q.x},${q.y}${q.ins?' (dentro)':''}  ${q.P.join('+')}`).join('\n'));}
     return br.close();}
   if(A.teste){// a mesma semente tem de dar exatamente a mesma partida, e a partida tem de acabar
     const {br,page}=await open(),c={lvl:'valenca',di:1,hero:'padeira',seed:7,name:'base',st:{...BASE}};

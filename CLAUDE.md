@@ -81,6 +81,6 @@ Corre o jogo verdadeiro sem desenhar, com um bot a jogar: cola o bot dentro do s
 - **Opções:** `--mapas`, `--dif 0,1,2`, `--herois`, `--estr`, `--n` (sementes por combinação), `--par` (browsers em paralelo; 2 por omissão, em prioridade baixa), `--detalhe` (quem passa, por que estrada, que torres caem, em que vaga fica tudo no nível 5, dano por ouro), `--ondas 30` (modo infinito até essa vaga), `--curto` (só o resumo), `--csv ficheiro`.
 - **Experimentar números sem mexer no jogo:** `--patch "TYPES.bes.cost=110;FOES.arqc.hp=60"`.
 - **Experimentar estratégias:** `--def '{"teste":{"hero":"caca","mix":{"bes":2,"cal":1}}}' --estr teste` (os campos estão explicados no topo do `sim.js`).
-- **Autoteste:** `node sim.js --teste` (a mesma semente tem de dar a mesma partida). `node sim.js --geo` mostra o que cada bandeira alcança.
+- **Autoteste:** `node sim.js --teste` (a mesma semente tem de dar a mesma partida). `node sim.js --geo` mostra a estrada que cada bandeira alcança em cada caminho; com `--sugere 2` lista os sítios livres que mais apanham a estrada 2.
 - **Estratégias:** `base` é o bot do duelo sem mandar tropas; `misto` é a melhor que se encontrou com os quatro tipos de torre; `portas` põe o azeite às portas e os trabucos e besteiros atrás; `so-arq`/`so-bes`/`so-tra`/`so-cal` medem cada torre sozinha.
 - **Como ler:** o bot não é uma pessoa. Os números servem para comparar (mapa contra mapa, torre contra torre, antes e depois de uma alteração), não como dificuldade absoluta.
