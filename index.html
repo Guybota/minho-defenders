@@ -532,6 +532,7 @@ const ICONS=(()=>{
     star:s('M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z',GL),
     warn:s('M12 3.2l9.5 17H2.5z',GL)+s('M12 9.5v5',null,2.2)+`<circle cx="12" cy="17.4" r="1.2" fill="${K}"/>`,
     flame:flame(0,0,1),
+    blast:`<circle cx="12" cy="12" r="9.5" fill="none" stroke="${K}" stroke-width="1.3" stroke-dasharray="3 2.4"/>`+s('M12 5.5l1.7 3.8 4-.9-2.3 3.4 2.6 3-4 .2-.6 4-2.6-3.1-3.5 2 1-3.9-3.6-1.8 3.8-1.4-.8-4z',OR),
     infinite:s('M12 12c-2-3-3.8-4.5-5.8-4.5a4.5 4.5 0 0 0 0 9c2 0 3.8-1.5 5.8-4.5s3.8-4.5 5.8-4.5a4.5 4.5 0 0 1 0 9c-2 0-3.8-1.5-5.8-4.5z',null,2),
     /* poderes */
     arrows:[[5,3],[11,2],[16.5,4.5]].map(([x,y])=>`<g transform="translate(${x-4} ${y})">${s('M4 1l0 13',null,1.5)}${s('M1.8 11.5L4 15.8 6.2 11.5z',ST,1)}${s('M4 1l-1.8-1M4 1l1.8-1M4 3l-1.8-1M4 3l1.8-1',null,1)}</g>`).join('')+s('M2.5 21.5c3-1.5 16-1.5 19 0',null,1.2),
@@ -3611,13 +3612,13 @@ function renderPanel(){
       Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
     return;}
   const t=s.tower,T=TYPES[t.k],st=tstat(t);
-  const extra=st.splash?`${tr('área','area')} ${Math.round(st.splash)}`:st.slow<1?`${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr('perfura','pierces'):'';
+  const extra=st.splash?`${ic('blast')} ${Math.round(st.splash)}`:st.slow<1?`${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr('perfura','pierces'):'';
   const nm=t.lv>=3?T.br[t.br].name:T.name;
   const mine=(t.owner||1)===S.me;
   // o que muda com a melhoria (mesmas contas que o combate, via tstat)
   const delta=n=>{const a=[];const d=(i,l,x,y,f)=>{if(Math.abs(y-x)>0.01)a.push(sti(i,l,`${f(x)}→${f(y)}`,'white-space:nowrap'));};
     d('swords',tr('Dano','Damage'),st.dmg,n.dmg,Math.round);d('target',tr('Alcance','Range'),st.range,n.range,Math.round);d('hourglass',tr('Recarga','Reload'),st.rate,n.rate,v=>Math.round(v*100)/100+'s');
-    if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('arde','burns'));return a.join(' · ');};
+    if(n.splash)d('blast',tr('Área','Area'),st.splash,n.splash,Math.round);if(n.burn&&!st.burn)a.push(sti('flame',tr('Passa a arder','Now burns'),''));return a.join(' · ');};
   // destruída: só se repara; as melhorias voltam depois da reparação
   let up='';
   if(t.broken)up=t.fixT>0?`<p class="hint" style="flex:1 1 100%">${ic('hammer')} ${tr('Em reparação; depois já se pode melhorar','Being repaired; it can be upgraded afterwards')}</p>`
@@ -3628,7 +3629,7 @@ function renderPanel(){
   else if(t.lv>=5){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}: ${T.L5[t.br]}</p>`;}
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
   p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/5${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
-    <div class="tinfo">${sti('swords',tr('Dano','Damage'),Math.round(st.dmg))}${sti('target',tr('Alcance','Range'),Math.round(st.range))}${sti('hourglass',tr('Recarga','Reload'),Math.round(st.rate*100)/100+'s')}${extra?`<span>${extra}</span>`:''}${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
+    <div class="tinfo">${sti('swords',tr('Dano','Damage'),Math.round(st.dmg))}${sti('target',tr('Alcance','Range'),Math.round(st.range))}${sti('hourglass',tr('Recarga','Reload'),Math.round(st.rate*100)/100+'s')}${extra?`<span${st.splash?` title="${tr('Área','Area')}"`:''}>${extra}</span>`:''}${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
     <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
