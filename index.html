@@ -1498,13 +1498,14 @@ function rangedHold(e,dt){
       S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:g.x+(Math.random()-0.5)*6,ty:g.y+(Math.random()-0.5)*6,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg*edm(e),gi:q.i});
       if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
     return true;}
-  // sem porta ao alcance: atacam a torre de pé mais próxima
-  let tw=e.aimT&&!e.aimT.broken&&S.towers.includes(e.aimT)&&Math.hypot(e.aimT.x-e.x,e.aimT.y-e.y)<=R.range?e.aimT:null;
-  if(!tw){let bd=R.range;for(const t of S.towers){if(t.broken)continue;const d=Math.hypot(t.x-e.x,t.y-e.y);if(d<=bd){bd=d;tw=t;}}}
+  // sem porta ao alcance: atacam a torre de pé mais próxima (contra torres: 80% do alcance e 75% do dano)
+  const tr2=R.range*0.8;
+  let tw=e.aimT&&!e.aimT.broken&&S.towers.includes(e.aimT)&&Math.hypot(e.aimT.x-e.x,e.aimT.y-e.y)<=tr2?e.aimT:null;
+  if(!tw){let bd=tr2;for(const t of S.towers){if(t.broken)continue;const d=Math.hypot(t.x-e.x,t.y-e.y);if(d<=bd){bd=d;tw=t;}}}
   e.aimT=tw;if(!tw){e.aim=null;return false;}
   e.aim=-1;e.rcd=(e.rcd==null?0.5:e.rcd)-dt;
   if(e.rcd<=0){e.rcd=R.rate*(0.85+Math.random()*0.3);const d=Math.hypot(tw.x-e.x,tw.y-e.y);
-    S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:tw.x+(Math.random()-0.5)*8,ty:tw.y-4+(Math.random()-0.5)*8,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg*edm(e),ti:tw.si});
+    S.eproj.push({k:R.k,sx:e.x,sy:e.y,tx:tw.x+(Math.random()-0.5)*8,ty:tw.y-4+(Math.random()-0.5)*8,t:0,T:Math.max(0.25,d/(R.k==='shell'?170:360)),dmg:R.dmg*edm(e)*0.75,ti:tw.si});
     if(R.k==='shell'){smoke(e.x,e.y,4);sfx('boom');e.kick=1;}else sfx('arrow');}
   return true;
 }
