@@ -41,6 +41,9 @@ function PAGE(){
   // quem chegou à praça (tipo e estrada) e em que bandeira caiu cada torre
   hitHeart=n=>{const e=S.enemies.find(e=>e.dead&&!e.seen&&e.d>=PATHS[e.p].len);if(e){e.seen=1;leakT[e.t]=(leakT[e.t]||0)+n;leakP[e.p]=(leakP[e.p]||0)+n;}hh(n);};
   breakTower=t=>{brokeS[t.si]=(brokeS[t.si]||0)+1;bt(t);};
+  // onde morre quem vem por cada estrada (sem contar as lendas): fração do caminho, se chegou à primeira porta e quem o matou
+  let dth=[];const kl=kill;kill=(e,src)=>{if(!e.dead&&!e.f.boss){const o=dth[e.p]||(dth[e.p]={n:0,pr:0,gate:0,by:{}}),g=LV.pathGates[e.p][0];o.n++;o.pr+=e.d/PATHS[e.p].len;if(g&&e.d>=g.d-40)o.gate++;
+    const k=src&&TYPES[src.k]?src.k:src===S.hero?'heroína':'outro';o.by[k]=(o.by[k]||0)+1;}kl(e,src);};
   const KS=Object.keys(TYPES),hyp=Math.hypot;
 
   // por mapa: o que cada bandeira alcança com cada tipo de torre
@@ -132,7 +135,7 @@ function PAGE(){
       for(const q of c){if(out.sug.length>=10)break;if(!out.sug.some(o=>hyp(o.x-q.x,o.y-q.y)<50))out.sug.push(q);}
       return out;},
     run(c){
-      sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
+      sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};dth=[];newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
       const think=mkBot(c.st),lives=[S.lives],idle=[],top=SLOTS.map(()=>0),end=c.ondas||0;if(end)S.infinite=true;// --ondas: modo infinito até essa vaga
       // ouro que custa pôr todas as bandeiras no nível 5 com esta mistura (sem reparações)
       const full=k=>TYPES[k].cost+TYPES[k].up.reduce((a,b)=>a+b,0),mx=Object.keys(c.st.mix),need=SLOTS.length*mx.reduce((a,k)=>a+c.st.mix[k]*full(k),0)/mx.reduce((a,k)=>a+c.st.mix[k],0);
@@ -148,7 +151,7 @@ function PAGE(){
       const dmg={},cnt={},spent={};let broke=0;
       S.towers.forEach(t=>{dmg[t.k]=(dmg[t.k]||0)+(t.dmgDone||0);cnt[t.k]=(cnt[t.k]||0)+1;spent[t.k]=(spent[t.k]||0)+t.spent;broke+=t.deaths||0;});
       return{lvl:c.lvl,di:c.di,hero:c.hero,estr:c.name,seed:c.seed,win:S.win?1:0,wave:S.wave,spent,maxW,goldW,need:Math.round(need),lvPct:top.reduce((a,b)=>a+b,0)/(5*top.length),lives:S.lives,t:Math.round(S.t),kills:S.stats.kills,
-        earned:S.stats.gold,gold:Math.round(S.gold),dmg,cnt,broke,gates:nGate,heroLv:S.hero.lv,heroK:S.hero.kills,leakT,leakP,brokeS,
+        earned:S.stats.gold,gold:Math.round(S.gold),dmg,cnt,broke,gates:nGate,heroLv:S.hero.lv,heroK:S.hero.kills,leakT,leakP,brokeS,dth,
         // vidas perdidas em cada vaga e ouro parado no início de cada vaga
         leak:lives.slice(1).map((v,i)=>Math.max(0,lives[i]-v)),idle,timeout:!S.over&&!end};
     }};
@@ -214,7 +217,11 @@ function report(R){
       const mw=g.filter(r=>r.maxW),gw=g.filter(r=>r.goldW);
       console.log('     tudo no nível 5: '+(mw.length?`vaga ${avg(mw,r=>r.maxW).toFixed(1)} (${mw.length} de ${g.length} partidas)`:'nunca')+', níveis atingidos '+(avg(g,r=>r.lvPct)*100).toFixed(0)+'%'
         +' | ouro para isso ('+g[0].need+'): '+(gw.length?`vaga ${avg(gw,r=>r.goldW).toFixed(1)} (${gw.length} de ${g.length})`:'nunca')
-        +' | dano por ouro: '+['arq','bes','tra','cal'].filter(k=>g.some(r=>r.spent[k])).map(k=>k+' '+(avg(g,r=>r.dmg[k]||0)/(avg(g,r=>r.spent[k]||0)||1)).toFixed(0)).join(', '));}}
+        +' | dano por ouro: '+['arq','bes','tra','cal'].filter(k=>g.some(r=>r.spent[k])).map(k=>k+' '+(avg(g,r=>r.dmg[k]||0)/(avg(g,r=>r.spent[k]||0)||1)).toFixed(0)).join(', '));
+      // por estrada (sem as lendas): quantos morrem, a que altura do caminho, quantos chegam à primeira porta e quem os mata
+      for(let p=0;p<3;p++){const D=g.map(r=>r.dth[p]).filter(Boolean),n=D.reduce((a,o)=>a+o.n,0);if(!n)continue;const by={};D.forEach(o=>Object.entries(o.by).forEach(([k,v])=>by[k]=(by[k]||0)+v));
+        console.log('     estrada '+p+': '+(n/g.length).toFixed(0)+' abates, morrem a '+(D.reduce((a,o)=>a+o.pr,0)/n*100).toFixed(0)+'% do caminho, '+(D.reduce((a,o)=>a+o.gate,0)/n*100).toFixed(0)+'% chegam à porta | quem mata: '
+          +Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' '+Math.round(v/n*100)+'%').join(', '));}}}
 }
 (async()=>{
   if(A.geo){const {br,page}=await open();
