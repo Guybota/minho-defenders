@@ -2602,9 +2602,9 @@ function drawFoe(e){
 /* barcos castelhanos: casco visto de cima (roda com o rumo), remos a remar, e mastros com velas às riscas de Castela em alçado */
 function hullPath(c,h,w){c.beginPath();c.moveTo(-h,-w*0.72);c.quadraticCurveTo(-h*0.1,-w*1.06,h*0.5,-w*0.92);c.quadraticCurveTo(h*0.9,-w*0.55,h,0);
   c.quadraticCurveTo(h*0.9,w*0.55,h*0.5,w*0.92);c.quadraticCurveTo(-h*0.1,w*1.06,-h,w*0.72);c.quadraticCurveTo(-h*1.06,0,-h,-w*0.72);c.closePath();}
-function drawBoat(b){
-  if(S.weather==='nevoeiro'||b.al<=0)return;
-  const B=BOATS[b.k],c=ctx,h=B.L/2,w=B.B/2,t=RM()?0:S.t,mv=b.mv&&!RM(),al=Math.min(1,b.al);
+function drawBoat(b,c=ctx){// c: outro canvas (barcos do mapa do menu, parados e sem partida a decorrer)
+  const mn=c!==ctx;if(!mn&&S.weather==='nevoeiro'||b.al<=0)return;
+  const B=BOATS[b.k],h=B.L/2,w=B.B/2,t=RM()||mn?0:S.t,mv=b.mv&&!RM(),al=Math.min(1,b.al);
   c.save();c.globalAlpha=al;c.translate(b.x,b.y);c.rotate(b.a+Math.sin(t*(mv?3:1.5)+b.id)*0.025);c.lineJoin='round';c.lineCap='round';
   // esteira e ondinhas na proa
   c.strokeStyle='rgba(240,248,250,.75)';c.lineWidth=1.2;
@@ -3290,7 +3290,7 @@ function drawSideWorld(P,water){
   if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,H+MY);ctx.stroke();ctx.restore();
     label(ctx,tr('Jogador 1','Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('Jogador 2','Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
   drawPathArrows();
-  S.boats.forEach(drawBoat);
+  S.boats.forEach(b=>drawBoat(b));
   for(const e of S.enemies)if(onView(e.x,e.y,90))drawFoe(e);
   drawHero();
   for(const t of S.towers)if(onView(t.x,t.y,50))drawTower(t);
@@ -3804,7 +3804,7 @@ function drawFlag(x,y,seed){
 /* ================= Mapa do Alto Minho por trás do menu ================= */
 // posições (0..1) das praças no mapa, usadas para "mergulhar" na praça escolhida ao entrar no jogo
 const MBG_XY={melgaco:[1440,425],moncao:[1030,485],valenca:[690,555],cerveira:[465,650],ancora:[215,810]};
-const MBG={on:false,t:null};
+const MBG={on:false,t:null,img:{}};
 // área visível do mapa do menu: em paisagem é o mapa 1600×1000 (cortado para encher); em retrato estica-se na vertical
 // (mais Galiza em cima e bem mais Portugal em baixo) para o mapa encher o ecrã sem faixas vazias
 function menuVB(vw,vh){const ar=vw/vh;if(ar>=1.25)return{x:0,y:0,w:1600,h:1000,fs:1,port:false};
@@ -3816,8 +3816,8 @@ function menuSvg(V){
   const smooth=(P,n)=>{const o=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
     for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;o.push([0,1].map(j=>0.5*(2*p1[j]+(-p0[j]+p2[j])*t+(2*p0[j]-5*p1[j]+4*p2[j]-p3[j])*t2+(-p0[j]+3*p1[j]-3*p2[j]+p3[j])*t3)));}}
     o.push(P[P.length-1]);return o;};
-  const RP=smooth(RC,8);
-  const rw=i=>{const u=i/(RP.length-1);return 10+u*u*15+Math.sin(i*0.37)*1.2;};
+  const RP=smooth(RC.map(([x,y])=>[x,y-18]),8);
+  const rw=i=>{const u=i/(RP.length-1);return 26+u*u*16+Math.sin(i*0.37)*1.2;};
   const bankL=[],bankR=[];RP.forEach((p,i)=>{const a=RP[Math.max(0,i-1)],b=RP[Math.min(RP.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,w=rw(i);
     bankL.push([p[0]-dy/L*w,p[1]+dx/L*w]);bankR.push([p[0]+dy/L*w,p[1]-dx/L*w]);});
   const pts=a=>a.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L');
@@ -3855,7 +3855,11 @@ function menuSvg(V){
     <text x="${x}" y="${y+22+18*fs}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="${30*fs}" fill="#2e2419" stroke="#e9dcbc" stroke-width="${6*fs}" paint-order="stroke">${label}</text>
     ${sub?`<text x="${x}" y="${y+22+42*fs}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${18*fs}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="${4*fs}" paint-order="stroke">${sub}</text>`:''}</g>`;
   const gal=(x,y,label)=>`<g><rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#a4583a" stroke="#2e2419"/><text x="${x}" y="${y-14}" text-anchor="middle" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${20*Math.min(fs,1.4)}" fill="#6b5a42" stroke="#e9dcbc" stroke-width="4" paint-order="stroke">${label}</text></g>`;
-  const boat=(x,y,rot)=>`<g class="boat" style="transform-box:fill-box;transform-origin:center"><g transform="translate(${x},${y}) rotate(${rot})"><path d="M-16,-6 L12,-6 L19,0 L12,6 L-16,6Z" fill="#6e4b2a" stroke="#2e2419" stroke-width="1.5"/><circle cx="-2" cy="0" r="4" fill="#b8302a"/></g></g>`;
+  // barcos do jogo (drawBoat) passados a imagem; mid(x) é o meio do rio nessa longitude
+  const mid=x=>RP.reduce((a,p)=>Math.abs(p[0]-x)<Math.abs(a[0]-x)?p:a);
+  const boat=(k,x,y,a,sc=0.62)=>{const id=k+a,z=BOATS[k].L*1.6;if(!MBG.img[id]){const cv=document.createElement('canvas');cv.width=cv.height=z*3;const c=cv.getContext('2d');c.scale(3,3);
+      drawBoat({k,x:z/2,y:z*0.6,a,al:1,id:0,mv:true},c);MBG.img[id]=cv.toDataURL();}
+    return `<g class="boat" style="transform-box:fill-box;transform-origin:center"><image href="${MBG.img[id]}" x="${(x-z*sc/2).toFixed(1)}" y="${(y-z*sc*0.6).toFixed(1)}" width="${(z*sc).toFixed(1)}" height="${(z*sc).toFixed(1)}"/></g>`;};
   // rotas de ataque: saem da vila galega, atravessam o rio e acabam (com seta) à porta da praça portuguesa
   const route=d=>`<path class="route" d="${d}" fill="none" stroke="#9b2226" stroke-width="3" opacity=".8" marker-end="url(#arr)"/>`;
   const nw=Math.ceil((Y1-Y0-120)/62);
@@ -3873,18 +3877,18 @@ function menuSvg(V){
   <path d="${bankPath(bankR)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
   <path d="${coast} L-40,${Y1} L-40,${Y0}Z" fill="#8fa7ad"/>
   <path d="${coast}" fill="none" stroke="#4f6a73" stroke-width="3"/>
-  <ellipse cx="160" cy="658" rx="16" ry="24" fill="#8fa7ad"/>
+  <ellipse cx="160" cy="642" rx="16" ry="40" fill="#8fa7ad"/>
   ${ripples}
   ${waves}
   ${hills}${groves}
   ${title(tY1,tr('GALIZA','GALICIA'),tr('REINO DE CASTELA','KINGDOM OF CASTILE'))}
   ${title(tY2,'PORTUGAL','ALTO MINHO')}
-  <text x="860" y="452" text-anchor="middle" transform="rotate(-12 860 452)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.4)}" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
+  <text x="860" y="478" text-anchor="middle" transform="rotate(-13 860 478)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.4)}" fill="#2f4a52">${tr('Rio Minho','River Minho')}</text>
   <text x="80" y="330" text-anchor="middle" transform="rotate(-90 80 330)" font-family="IM Fell English,Georgia,serif" font-style="italic" font-size="${34*Math.min(fs,1.3)}" fill="#2f4a52">${tr('Oceano Atlântico','Atlantic Ocean')}</text>
   ${gal(1390,322,'Arbo')}${gal(1000,372,'Salvaterra')}${gal(675,455,'Tui')}${gal(440,560,'Goián')}${gal(230,585,'A Guarda')}
   ${route('M1390,333 C1405,370 1435,380 1438,401')}${route('M1000,383 C1015,420 1030,440 1029,461')}${route('M675,466 C690,500 680,515 688,531')}${route('M440,571 C455,600 470,610 464,626')}
   ${route('M223,595 C150,620 60,660 70,730 C78,790 140,810 186,811')}
-  ${boat(1412,384,100)}${boat(1014,441,95)}${boat(683,513,100)}${boat(453,598,60)}${boat(62,715,95)}
+  ${boat('batel',...mid(1412),1.75)}${boat('barca',...mid(1014),1.65)}${boat('galeota',...mid(683),1.75)}${boat('nau',...mid(453),1.2)}${boat('galeao',62,715,1.65)}
   ${town('moncao',1030,485,'Monção','Deu-la-Deu')}${town('valenca',690,555,'Valença',tr('Praça e Coroada','Praça & Coroada'))}
   ${town('cerveira',465,650,'Cerveira',tr('Castelo','Castle'))}${town('ancora',215,810,'Âncora',tr('Forte da Lagarteira','Forte da Lagarteira'))}${town('melgaco',1440,425,'Melgaço','Inês Negra')}
   <g transform="translate(${cx},${cy}) scale(${V.port?1.3:1})"><circle r="46" fill="#e9dcbc" stroke="#2e2419" stroke-width="2"/><path d="M0,-66 L10,0 L0,66 L-10,0Z" fill="#2e2419"/><path d="M-58,0 L0,8 L58,0 L0,-8Z" fill="none" stroke="#2e2419" stroke-width="2"/><text y="-78" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="#2e2419">N</text></g>
