@@ -148,7 +148,7 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .build:disabled{opacity:.6;box-shadow:none}
 .build:disabled .cs{color:var(--red);border-color:var(--red)}
 .tinfo{display:flex;gap:.3rem;flex-wrap:wrap;font-size:.88rem;margin-bottom:.45rem}
-.tinfo span{white-space:nowrap;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:.05rem .5rem}
+.tinfo>span{white-space:nowrap;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:.05rem .5rem}
 .tinfo span.warn{border-color:var(--red);color:var(--red)}
 .acts{display:flex;gap:.35rem;flex-wrap:wrap}
 .acts .br{flex:1 1 9rem;text-align:left;line-height:1.2}
@@ -586,6 +586,8 @@ const icSvg=(n,ink)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24
 // os ícones só de tinta (pausa, som, menu…) seguem a cor do texto; os outros são «autocolantes» com contorno fixo
 const IC_MONO=new Set(['pause','play','snd0','snd1','snd2','menu','fog','infinite','close','zin','zout','fit']);
 function ic(n,cls){return icSvg(n,IC_MONO.has(n)?'currentColor':'#2e2419').replace('<svg ','<svg class="ico'+(cls?' '+cls:'')+'" aria-hidden="true" focusable="false" ');}
+// número com o ícone do stat à frente (coração vida, espadas dano, alvo alcance, ampulheta recarga…); o nome fica no title e no aria-label
+const sti=(i,l,v,css)=>`<span role="img" aria-label="${l} ${v}" title="${l}"${css?` style="${css}"`:''}>${ic(i)} ${v}</span>`;
 const IC_IMG={};
 function icImg(n){let im=IC_IMG[n];if(!im){im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icSvg(n,'#2e2419'));IC_IMG[n]=im;}return im;}
 document.querySelectorAll('[data-ic]').forEach(e=>{e.innerHTML=ic(e.dataset.ic);});
@@ -1670,6 +1672,8 @@ function bossSpecial(h){
     S.fx.push({k:'boom',x:b[0],y:b[1],r:40,t:0,T:0.5});sfx('smash');jolt(6);chips(b[0],b[1],10,'#7a5530',1.2);
     S.texts.push({x:h.x,y:h.y-30,s:tr('Sai da frente!','Out of the way!'),t:0,T:1.3,sp:true});}
 }
+// dano, alcance e recarga da heroína com nível, melhorias, oferendas e bênçãos (combate e painel usam as mesmas contas)
+const hstat=h=>({dmg:h.D.dmg*(1+0.12*(h.lv-1))*S.mods.hero*(hUp(h,'dmg')?1.35:1)*(1+0.08*(h.gift||0)),range:h.D.range*(hUp(h,'range')?1.3:1),rate:h.D.rate*(hUp(h,'fast')?0.65:1)});
 function updateHero(dt){
   const h=S.hero;
   if(h.dead){h.respawn-=dt;if(h.respawn<=0){h.dead=false;h.hp=h.max;h.x=LV.goal.x+26;h.y=LV.goal.y+14;h.tx=null;}return;}
@@ -1685,9 +1689,9 @@ function updateHero(dt){
   if(h.hp<=0){h.dead=true;h.respawn=hUp(h,'spFast')?6:12;S.enemies.forEach(e=>e.blocked=false);S.texts.push({x:h.x,y:h.y-26,s:pick(Q.heroDie),t:0,T:2,sp:true});return;}
   h.cd-=dt;h.swing=Math.max(0,h.swing-dt);h.spT=Math.max(0,(h.spT||0)-dt);
   if(h.cd<=0){
-    let tg=null,bd=h.D.range*(hUp(h,'range')?1.3:1);
+    const hs=hstat(h);let tg=null,bd=hs.range;
     for(const e of S.enemies){if(e.dead||e.under||(!h.D.water&&inRiver(e.x,e.y)))continue;const d=Math.hypot(e.x-h.x,e.y-h.y);if(d<=bd){bd=d;tg=e;}}
-    if(tg){h.cd=h.D.rate*(hUp(h,'fast')?0.65:1);h.ang=Math.atan2(tg.y-h.y,tg.x-h.x);const dmg=h.D.dmg*(1+0.12*(h.lv-1))*S.mods.hero*(hUp(h,'dmg')?1.35:1)*(1+0.08*(h.gift||0));
+    if(tg){h.cd=hs.rate;h.ang=Math.atan2(tg.y-h.y,tg.x-h.x);const dmg=hs.dmg;
       if(h.D.melee){hurt(tg,dmg,false,'hero');h.swing=0.2;sfx('hit');
         if(hUp(h,'cleave'))for(const o of S.enemies)if(o!==tg&&!o.dead&&!inRiver(o.x,o.y)&&Math.hypot(o.x-tg.x,o.y-tg.y)<28)hurt(o,dmg*0.6,false,'hero',true);}
       else{h.swing=0.2;const B=h.D.burn;S.proj.push({k:h.D.proj||'bread',x:h.x,y:h.y-8,tg,lx:tg.x,ly:tg.y,sp:320,dmg,pierce:false,src:'hero',split:hUp(h,'multi'),
@@ -3558,13 +3562,15 @@ let panelSel,heroMin=!!LS.get('hmin',false);
 // atualiza o painel sem o reconstruir: estado dos botões (ouro) e números da heroína
 const heroXpF=h=>h.lv>=HERO_MAX?1:S.remote?(h.xpP||0)/100:Math.min(1,h.xp/xpNeed(h.lv));
 const heroXpTxt=h=>h.lv>=HERO_MAX?tr('Nível máximo','Max level'):tr('Experiência','Experience')+' '+Math.floor(heroXpF(h)*100)+'%';
+// o painel da heroína refaz-se quando muda o que mexe nos números dela: nível, melhorias, oferendas e bênçãos
+const heroKey=h=>h.lv+':'+(h.ups||[]).length+':'+(h.gift||0)+':'+S.mods.hero;
 function refreshPanel(){
   const p=$('panel');if(!S||!p.firstChild)return;
   const g=myGold();
   p.querySelectorAll('[data-cost]').forEach(b=>{const d=g<+b.dataset.cost;if(b.disabled!==d){b.disabled=d;if(!d)pop(b,'afford');}});
   if(S.sel==='hero'){
     const h=S.hero,sp=h.D.sp,cd=Math.ceil(S.cd.hero),set=(k,v)=>{const e=p.querySelector(`[data-h="${k}"]`);if(e&&e.textContent!==v)e.textContent=v;};
-    if(p.dataset.hk!==h.lv+':'+(h.ups||[]).length+':'+(h.gift||0))return renderPanel();
+    if(p.dataset.hk!==heroKey(h))return renderPanel();
     set('xp',heroXpTxt(h));set('hp',Math.max(0,Math.round(h.hp/h.max*100))+'%');set('k',h.kills+' '+tr('derrotados','defeated'));
     set('st',h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her'));
     const st=p.querySelector('[data-h="st"]');if(st&&st.classList.contains('warn')!==h.dead)st.classList.toggle('warn',h.dead);
@@ -3586,29 +3592,31 @@ function renderPanel(){
       WORKS.map(w=>{const done=w.once&&S.works[w.k],c=workCost(w);return done?`<button class="br" disabled>${ic(w.ic)} ${w.name}<small>${tr('Feito','Done')}</small></button>`
         :`<button class="main br" data-a="work" data-k="${w.k}" data-cost="${c}" ${g<c?'disabled':''}>${ic(w.ic)} ${w.name} · ${c} ${ic('coin')}<small>${w.desc}</small></button>`;}).join('')+`</div>`;return;}
   if(S.sel==='hero'){
-    const h=S.hero,sp=h.D.sp,cd=Math.ceil(S.cd.hero),pend=heroPend(h),ti=(h.ups||[]).length;p.dataset.hk=h.lv+':'+ti+':'+(h.gift||0);
-    const got=(h.ups||[]).map((b,i)=>h.D.ups[i]&&h.D.ups[i][b]?`<span title="${h.D.ups[i][b].desc}">${ic('star')} ${h.D.ups[i][b].name}</span>`:'').join('');
+    const h=S.hero,sp=h.D.sp,cd=Math.ceil(S.cd.hero),pend=heroPend(h),ti=(h.ups||[]).length,hs=hstat(h);p.dataset.hk=heroKey(h);
+    // cada melhoria leva o ícone do stat em que mexe (os mesmos da lista de inimigos e das torres)
+    const ui=U=>ic({dmg:'swords',hp:'heart',range:'target',fast:'hourglass',spFast:'hourglass',gold:'coin',block:'shield'}[U.k]||'star');
+    const got=(h.ups||[]).map((b,i)=>h.D.ups[i]&&h.D.ups[i][b]?`<span title="${h.D.ups[i][b].desc}">${ui(h.D.ups[i][b])} ${h.D.ups[i][b].name}</span>`:'').join('');
     const choose=pend>0&&h.D.ups[ti]?`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Melhoria do nível','Level')} ${HERO_TIERS[ti]}${tr(': escolhe uma',' upgrade: pick one')}</p>`+
-      h.D.ups[ti].map((U,b)=>`<button class="main br" data-a="hup" data-b="${b}">${U.name}<small>${U.desc}</small></button>`).join(''):'';
+      h.D.ups[ti].map((U,b)=>`<button class="main br" data-a="hup" data-b="${b}">${ui(U)} ${U.name}<small>${U.desc}</small></button>`).join(''):'';
     p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name}<small>${tr('Nível','Level')} ${h.lv}/${HERO_MAX}${heroMin&&pend>0?' '+ic('star'):''}</small></b>${heroMin?`<button class="main hsp" data-a="special" title="${sp.name}" aria-label="${sp.name}" ${cd>0||h.dead||S.wave<1?'disabled':''}>${ic('powers')}<span data-h="spc">${cd>0?cd+'s':''}</span></button>`:''}<button data-a="min" aria-expanded="${!heroMin}" aria-label="${heroMin?tr('Abrir painel','Expand panel'):tr('Minimizar painel','Minimise panel')}">${ic(heroMin?'zin':'zout')}</button><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
       <div class="tinfo"><span>${ic('star')} <span data-h="xp">${heroXpTxt(h)}</span></span>${got}</div>${h.D.pass?`<p class="hint">${h.D.pass}</p>`:''}
       ${choose?`<div class="acts">${choose}</div>`:''}
-      <div class="tinfo"><span>${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span><span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
+      <div class="tinfo"><span title="${tr('Vida','Health')}">${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span>${sti('swords',tr('Dano','Damage'),Math.round(hs.dmg))}${sti('target',tr('Alcance','Range'),Math.round(hs.range))}${sti('hourglass',tr('Recarga','Reload'),Math.round(hs.rate*100)/100+'s')}<span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
       <div class="acts"><button class="main br" data-a="special" ${cd>0||h.dead||S.wave<1?'disabled':''}><span data-h="sp">${sp.name}${cd>0?' ('+cd+'s)':''}</span><small>${sp.desc}</small></button>
       ${h.lv<HERO_MAX?`<button class="br" data-a="hbuy" data-b="train" data-cost="${trainCost(h)}" ${g<trainCost(h)?'disabled':''}>${ic('star')} ${tr('Treino com o mestre de armas','Training with the master-at-arms')} · ${trainCost(h)} ${ic('coin')}<small>${tr('Meio nível de experiência','Half a level of experience')}</small></button>`
-        :(h.gift||0)<5?`<button class="br" data-a="hbuy" data-b="gift" data-cost="${giftCost(h)}" ${g<giftCost(h)?'disabled':''}>${ic('star')} ${tr('Oferenda do povo','Offering from the people')} (${h.gift||0}/5) · ${giftCost(h)} ${ic('coin')}<small>${tr('+8% de vida e de dano','+8% health and damage')}</small></button>`:''}</div>`;return;}
+        :(h.gift||0)<5?`<button class="br" data-a="hbuy" data-b="gift" data-cost="${giftCost(h)}" ${g<giftCost(h)?'disabled':''}>${ic('star')} ${tr('Oferenda do povo','Offering from the people')} (${h.gift||0}/5) · ${giftCost(h)} ${ic('coin')}<small>+8% ${sti('heart',tr('Vida','Health'),'')}${tr('e','and')} ${sti('swords',tr('Dano','Damage'),'')}</small></button>`:''}</div>`;return;}
   const s=SLOTS[S.sel];
   if(!s.tower){
     p.innerHTML=`<div class="ph"><b>${s.name}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div><div class="grid">`+
       Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
     return;}
   const t=s.tower,T=TYPES[t.k],st=tstat(t);
-  const extra=st.splash?` · ${tr('área','area')} ${Math.round(st.splash)}`:st.slow<1?` · ${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr(' · perfura',' · pierces'):'';
+  const extra=st.splash?`${tr('área','area')} ${Math.round(st.splash)}`:st.slow<1?`${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr('perfura','pierces'):'';
   const nm=t.lv>=3?T.br[t.br].name:T.name;
   const mine=(t.owner||1)===S.me;
   // o que muda com a melhoria (mesmas contas que o combate, via tstat)
-  const delta=n=>{const a=[];const d=(l,x,y,f)=>{if(Math.abs(y-x)>0.01)a.push(`${l} ${f(x)}→${f(y)}`);};
-    d(tr('Dano','Damage'),st.dmg,n.dmg,Math.round);d(tr('Alcance','Range'),st.range,n.range,Math.round);d(tr('Recarga','Reload'),st.rate,n.rate,v=>Math.round(v*100)/100+'s');
+  const delta=n=>{const a=[];const d=(i,l,x,y,f)=>{if(Math.abs(y-x)>0.01)a.push(sti(i,l,`${f(x)}→${f(y)}`,'white-space:nowrap'));};
+    d('swords',tr('Dano','Damage'),st.dmg,n.dmg,Math.round);d('target',tr('Alcance','Range'),st.range,n.range,Math.round);d('hourglass',tr('Recarga','Reload'),st.rate,n.rate,v=>Math.round(v*100)/100+'s');
     if(n.splash&&n.splash!==st.splash)a.push(tr('Área ','Area ')+Math.round(n.splash));if(n.burn&&!st.burn)a.push(tr('arde','burns'));return a.join(' · ');};
   // destruída: só se repara; as melhorias voltam depois da reparação
   let up='';
@@ -3620,7 +3628,7 @@ function renderPanel(){
   else if(t.lv>=5){up=`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Nível máximo','Max level')}: ${T.L5[t.br]}</p>`;}
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
   p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/5${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
-    <div class="tinfo"><span>${ic('swords')} ${tr('Dano','Damage')} ${Math.round(st.dmg)}</span><span>${ic('target')} ${tr('Alcance','Range')} ${Math.round(st.range)}</span><span>${ic('hourglass')} ${Math.round(st.rate*100)/100}s${extra}</span>${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
+    <div class="tinfo">${sti('swords',tr('Dano','Damage'),Math.round(st.dmg))}${sti('target',tr('Alcance','Range'),Math.round(st.range))}${sti('hourglass',tr('Recarga','Reload'),Math.round(st.rate*100)/100+'s')}${extra?`<span>${extra}</span>`:''}${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
     <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
@@ -4588,8 +4596,7 @@ const FOE_INFO={
   arren:[tr('Melgaço, vagas 10 e 20','Melgaço, waves 10 and 20'),tr('Apressa os castelhanos à volta e puxa os cabelos à heroína.','Speeds up nearby Castilians and pulls the heroine’s hair.')]};
 function showFoes(back){
   // vida e passo como entram em campo (mkFoe) na vaga 1, em Castelhano
-  // cada número com o seu ícone; o nome fica no title e no aria-label
-  const st=(i,l,v)=>`<span role="img" aria-label="${l} ${v}" title="${l}" style="white-space:nowrap;margin-right:.6rem">${ic(i)} ${v}</span>`;
+  const st=(i,l,v)=>sti(i,l,v,'white-space:nowrap;margin-right:.6rem');
   const L={hp:tr('Vida','Health'),spd:tr('Velocidade','Speed'),arm:tr('Armadura','Armour'),gold:tr('Ouro','Gold'),leak:tr('Vidas que tira à praça','Lives taken from the fortress'),dmg:tr('Dano do tiro','Shot damage'),rate:tr('Tempo entre tiros','Time between shots'),rng:tr('Alcance','Range')};
   showModal(`<h2>${tr('Inimigos','Enemies')}</h2>
     <p class="small">${[['heart',L.hp],['boot',L.spd],['shield',L.arm],['coin',L.gold],['castle',L.leak],['swords',L.dmg],['hourglass',L.rate],['target',L.rng]].map(([i,l])=>`<span style="white-space:nowrap">${ic(i)} ${l}</span>`).join(' · ')}</p>
