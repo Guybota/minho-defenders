@@ -833,9 +833,9 @@ const TYPES={
   tra:{name:tr('Trabuco','Trebuchet'),icon:'stone',cost:130,up:[120,190,260,480],L5:[tr('Área maior e fogo mais forte','Bigger area and fiercer fire'),tr('Cada pedrada atordoa quem apanha','Every stone stuns whoever it hits')],dmg:[34,58],range:[150,165],rate:[2.4,2.2],splash:[45,52],col:'#6b4a2a',desc:tr('Pedras com dano em área.','Stones with area damage.'),
     br:[{name:tr('Pedras em chamas','Flaming stones'),desc:tr('Área que arde','Burning area'),dmg:86,range:180,rate:2.0,splash:62,burn:{dps:10,t:3}},
         {name:tr('Longo alcance','Long range'),desc:tr('Acerta em meio mapa','Hits half the map'),dmg:102,range:245,rate:2.1,splash:50}]},
-  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'cauldron',cost:80,up:[80,130,190,360],L5:[tr('Queima 60% mais','Burns 60% more'),tr('Abranda ainda mais e chega mais longe','Slows even more and reaches further')],dmg:[6,10],range:[70,78],rate:[0.9,0.85],slow:[0.7,0.65],col:'#9b2226',desc:tr('Queima e abranda.','Burns and slows.'),
-    br:[{name:tr('Azeite fervente','Scalding oil'),desc:tr('Queima muito mais','Burns much more'),dmg:26,range:86,rate:0.8,slow:0.6},
-        {name:tr('Pez pegajoso','Sticky pitch'),desc:tr('Abranda muito mais','Slows them much more'),dmg:12,range:96,rate:0.8,slow:0.45}]}
+  cal:{name:tr('Azeite a ferver','Boiling oil'),icon:'cauldron',cost:80,up:[80,130,190,360],L5:[tr('Queima 60% mais','Burns 60% more'),tr('Abranda ainda mais e chega mais longe','Slows even more and reaches further')],dmg:[8,13],range:[70,78],rate:[0.9,0.85],slow:[0.7,0.65],col:'#9b2226',desc:tr('Queima e abranda. Ignora a armadura.','Burns and slows. Ignores armour.'),
+    br:[{name:tr('Azeite fervente','Scalding oil'),desc:tr('Queima muito mais','Burns much more'),dmg:34,range:86,rate:0.8,slow:0.6},
+        {name:tr('Pez pegajoso','Sticky pitch'),desc:tr('Abranda muito mais','Slows them much more'),dmg:16,range:96,rate:0.8,slow:0.45}]}
 };
 const FOES={
   peao:{name:tr('Peão','Footman'),hp:38,spd:42,armor:0,gold:4,r:7,col:'#b8302a',leak:1},
@@ -1766,8 +1766,8 @@ function update(dt){
     t.cd-=dt;if(t.cd>0)continue;const st=tstat(t);
     if(t.k==='cal'){
       let any=false;
-      // as lendas só sentem metade do abrandamento
-      for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&!(e.hidden&&!S.mods.sight)&&Math.hypot(e.x-t.x,e.y-t.y)<=st.range){any=true;hurt(e,st.dmg,false,t,true);if(!e.f.noslow){e.slowT=1;e.slowF=Math.min(e.slowF,e.f.boss?1-(1-st.slow)/2:st.slow);}}}
+      // o azeite entra pela armadura (senão cada pingo perdia quase tudo); as lendas só sentem metade do abrandamento
+      for(const e of S.enemies){if(!e.dead&&!e.f.fly&&!e.under&&!(e.hidden&&!S.mods.sight)&&Math.hypot(e.x-t.x,e.y-t.y)<=st.range){any=true;hurt(e,st.dmg,true,t,true);if(!e.f.noslow){e.slowT=1;e.slowF=Math.min(e.slowF,e.f.boss?1-(1-st.slow)/2:st.slow);}}}
       if(any){t.cd=st.rate;S.fx.push({k:'oil',x:t.x,y:t.y,r:st.range,t:0,T:0.7});sfx('oil');}
       continue;
     }
