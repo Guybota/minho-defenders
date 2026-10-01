@@ -134,7 +134,10 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .hint+.hint{margin-top:.35rem;font-style:normal}
 .ph{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem}
 .ph b{font-family:'IM Fell English SC',Georgia,serif;font-weight:400;font-size:1.05rem}
+.ph b{margin-right:auto}
 .ph button{min-height:32px;width:32px;padding:0;border-radius:50%}
+/* painel da heroína minimizado: fica só o cabeçalho, para se ver o mapa e escolher onde a pôr */
+#panel.min>:not(.ph){display:none}#panel.min .ph{margin-bottom:0}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
 .build{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem .4rem;line-height:1.15;border-radius:6px;box-shadow:0 2px 0 var(--shadow)}
 .build .ic{font-size:1.55rem}
@@ -340,11 +343,12 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 #bWave:not(:disabled):active{transform:translateX(-50%) translateY(1px) scale(.97)}
 #bWave:disabled{background:var(--glass);opacity:0;pointer-events:none}/* durante a vaga o botão sai do caminho */
 #abil{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .6rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 72px);top:auto;transform:none;
-  flex-direction:column-reverse;align-items:center;gap:.5rem;padding:0;border:0;background:none;box-shadow:none;transition:opacity .25s;pointer-events:none}
+  flex-direction:column-reverse;align-items:center;gap:.5rem;padding:0;border:0;background:none;box-shadow:none;transition:opacity .25s;pointer-events:none;
+  flex-wrap:wrap;justify-content:flex-start;align-content:flex-start;max-height:calc(100vh - 9rem);max-height:calc(100dvh - 9rem)}/* telemóvel deitado: o que não cabe em altura passa para outra coluna */
 #abil .ab{transition:opacity .22s ease,transform .28s cubic-bezier(.2,1.3,.4,1),border-color .15s,background-color .15s}
 #abil:not(.open) .ab{opacity:0;transform:translateY(30px) scale(.5);pointer-events:none}
 #abil.open .ab{pointer-events:auto}
-#abil.open .ab:nth-child(2){transition-delay:.04s}#abil.open .ab:nth-child(3){transition-delay:.08s}#abil.open .ab:nth-child(4){transition-delay:.12s}
+#abil.open .ab:nth-child(2){transition-delay:.04s}#abil.open .ab:nth-child(3){transition-delay:.08s}#abil.open .ab:nth-child(4){transition-delay:.12s}#abil.open .ab:nth-child(5){transition-delay:.16s}
 #abilT{position:fixed;z-index:6;left:calc(env(safe-area-inset-left,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);width:64px;height:64px;min-height:0;padding:0;border-radius:50%;
   background:var(--bg);background:var(--glass);border:2px solid var(--line);box-shadow:0 4px 12px var(--shadow);transition:opacity .25s,transform .2s,border-color .15s}
 #abilT .ai{font-size:1.9rem;line-height:1;display:inline-block;transition:transform .3s cubic-bezier(.2,1.3,.4,1)}
@@ -355,6 +359,9 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 .ab .ai{font-size:1.55rem}
 .ab .an{font-size:.58rem;letter-spacing:.02em}
 .ab em{top:4px;right:50%;transform:translateX(50%);font-weight:700;color:var(--red)}
+/* reparar tudo: o custo total numa etiqueta por cima do martelo */
+.ab[data-ab="fix"] em{top:2px;padding:0 .3rem;border-radius:8px;background:var(--bg);color:var(--red);text-shadow:none;line-height:1.25}
+.ab[data-ab="fix"] em:empty{display:none}
 #zoomb{left:auto;right:calc(env(safe-area-inset-right,0px) + .5rem);top:50%;transform:translateY(-50%)}
 #zoomb button{background:var(--bg);background:var(--glass)}
 #panel{z-index:7}
@@ -449,6 +456,7 @@ html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition
   <button class="ab" data-ab="gate"><span class="ai" data-ic="gate"></span><span class="an">Portas</span><em></em><i></i></button>
   <button class="ab" data-ab="bell"><span class="ai" data-ic="bell"></span><span class="an">Sino</span><em></em><i></i></button>
   <button class="ab" data-ab="hero"><span class="ai" id="heroIc" data-ic="baguette"></span><span class="an" id="heroNm">Heroína</span><em></em><i></i></button>
+  <button class="ab" data-ab="fix"><span class="ai" data-ic="hammer"></span><span class="an">Reparar</span><em></em><i></i></button>
 </nav>
 <button id="sendT" aria-label="Mandar tropas" aria-expanded="false" aria-controls="send"><span class="ai" data-ic="helmet"></span><b class="dot" hidden></b></button>
 <nav id="send" aria-label="Mandar tropas"></nav>
@@ -1488,6 +1496,10 @@ function breakTower(t){t.broken=true;t.hp=0;t.deaths=(t.deaths||0)+1;t.lv=Math.m
   S.texts.push({x:t.x,y:t.y-30,s:pick([tr('Deitaram-nos a torre abaixo!','They knocked our tower down!'),tr('Lá se foi a torre!','There goes the tower!'),tr('Chamem o pedreiro!','Call the stonemason!')]),t:0,T:2,big:true});
   NET.twDirty=true;if(typeof S.sel==='number'&&SLOTS[S.sel].tower===t)renderPanel();}
 // reparada (ou melhorada): vida cheia e de volta ao combate
+// torres por reparar (no mesmo ecrã cada jogador repara as suas) e o custo de as reparar todas de uma vez
+const fixList=who=>S.towers.filter(t=>t.broken&&!(t.fixT>0)&&(!S.local||(t.owner||1)===who));
+const fixSum=who=>fixList(who).reduce((c,t)=>c+fixCost(t),0);
+function startFix(t){t.fixD=t.fixT=fixDur(t);chips(t.x,t.y,6,'#c9971c',0.6);S.texts.push({x:t.x,y:t.y-28,s:tr('Mãos à obra!','Get to work!'),ic:'hammer',t:0,T:1.3});}
 function fixTower(t){t.broken=false;t.fixT=0;t.fixD=0;t.hp=towerMax(t);t.upAt=performance.now();NET.twDirty=true;}
 /* ================= Portas ================= */
 // atirador com uma porta fechada ao alcance (ao longo do caminho): fica parado a disparar; devolve se está a disparar
@@ -3418,8 +3430,8 @@ function doAct(a,who){
       if(Math.random()<0.6){const q=pick(Q.build);S.texts.push({x:s.x,y:s.y-26,s:q,t:0,T:1.6,sp:true});say(q,'pt-PT');}break;}
     case'up':{const t=s&&s.tower;if(!t||t.broken||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);break;}
     case'br':{const t=s&&s.tower;if(!t||t.broken||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
-    case'fix':{const t=s&&s.tower;if(!t||!t.broken||t.fixT>0||!pay(who,fixCost(t)))return;t.fixD=t.fixT=fixDur(t);sfx('coin');chips(t.x,t.y,6,'#c9971c',0.6);
-      S.texts.push({x:t.x,y:t.y-28,s:tr('Mãos à obra!','Get to work!'),ic:'hammer',t:0,T:1.3});if(S.sel===a.i)renderPanel();break;}
+    case'fix':{const t=s&&s.tower;if(!t||!t.broken||t.fixT>0||!pay(who,fixCost(t)))return;startFix(t);sfx('coin');if(S.sel===a.i)renderPanel();break;}
+    case'fixAll':{const ts=fixList(who);if(!ts.length||!pay(who,fixSum(who)))return;ts.forEach(startFix);sfx('coin');if(typeof S.sel==='number')renderPanel();break;}
     case'pri':{const t=s&&s.tower;if(!t)return;const ks=Object.keys(PRI);t.pri=ks[(ks.indexOf(t.pri)+1)%ks.length];break;}
     case'sell':{const t=s&&s.tower;if(!t||(t.owner||1)!==who)return;const g=Math.floor(t.spent*0.7);if(who===2)S.gold2+=g;else S.gold+=g;
       S.towers=S.towers.filter(x=>x!==t);s.tower=null;break;}
@@ -3491,7 +3503,9 @@ function hud(){
   else{lab=tr('Última vaga…','Last wave…');dis=true;}
   if(last.bWaveT!==lab){last.bWaveT=lab;$('bWaveT').innerHTML=(lab.endsWith('\u00a4')?lab.slice(0,-1)+' '+ic('coin'):(!S.started||S.wave===0)&&!S.over?ic('swords')+' '+lab:lab);}setW('bWaveF',fill);if(b.disabled!==dis)b.disabled=dis;
   const pulse=!dis&&(S.wave===0||(S.nextT!=null&&S.nextT<6));if(b.classList.contains('pulse')!==pulse)b.classList.toggle('pulse',pulse);
-  document.querySelectorAll('.ab').forEach(el=>{const k=el.dataset.ab,cd=k==='hero'?S.cd.hero:S.cd[k],max=k==='hero'?heroSpCd(S.hero):ABIL[k].cd*S.mods.cd;
+  document.querySelectorAll('.ab').forEach(el=>{const k=el.dataset.ab;
+    if(k==='fix'){const c=fixSum(S.me||1),off=!c||myGold()<c,em=el.querySelector('em'),v=c?String(c):'';if(em.textContent!==v)em.textContent=v;if(el.classList.contains('cd')!==off)el.classList.toggle('cd',off);return;}
+    const cd=k==='hero'?S.cd.hero:S.cd[k],max=k==='hero'?heroSpCd(S.hero):ABIL[k].cd*S.mods.cd;
     const pct=Math.round(Math.min(1,cd/max)*100)+'%';const i=el.lastChild;if(i.style.height!==pct)i.style.height=pct;
     const sec=cd>0?String(Math.ceil(cd)):'',em=el.querySelector('em');if(em.textContent!==sec)em.textContent=sec;
     const on=cd>0||(k!=='hero'&&S.wave<1);if(el.classList.contains('cd')!==on){el.classList.toggle('cd',on);if(!on&&S.started)pop(el,'ready');}
@@ -3504,7 +3518,7 @@ function hud(){
   if(mg!==lastGold||(S.sel==='hero'&&now-lastPanelTick>250)){lastGold=mg;lastPanelTick=now;if(S.sel!=null)refreshPanel();}
 }
 const PRI={primeiro:tr('Primeiro','First'),forte:tr('Mais forte','Strongest'),rapido:tr('Mais rápido','Fastest'),perto:tr('Mais perto','Closest')};
-let panelSel;
+let panelSel,heroMin=!!LS.get('hmin',false);
 // atualiza o painel sem o reconstruir: estado dos botões (ouro) e números da heroína
 const heroXpF=h=>h.lv>=HERO_MAX?1:S.remote?(h.xpP||0)/100:Math.min(1,h.xp/xpNeed(h.lv));
 const heroXpTxt=h=>h.lv>=HERO_MAX?tr('Nível máximo','Max level'):tr('Experiência','Experience')+' '+Math.floor(heroXpF(h)*100)+'%';
@@ -3524,7 +3538,7 @@ function refreshPanel(){
 }
 function renderPanel(){
   const p=$('panel');if(!S||S.sel==null||(typeof S.sel==='number'&&!SLOTS[S.sel].tower)){p.classList.remove('open');document.body.classList.remove('panel-open');panelSel='none';return;}
-  p.classList.add('open');document.body.classList.add('panel-open');
+  p.classList.add('open');document.body.classList.add('panel-open');p.classList.toggle('min',S.sel==='hero'&&heroMin);
   // a folha do painel só "entra" quando a seleção muda (não a cada moeda ganha)
   const key=S.sel==null?'none':S.sel==='hero'||S.sel==='works'?S.sel:S.sel+':'+(SLOTS[S.sel].tower?SLOTS[S.sel].tower.lv:0);
   if(key!==panelSel){panelSel=key;pop(p,'in');}
@@ -3540,7 +3554,7 @@ function renderPanel(){
     const got=(h.ups||[]).map((b,i)=>h.D.ups[i]&&h.D.ups[i][b]?`<span title="${h.D.ups[i][b].desc}">${ic('star')} ${h.D.ups[i][b].name}</span>`:'').join('');
     const choose=pend>0&&h.D.ups[ti]?`<p class="hint" style="flex:1 1 100%">${ic('star')} ${tr('Melhoria do nível','Level')} ${HERO_TIERS[ti]}${tr(': escolhe uma',' upgrade: pick one')}</p>`+
       h.D.ups[ti].map((U,b)=>`<button class="main br" data-a="hup" data-b="${b}">${U.name}<small>${U.desc}</small></button>`).join(''):'';
-    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}/${HERO_MAX}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
+    p.innerHTML=`<div class="ph"><b>${ic(h.D.icon)} ${h.D.name} · ${tr('nível','level')} ${h.lv}/${HERO_MAX}${heroMin&&pend>0?' '+ic('star'):''}</b><button data-a="min" aria-expanded="${!heroMin}" aria-label="${heroMin?tr('Abrir painel','Expand panel'):tr('Minimizar painel','Minimise panel')}">${ic(heroMin?'zin':'zout')}</button><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
       <div class="tinfo"><span>${ic('star')} <span data-h="xp">${heroXpTxt(h)}</span></span>${got}</div>${h.D.pass?`<p class="hint">${h.D.pass}</p>`:''}
       ${choose?`<div class="acts">${choose}</div>`:''}
       <div class="tinfo"><span>${ic('heart')} <span data-h="hp">${Math.max(0,Math.round(h.hp/h.max*100))}%</span></span><span>${ic('swords')} <span data-h="k">${h.kills} ${tr('derrotados','defeated')}</span></span><span data-h="st"${h.dead?' class="warn"':''}>${h.dead?tr('A recuperar…','Recovering…'):tr('Toca no mapa para a mover','Tap the map to move her')}</span></div>
@@ -3577,6 +3591,7 @@ $('panel').addEventListener('click',ev=>{
   const b=ev.target.closest('button');if(!b||b.disabled||!S)return;
   const a=b.dataset.a,i=typeof S.sel==='number'?S.sel:null;
   if(a==='close'){S.sel=null;renderPanel();return;}
+  if(a==='min'){heroMin=!heroMin;LS.set('hmin',heroMin);renderPanel();return;}
   if(a==='special')return act({a:'heroSp'});
   if(a==='hup')return act({a:'heroUp',b:+b.dataset.b});
   if(a==='hbuy')return act({a:'heroBuy',b:b.dataset.b});
@@ -3595,6 +3610,7 @@ $('abilT').addEventListener('click',()=>{audio();setAbilOpen(!$('abil').classLis
 setAbilOpen(!!LS.get('abil',false));
 document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
   if(!S||!S.started||S.over)return;audio();const k=el.dataset.ab;
+  if(k==='fix'){const c=fixSum(S.me||1);if(!c)return toast(tr('Não há torres por reparar.','No towers need repairing.'));if(myGold()<c)return toast(tr('Reparar tudo custa '+c+' de ouro.','Repairing everything costs '+c+' gold.'));return act({a:'fixAll'});}
   if(k!=='hero'&&S.wave<1)return toast(tr('Os poderes só se podem usar depois de começar a primeira vaga.','Powers can only be used once the first wave has started.'));
   if(k==='hero'){S.sel=S.sel==='hero'?null:'hero';S.aim=null;renderPanel();}
   else if(k==='rain'){if(S.cd.rain>0)return;S.aim=S.aim==='rain'?null:'rain';S.sel=null;renderPanel();}
@@ -4653,7 +4669,7 @@ function applyStaticLang(){
   A('.wxs','title','Weather');A('#gold2w','title','Partner’s gold');A('#stLives','title','Fortress lives');
   T('#bWaveT','Call wave');T('#pausedTxt','Paused');A('#bSpeed','aria-label','Speed');A('#bPause','aria-label','Pause');A('#bSound','aria-label','Sound');
   A('#zoomb [data-z="in"]','aria-label','Zoom in');A('#zoomb [data-z="out"]','aria-label','Zoom out');A('#zoomb [data-z="reset"]','aria-label','Show whole map');
-  T('[data-ab="rain"] .an','Arrows');T('[data-ab="gate"] .an','Gates');T('[data-ab="bell"] .an','Bell');T('#heroNm','Heroine');A('#cardsHud','title','Blessings & pacts');A('#abil','aria-label','Powers');A('#abilT','aria-label','Powers');
+  T('[data-ab="rain"] .an','Arrows');T('[data-ab="gate"] .an','Gates');T('[data-ab="bell"] .an','Bell');T('[data-ab="fix"] .an','Repair');T('#heroNm','Heroine');A('#cardsHud','title','Blessings & pacts');A('#abil','aria-label','Powers');A('#abilT','aria-label','Powers');
 }
 applyStaticLang();
 new ResizeObserver(resize).observe($('stage'));
