@@ -42,7 +42,7 @@ function PAGE(){
   hitHeart=n=>{const e=S.enemies.find(e=>e.dead&&!e.seen&&e.d>=PATHS[e.p].len);if(e){e.seen=1;leakT[e.t]=(leakT[e.t]||0)+n;leakP[e.p]=(leakP[e.p]||0)+n;}hh(n);};
   breakTower=t=>{brokeS[t.si]=(brokeS[t.si]||0)+1;bt(t);};
   // onde morre quem vem por cada estrada (sem contar as lendas): fração do caminho, se chegou à primeira porta e quem o matou
-  let dth=[];const kl=kill;kill=(e,src)=>{if(!e.dead&&!e.f.boss){const o=dth[e.p]||(dth[e.p]={n:0,pr:0,gate:0,by:{}}),g=LV.pathGates[e.p][0];o.n++;o.pr+=e.d/PATHS[e.p].len;if(g&&e.d>=g.d-40)o.gate++;
+  let dth=[];const kl=kill;kill=(e,src)=>{if(!e.dead&&!e.f.boss){const o=dth[e.p]||(dth[e.p]={n:0,pr:0,gate:0,by:{},gt:{},nt:{}}),g=LV.pathGates[e.p][0];o.n++;o.pr+=e.d/PATHS[e.p].len;if(g&&e.d>=g.d-40){o.gate++;o.gt[e.t]=(o.gt[e.t]||0)+1;}o.nt[e.t]=(o.nt[e.t]||0)+1;
     const k=src&&TYPES[src.k]?src.k:src===S.hero?'heroína':'outro';o.by[k]=(o.by[k]||0)+1;}kl(e,src);};
   const KS=Object.keys(TYPES),hyp=Math.hypot;
 
@@ -221,7 +221,10 @@ function report(R){
       // por estrada (sem as lendas): quantos morrem, a que altura do caminho, quantos chegam à primeira porta e quem os mata
       for(let p=0;p<3;p++){const D=g.map(r=>r.dth[p]).filter(Boolean),n=D.reduce((a,o)=>a+o.n,0);if(!n)continue;const by={};D.forEach(o=>Object.entries(o.by).forEach(([k,v])=>by[k]=(by[k]||0)+v));
         console.log('     estrada '+p+': '+(n/g.length).toFixed(0)+' abates, morrem a '+(D.reduce((a,o)=>a+o.pr,0)/n*100).toFixed(0)+'% do caminho, '+(D.reduce((a,o)=>a+o.gate,0)/n*100).toFixed(0)+'% chegam à porta | quem mata: '
-          +Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' '+Math.round(v/n*100)+'%').join(', '));}}}
+          +Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' '+Math.round(v/n*100)+'%').join(', '));
+        // quem chega à porta: por tipo, quantos por partida e que parte dos desse tipo
+        const gt={},nt={};D.forEach(o=>{Object.entries(o.gt).forEach(([k,v])=>gt[k]=(gt[k]||0)+v);Object.entries(o.nt).forEach(([k,v])=>nt[k]=(nt[k]||0)+v);});
+        if(Object.keys(gt).length)console.log('       chegam à porta: '+Object.entries(gt).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' '+(v/g.length).toFixed(1)+' ('+Math.round(v/nt[k]*100)+'%)').join(', '));}}}
 }
 (async()=>{
   if(A.geo){const {br,page}=await open();
