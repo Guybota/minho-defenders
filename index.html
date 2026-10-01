@@ -478,7 +478,7 @@ const W=600,MAXW=20;let H=900;// no duelo o mundo é mais alto (duas praças, um
 // margens do mundo à volta do mapa para o canvas ocupar o espaço todo (atualizadas no resize)
 let MX=0,MY=0;
 const $=id=>document.getElementById(id);
-const cv=$('c'),ctx=cv.getContext('2d');
+const cv=$('c');let ctx=cv.getContext('2d');// let: os retratos da lista de inimigos trocam-no por um instante
 const bgc=document.createElement('canvas'),bctx=bgc.getContext('2d');
 const ovc=document.createElement('canvas'),octx=ovc.getContext('2d');
 let scale=1,dpr=1;
@@ -3119,7 +3119,7 @@ function drawBoss(e){
     if(moving&&Math.random()<0.25)S.parts.push({k:'smoke',x:e.x-fx*e.r*0.6,y:e.y+e.r*0.8,vx:-fx*12,vy:-8,r:2+Math.random()*2,t:0,T:0.6});
   }
   c.restore();
-  if(e.hero)return;
+  if(e.hero||e.port)return;// herói ou retrato (lista de inimigos): sem nome por baixo
   label(ctx,e.f.name,e.x,e.y+e.r*1.4+8,11,true,'#7b0f0f');
   if(e.stunT>0){ctx.fillStyle='#e8c24a';for(let k=0;k<3;k++){const a=S.t*6+k*2.1;ctx.beginPath();ctx.arc(e.x+Math.cos(a)*8,e.y-e.r*1.6+Math.sin(a)*2.5,1.8,0,Math.PI*2);ctx.fill();}}
 }
@@ -4589,11 +4589,18 @@ function showFoes(back){
   // vida e passo como entram em campo (mkFoe) na vaga 1, em Castelhano
   showModal(`<h2>${tr('Inimigos','Enemies')}</h2><p class="small">${tr('Vida na vaga 1 em Castelhano: cresce a cada vaga, e é ×0,75 em Turista e ×1,35 em Capitão Paco. A armadura desconta-se a cada golpe (os besteiros ignoram-na).','Health at wave 1 on Castilian: it grows every wave, and is ×0.75 on Tourist and ×1.35 on Captain Paco. Armour is taken off every hit (crossbowmen ignore it).')}</p>`+
     Object.keys(FOE_INFO).map(k=>{const f=FOES[k],[w,d]=FOE_INFO[k],r=f.ranged;
-      return `<div class="ach"><span class="ai" style="flex:none"><i style="display:inline-block;width:1rem;height:1rem;border-radius:50%;background:${f.col};border:1.5px solid #2e2419"></i></span><span><b>${f.name} <small>· ${w}</small></b>
+      return `<div class="ach"><canvas data-f="${k}" width="168" height="168" style="flex:none;width:3.5rem;height:3.5rem" aria-hidden="true"></canvas><span><b>${ic(E_IC[k]||'dagger')} ${f.name} <small>· ${w}</small></b>
         ${tr('Vida','Health')} ${Math.round(f.hp*0.96)} · ${tr('Velocidade','Speed')} ${Math.round(f.spd*0.9)} · ${tr('Armadura','Armour')} ${f.armor} · ${tr('Ouro','Gold')} ${f.gold} · ${tr('Tira','Takes')} ${f.leak} ${tr(f.leak===1?'vida':'vidas',f.leak===1?'life':'lives')}${
         r?` · ${tr('Tiro','Shot')} ${r.dmg} ${tr('a cada','every')} ${r.rate} s, ${tr('alcance','range')} ${r.range}`:''}<small style="display:block">${d}</small></span></div>`;}).join('')+
     `<p class="small">${ic('crown')} ${tr('Elites (a partir da vaga 15, contorno dourado): vida ×1,8, +2 de armadura e o dobro do ouro. Também a partir da vaga 15, todos ganham +15% de vida e +12% de dano a cada 2 vagas.','Elites (from wave 15, gold outline): health ×1.8, +2 armour and double gold. Also from wave 15, everyone gains +15% health and +12% damage every 2 waves.')}</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
+  // retratos: os desenhos do jogo (parados) num canvas por linha; ctx e S são emprestados só enquanto se pinta
+  const c0=ctx,s0=S;S=S||{t:0,gates:[]};
+  try{$('mcard').querySelectorAll('canvas[data-f]').forEach(cn=>{const k=cn.dataset.f,f=FOES[k],z=3*Math.min(2.3,(f.boss?11:k==='torre'||k==='band'||k==='gait'?14:15.5)/f.r);
+    const e={id:1,port:1,t:k,f,hp:1,max:1,r:f.r,col:f.col,a:0,cur:0,stunT:0,blocked:false,hidden:k==='pereg'?1:0,bcd:0,x:28*3/z,y:(k==='ari'||k==='bomb'?28:k==='torre'?38:33)*3/z};
+    ctx=cn.getContext('2d');ctx.scale(z,z);
+    if(f.boss)drawBoss(e);else if(k==='bomb')drawBombard(e);else if(k==='ari')drawRam(e);else if(k==='torre')drawSiege(e);else drawChibi(e,false);});}
+  finally{ctx=c0;S=s0;}
 }
 function showAch(back){
   const n=ACH.filter(a=>achDone[a.id]).length;
