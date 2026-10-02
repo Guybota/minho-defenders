@@ -3819,14 +3819,16 @@ function drawFlag(x,y,seed){
 // posições (0..1) das praças no mapa, usadas para "mergulhar" na praça escolhida ao entrar no jogo
 const MBG_XY={melgaco:[1440,425],moncao:[1030,485],valenca:[690,555],cerveira:[465,650],ancora:[215,810]};
 const MBG={on:false,t:null,img:{}};
-// área visível do mapa do menu: em paisagem é o mapa 1600×1000 (cortado para encher); em retrato estica-se na vertical
+// área visível do mapa do menu: tem sempre a proporção do ecrã e contém o mapa 1600×1000 inteiro (nada é cortado).
+// Em paisagem larga ganha mar à esquerda e um pouco de terra à direita; mais quadrada ganha Galiza e Portugal; em retrato estica-se na vertical
 // (mais Galiza em cima e bem mais Portugal em baixo) para o mapa encher o ecrã sem faixas vazias
-function menuVB(vw,vh){const ar=vw/vh;if(ar>=1.25)return{x:0,y:0,w:1600,h:1000,fs:1,port:false};
+function menuVB(vw,vh){const ar=vw/vh;if(ar>=1.6){const w=1000*ar,e=w-1600,r=Math.min(e/2,100);return{x:r-e,y:0,w,h:1000,fs:1,port:false};}
+  if(ar>=1.25){const h=1600/ar;return{x:0,y:(1000-h)/2,w:1600,h,fs:1,port:false};}
   // o centro desce: o rio e as vilas ficam no terço de cima, por cima do painel do menu (que em retrato encosta ao fundo)
   const w=ar<0.9?1560:1600,h=w/ar;return{x:0,y:540+h*0.3-h/2,w,h,fs:ar<0.9?1.65:1.25,port:true};}
 function menuSvg(V){
   // rio: linha central suavizada (Catmull-Rom) e margens que alargam de nascente até à foz, onde entra no oceano
-  const RC=[[1660,330],[1560,352],[1480,378],[1390,396],[1280,412],[1160,428],[1040,448],[930,468],[820,495],[700,520],[610,548],[530,578],[450,612],[370,635],[290,648],[210,655],[120,660],[40,665]];
+  const RC=[[1780,305],[1660,330],[1560,352],[1480,378],[1390,396],[1280,412],[1160,428],[1040,448],[930,468],[820,495],[700,520],[610,548],[530,578],[450,612],[370,635],[290,648],[210,655],[120,660],[40,665]];
   const smooth=(P,n)=>{const o=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
     for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;o.push([0,1].map(j=>0.5*(2*p1[j]+(-p0[j]+p2[j])*t+(2*p0[j]-5*p1[j]+4*p2[j]-p3[j])*t2+(-p0[j]+3*p1[j]-3*p2[j]+p3[j])*t3)));}}
     o.push(P[P.length-1]);return o;};
@@ -3877,8 +3879,9 @@ function menuSvg(V){
   // rotas de ataque: saem da vila galega, atravessam o rio e acabam (com seta) à porta da praça portuguesa
   const route=d=>`<path class="route" d="${d}" fill="none" stroke="#9b2226" stroke-width="3" opacity=".8" marker-end="url(#arr)"/>`;
   const nw=Math.ceil((Y1-Y0-120)/62);
-  const waves=Array.from({length:nw},(_,i)=>`<path class="wave" d="M${10+(i%2)*30},${Y0+120+i*62} q20,-8 40,0 t40,0 t40,0" fill="none" stroke="#4f6a73" stroke-width="2" opacity=".5"/>`).join('');
-  const dots=Array.from({length:Math.round(260*(Y1-Y0)/1000)},(_,i)=>{const x=(i*397)%1600,y=Y0+(i*613)%(Y1-Y0);return `<rect x="${x}" y="${y}" width="2" height="2" fill="#78603c" opacity=".12"/>`;}).join('');
+  const wcol=[];for(let x=10;x>V.x+10;x-=165)wcol.push(x);// mar mais largo leva mais colunas de ondas
+  const waves=wcol.map((x0,c)=>Array.from({length:nw},(_,i)=>`<path class="wave" d="M${x0+((i+c)%2)*30},${Y0+120+i*62} q20,-8 40,0 t40,0 t40,0" fill="none" stroke="#4f6a73" stroke-width="2" opacity=".5"/>`).join('')).join('');
+  const dots=Array.from({length:Math.round(260*(Y1-Y0)/1000)},(_,i)=>{const x=V.x+(i*397)%V.w,y=Y0+(i*613)%(Y1-Y0);return `<rect x="${x}" y="${y}" width="2" height="2" fill="#78603c" opacity=".12"/>`;}).join('');
   const title=(y,a,b)=>V.port?`<text x="${V.x+V.w/2+80}" y="${y}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" fill="#6b5a42" opacity=".85"><tspan font-size="84" letter-spacing="12">${a}</tspan><tspan x="${V.x+V.w/2+80}" dy="62" font-size="42" letter-spacing="8">${b}</tspan></text>`
     :`<text x="930" y="${y}" text-anchor="middle" font-family="IM Fell English SC,Georgia,serif" font-size="46" letter-spacing="10" fill="#6b5a42" opacity=".85">${a} · ${b}</text>`;
   return `<svg viewBox="${V.x} ${V.y} ${V.w} ${V.h}" preserveAspectRatio="xMidYMid ${V.port?'meet':'slice'}" xmlns="http://www.w3.org/2000/svg">
@@ -3889,7 +3892,7 @@ function menuSvg(V){
   <path d="${riverShape}" fill="#8fa7ad"/>
   <path d="${bankPath(bankL)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
   <path d="${bankPath(bankR)}" fill="none" stroke="#4f6a73" stroke-width="3" stroke-linejoin="round"/>
-  <path d="${coast} L-40,${Y1} L-40,${Y0}Z" fill="#8fa7ad"/>
+  <path d="${coast} L${V.x-40},${Y1} L${V.x-40},${Y0}Z" fill="#8fa7ad"/>
   <path d="${coast}" fill="none" stroke="#4f6a73" stroke-width="3"/>
   <ellipse cx="160" cy="642" rx="16" ry="40" fill="#8fa7ad"/>
   ${ripples}
