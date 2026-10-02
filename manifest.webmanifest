@@ -1,0 +1,9 @@
+{
+  "name": "Minho Defenders",
+  "short_name": "Minho",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#e6d8b6",
+  "theme_color": "#e6d8b6",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png" }]
+}
