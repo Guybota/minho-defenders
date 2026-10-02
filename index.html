@@ -3612,7 +3612,8 @@ function hud(){
   const pulse=!dis&&(S.wave===0||(S.nextT!=null&&S.nextT<6));if(b.classList.contains('pulse')!==pulse)b.classList.toggle('pulse',pulse);
   document.querySelectorAll('.ab').forEach(el=>{const k=el.dataset.ab;
     if(k==='fix'){const c=fixSum(S.me||1),off=!c||myGold()<c,em=el.querySelector('em'),v=c?String(c):'';if(em.textContent!==v)em.textContent=v;if(el.classList.contains('cd')!==off)el.classList.toggle('cd',off);return;}
-    const cd=k==='hero'?S.cd.hero:S.cd[k],max=k==='hero'?heroSpCd(S.hero):ABIL[k].cd*S.mods.cd;
+    // herói morto: o botão conta o tempo até renascer
+    const dead=k==='hero'&&S.hero.dead,cd=dead?S.hero.respawn:k==='hero'?S.cd.hero:S.cd[k],max=dead?(hUp(S.hero,'spFast')?6:12):k==='hero'?heroSpCd(S.hero):ABIL[k].cd*S.mods.cd;
     const pct=Math.round(Math.min(1,cd/max)*100)+'%';const i=el.lastChild;if(i.style.height!==pct)i.style.height=pct;
     const sec=cd>0?String(Math.ceil(cd)):'',em=el.querySelector('em');if(em.textContent!==sec)em.textContent=sec;
     const on=cd>0||(k!=='hero'&&S.wave<1);if(el.classList.contains('cd')!==on){el.classList.toggle('cd',on);if(!on&&S.started)pop(el,'ready');}
