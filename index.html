@@ -8,6 +8,9 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 64 64'><defs><path id='c' d='M-3.5 3.5V-3h1.8v2h.8V-4h1.8v3h.8v-2h1.8V3.5z' fill='%23e8c24a' stroke='%232e2419' stroke-width='.6'/><g id='q'><path d='M-4.5-5.5h9v6c0 3-2.5 4.5-4.5 5.5-2-1-4.5-2.5-4.5-5.5z' fill='%232f4a9e' stroke='%232e2419' stroke-width='.8'/><path d='M-2-3h.01M2-3h.01M0-1h.01M-2 1h.01M2 1h.01' stroke='%23f4efe2' stroke-width='1.6' stroke-linecap='round'/></g></defs><rect width='64' height='64' fill='%23b8302a'/><rect x='.75' y='.75' width='62.5' height='62.5' fill='none' stroke='%232e2419' stroke-width='1.5'/><rect x='11' y='11' width='42' height='42' fill='%23f4efe2' stroke='%232e2419' stroke-width='1.5'/><use xlink:href='%23c' x='6' y='6'/><use xlink:href='%23c' x='23' y='6'/><use xlink:href='%23c' x='41' y='6'/><use xlink:href='%23c' x='58' y='6'/><use xlink:href='%23c' x='6' y='58'/><use xlink:href='%23c' x='23' y='58'/><use xlink:href='%23c' x='41' y='58'/><use xlink:href='%23c' x='58' y='58'/><use xlink:href='%23c' x='6' y='23'/><use xlink:href='%23c' x='6' y='41'/><use xlink:href='%23c' x='58' y='23'/><use xlink:href='%23c' x='58' y='41'/><use xlink:href='%23q' x='32' y='20.5'/><use xlink:href='%23q' x='32' y='32'/><use xlink:href='%23q' x='32' y='43.5'/><use xlink:href='%23q' x='21.5' y='32'/><use xlink:href='%23q' x='42.5' y='32'/></svg>">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
+<!-- app instalada: o mapa vai até ao topo do ecrã, por baixo da barra de estado -->
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://cdn.jsdelivr.net/npm/sam-js@0.3.1/dist/samjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
@@ -17,8 +20,8 @@
   --red:#9b2226; --btn:#efe3c6; --btnink:#2e2419; --dis:#b9a987; --sel:#f7e7b8;
   --gold:#c9971c; --good:#6f9a3a; --shadow:rgba(46,36,25,.28);
   box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --sat:env(safe-area-inset-top,0px);
+
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -119,7 +122,7 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 @keyframes ready{0%{box-shadow:0 0 0 0 rgba(201,151,28,.8);border-color:var(--gold)}100%{box-shadow:0 0 0 10px rgba(201,151,28,0)}}
 
 /* ---------- Painel (torre, heroína, construir) ---------- */
-#panel{position:absolute;z-index:4;left:.4rem;right:.4rem;bottom:.4rem;max-height:62%;overflow:auto;background:var(--panel);
+#panel{position:absolute;z-index:4;left:.4rem;right:.4rem;bottom:calc(env(safe-area-inset-bottom,0px) + .4rem);max-height:62%;overflow:auto;background:var(--panel);
   border:1px solid var(--line);border-radius:14px;padding:1rem .65rem .7rem;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 3px var(--panel),inset 0 0 0 4px var(--line);
   transform:translateY(calc(100% + 1rem));opacity:0;visibility:hidden;pointer-events:none;
   transition:transform .32s cubic-bezier(.2,.9,.25,1.05),opacity .22s ease,visibility 0s linear .32s}
@@ -162,7 +165,7 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .coopbox input{font:inherit;flex:1;min-width:0;padding:.4rem .6rem;border:1px solid var(--line);border-radius:4px;background:var(--btn);color:var(--btnink);text-transform:uppercase;letter-spacing:.2em}
 
 /* ---------- Janelas ---------- */
-#modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(30,22,14,.62);padding:1rem;z-index:10;animation:fade .2s ease-out}
+#modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(30,22,14,.62);padding:calc(env(safe-area-inset-top,0px) + 1rem) 1rem calc(env(safe-area-inset-bottom,0px) + 1rem);z-index:10;animation:fade .2s ease-out}
 #modal[hidden]{display:none}
 @keyframes fade{from{opacity:0}}
 .card{position:relative;background:var(--bg);color:var(--ink);border:1px solid var(--line);max-width:32rem;width:100%;padding:1.2rem 1.3rem;border-radius:6px;
@@ -382,7 +385,7 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
 @media (orientation:portrait),(max-width:699px){body.panel-open #pausedTag{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem)}}
 @media (orientation:landscape) and (min-width:700px){
   /* o painel lateral tem a altura do conteúdo (antes esticava até ao fundo e ficava meio vazio) */
-  #panel{top:4.2rem;bottom:auto;right:.6rem;max-height:calc(100% - 4.8rem)}
+  #panel{top:calc(env(safe-area-inset-top,0px) + 4.2rem);bottom:auto;right:.6rem;max-height:calc(100% - 4.8rem - env(safe-area-inset-top,0px))}
   body.panel-open #zoomb{opacity:0;pointer-events:none}
 }
 @media (orientation:portrait),(max-width:699px){
@@ -481,6 +484,8 @@ html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition
 const W=600,MAXW=20;let H=900;// no duelo o mundo é mais alto (duas praças, uma de cada lado do rio)
 // margens do mundo à volta do mapa para o canvas ocupar o espaço todo (atualizadas no resize)
 let MX=0,MY=0;
+// limites do fundo desenhado: o ecrã sem zoom (W+2MX por H+2MY) mais a folga por onde se pode arrastar o mapa (ver resize)
+let EX0=0,EX1=W,EY0=0,EY1=900;
 const $=id=>document.getElementById(id);
 const cv=$('c');let ctx=cv.getContext('2d');// let: os retratos da lista de inimigos trocam-no por um instante
 const bgc=document.createElement('canvas'),bctx=bgc.getContext('2d');
@@ -1953,7 +1958,7 @@ function rock(c,x,y,k,r){c.fillStyle='#b3aa94';c.strokeStyle='#5a5240';c.lineWid
 function decoOK(x,y,rad,labs){
   if(nearWater(x,y,10+rad)||(LV.southRiver&&y>782-rad))return false;
   if(DUEL&&sideAt(x,y)!==LV.side)return false;
-  if(x<-MX+14+rad||x>W+MX-14-rad||y<-MY+14+rad||y>H+MY-14-rad)return false;
+  if(x<EX0+14+rad||x>EX1-14-rad||y<EY0+14+rad||y>EY1-14-rad)return false;
   if(dPath(x,y)<16+rad||inPoly(x,y,LV.wall)||dPoly(x,y,LV.wall)<(LV.style==='bastion'?38:24)+rad)return false;
   if(SLOTS.some(s=>Math.hypot(s.x-x,s.y-y)<22+rad)||LV.marks.some(m=>Math.hypot(m.x-x,m.y-y)<Math.max(m.w,m.h)+rad+6))return false;
   if(Math.hypot(x-540,y-845)<50+rad)return false;
@@ -2068,14 +2073,14 @@ function drawFields(c,r,n){
 function drawBG(){
   if(!LV||(DUEL&&DUEL.init))return;
   if(offSide())return withSide(DUEL.me,drawBG);
-  bgc.width=Math.round(cv.width*BZ);bgc.height=Math.round(cv.height*BZ);
-  const kb=scale*dpr*BZ,c=bctx;c.setTransform(kb,0,0,kb,MX*kb,MY*kb);OCC=[];
+  const kb=scale*dpr*BZ,c=bctx;bgc.width=Math.round((EX1-EX0)*kb);bgc.height=Math.round((EY1-EY0)*kb);
+  c.setTransform(kb,0,0,kb,-EX0*kb,-EY0*kb);OCC=[];
   const r=rng(1640+LV.id.length*97+(DUEL?7:0)),r2=rng(77+LV.id.length*13);
-  const X0=-MX-12,X1=W+MX+12,Y0=-MY,Y1=H+MY;
+  const X0=EX0-12,X1=EX1+12,Y0=EY0,Y1=EY1;
   c.fillStyle='#e9dcbc';c.fillRect(X0,Y0,X1-X0,Y1-Y0);
   for(let i=0;i<900;i++){c.fillStyle=`rgba(120,95,60,${r()*0.06})`;c.fillRect(r()*W,r()*H,r()*3+1,r()*3+1);}
   // margens: continuação do terreno à volta do mapa
-  if(MX>1||MY>1){
+  {
     const area=(X1-X0)*(Y1-Y0)-W*H;
     for(let i=0;i<area/400;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(Y1-Y0);if(x>0&&x<W&&y>0&&y<H)continue;c.fillStyle=`rgba(120,95,60,${r2()*0.06})`;c.fillRect(x,y,r2()*3+1,r2()*3+1);}
     c.fillStyle='rgba(125,138,78,.14)';
@@ -2084,7 +2089,7 @@ function drawBG(){
   c.fillStyle='rgba(125,138,78,.14)';
   for(let i=0;i<(DUEL?30:16);i++){c.beginPath();c.ellipse(r()*W,DUEL?r()*H:230+r()*660,40+r()*70,20+r()*40,r()*3,0,Math.PI*2);c.fill();}
   if(!DUEL&&!LV.sea)for(let i=0;i<40;i++){const x=220+r()*360,y=14+r()*14;if(y<riverTop(x)-2)house(c,r,x,y,0.6);}
-  if(!DUEL&&!LV.sea&&(MX>1||MY>1))for(let i=0;i<(MX*40+MY*(W+2*MX))/300;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(28-Y0);if(x>220&&x<W&&y>0)continue;if(y>riverTop(x)-4)continue;house(c,r2,x,y,0.6);}
+  if(!DUEL&&!LV.sea)for(let i=0;i<(X1-X0)*(20-Y0)/300;i++){const x=X0+r2()*(X1-X0),y=Y0+r2()*(28-Y0);if(x>220&&x<W&&y>0)continue;if(y>riverTop(x)-4||(y<-25&&r2()>0.22))continue;house(c,r2,x,y,0.6);}
   const xa=Math.floor(X0/10)*10,xb=Math.ceil(X1/10)*10;
   if(DUEL)return drawBGDuel(c,r,r2,X0,X1,Y0,Y1);
   c.beginPath();c.moveTo(xa,riverTop(xa));for(let x=xa;x<=xb;x+=10)c.lineTo(x,riverTop(x));
@@ -2093,7 +2098,7 @@ function drawBG(){
   if(LV.sea){c.fillStyle='#7b98a6';c.fillRect(X0,Y0,X1-X0,riverTop(0)+8-Y0);}
   drawSandbars(c,r);
   c.strokeStyle='rgba(47,74,82,.35)';c.lineWidth=1;
-  for(let k=0;k<12;k++){const yb=58+k*15;c.beginPath();for(let x=xa;x<xb;x+=6){const y=yb+Math.sin(x/18+k)*2;x===xa?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
+  for(let k=LV.sea?Math.ceil((Y0-58)/15)+1:0;k<12;k++){const yb=58+k*15;c.beginPath();for(let x=xa;x<xb;x+=6){const y=yb+Math.sin(x/18+k)*2;x===xa?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
   if(LV.southRiver){c.beginPath();c.moveTo(xa,800);for(let x=xa;x<=xb;x+=10)c.lineTo(x,800+Math.sin(x/60)*8);c.lineTo(xb,Y1);c.lineTo(xa,Y1);c.closePath();
     c.fillStyle='#8fa7ad';c.fill();c.strokeStyle='#4f6a73';c.lineWidth=1.5;c.stroke();label(c,LV.southRiver,300,850,20,true,'#2f4a52');}
   c.setLineDash([4,6]);c.strokeStyle='rgba(155,34,38,.7)';c.lineWidth=1.5;
@@ -2106,7 +2111,7 @@ function drawBG(){
   drawLandLabels(c);
   drawCompass(c,540,845);
   bgFocus(c,X0,X1,Y0,Y1);
-  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
+  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(EX0+4,EY0+4,EX1-EX0-8,EY1-EY0-8);c.lineWidth=0.8;c.strokeRect(EX0+9,EY0+9,EX1-EX0-18,EY1-EY0-18);
 }
 // foco: os cantos escurecem um pouco para o olho ir para o centro do mapa
 function bgFocus(c,X0,X1,Y0,Y1){
@@ -2125,7 +2130,7 @@ function drawBGDuel(c,r,r2,X0,X1,Y0,Y1){
   const ym=(RTd(300)+RBd(300))/2;label(c,tr('Rio Minho','River Minho'),300,ym,22,true,'#2f4a52');
   label(c,tr('Reino de Castela','Kingdom of Castile'),200,RTd(200)-30,12,true,'#9b2226');label(c,tr('Reino de Portugal','Kingdom of Portugal'),205,RBd(205)+32,12,true,'#2f4a73');
   drawCompass(c,548,H-58);
-  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(-MX+4,-MY+4,W+2*MX-8,H+2*MY-8);c.lineWidth=0.8;c.strokeRect(-MX+9,-MY+9,W+2*MX-18,H+2*MY-18);
+  c.strokeStyle='#3e3222';c.lineWidth=2;c.strokeRect(EX0+4,EY0+4,EX1-EX0-8,EY1-EY0-8);c.lineWidth=0.8;c.strokeRect(EX0+9,EY0+9,EX1-EX0-18,EY1-EY0-18);
 }
 function drawSandbars(c,r){
   // ínsuas: ilhotas de areia com erva e juncos, de contorno irregular
@@ -2153,7 +2158,7 @@ function drawLand(c,r,r2,X0,X1,Y0,Y1){
   const so=LV.south;
   if(LV.fields)drawFields(c,r,LV.fields);
   for(let i=0;i<(so.all?700:240);i++){const x=40+r()*520,y=so.y0+r()*(so.y1-so.y0);if(houseOK(x,y,false))house(c,r,x,y);}
-  if(!DUEL&&(MX>1||MY>1)){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/900;
+  if(!DUEL){const ya=so.all?230:so.y0,n=((X1-X0)*(Y1-ya)-W*(Math.min(H,Y1)-ya))/900;
     for(let i=0;i<n;i++){const x=X0+r2()*(X1-X0),y=ya+r2()*(Y1-ya);if(x>-6&&x<W+6&&y<H+6)continue;if(LV.southRiver&&y>782)continue;if(y<riverBot(x)+10)continue;house(c,r2,x,y);}}
   if(so.road){const R=LV.road||[[310,640],[322,780],[335,900]];c.strokeStyle='#b9a47a';c.lineWidth=8;c.lineCap='round';c.beginPath();R.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
   c.lineJoin='miter';c.miterLimit=2.2;polyPath(c,LV.wall);
@@ -3251,7 +3256,7 @@ function drawWavePreview(){
 // água viva: reflexos que descem o rio, ondinhas à volta das ínsuas e ondas na costa
 const WGL=[...Array(46)].map((_,i)=>({u:(i*0.618)%1,v:((i*0.371)%1),s:0.6+((i*0.53)%1)*0.8,ph:i*1.7}));
 function drawWater(){
-  if(!LV)return;const t=RM()?0:S.t,X0=-MX-10,X1=W+MX+10,span=X1-X0,c=ctx;c.save();c.lineCap='round';
+  if(!LV)return;const t=RM()?0:S.t,X0=EX0-10,X1=EX1+10,span=X1-X0,c=ctx;c.save();c.lineCap='round';
   for(const g of WGL){const x=X0+(((g.u*span-t*9*g.s)%span)+span)%span,top=wTop(x)+6,bot=wBot(x)-6;if(bot<=top)continue;
     const y=top+(bot-top)*g.v+Math.sin(t*0.8+g.ph)*1.5,al=0.18+0.16*Math.sin(t*1.6+g.ph),L=5+g.s*5;
     if(LV.sandbars&&LV.sandbars.some(([sx,sy,rx,ry])=>((x-sx)/(rx+8))**2+((y-sy)/(ry+6))**2<1))continue;
@@ -3265,8 +3270,8 @@ function drawWater(){
 function draw(){
   ctx.setTransform(1,0,0,1,0,0);
   const kb=scale*dpr*BZ;
-  // fora das pontas do mapa (puxado para lá da margem) fica papel liso; o recorte evita ler fora do bgc (o Safari não desenha nada nesse caso)
-  {const sx=(VIEW.ox+MX)*kb,sy=(VIEW.oy+MY)*kb,sw=VW()*kb,sh=VH()*kb,fx=cv.width/sw,fy=cv.height/sh;
+  // o fundo (bgc) cobre EX0..EX1 por EY0..EY1, mais do que o ecrã; o recorte é só por segurança (o Safari não desenha nada se se ler fora do bgc)
+  {const sx=(VIEW.ox-EX0)*kb,sy=(VIEW.oy-EY0)*kb,sw=VW()*kb,sh=VH()*kb,fx=cv.width/sw,fy=cv.height/sh;
     const x0=Math.max(0,sx),y0=Math.max(0,sy),x1=Math.min(bgc.width,sx+sw),y1=Math.min(bgc.height,sy+sh);
     if(x0>sx||y0>sy||x1<sx+sw||y1<sy+sh){ctx.fillStyle='#d8c79f';ctx.fillRect(0,0,cv.width,cv.height);}
     if(x1>x0&&y1>y0)ctx.drawImage(bgc,x0,y0,x1-x0,y1-y0,(x0-sx)*fx,(y0-sy)*fy,(x1-x0)*fx,(y1-y0)*fy);}
@@ -3297,7 +3302,7 @@ function drawSideWorld(P,water){
   if(LV.heart&&S.started&&!S.over&&!offSide()&&S.sel!=='works'){const g=S.local?Math.max(S.gold,S.gold2):myGold();
     if(WORKS.some(w=>!(w.once&&S.works[w.k])&&(w.k!=='recon'||S.lives<S.startLives)&&g>=workCost(w))){const b=RM()?0:Math.sin(S.t*4)*2;drawIc(ctx,'hammer',LV.heart.x+22,LV.heart.y-38+b,15);}}
   drawGates();
-  if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,H+MY);ctx.stroke();ctx.restore();
+  if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,EY1);ctx.stroke();ctx.restore();
     label(ctx,tr('Jogador 1','Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('Jogador 2','Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
   drawPathArrows();
   S.boats.forEach(b=>drawBoat(b));
@@ -3346,14 +3351,14 @@ function drawSideWorld(P,water){
 }
 function drawWeather(){
   const each=f=>DUEL?[0,1].forEach(i=>withSide(i,f)):f();
-  if(S.weather==='nevoeiro'&&DUEL){ctx.fillStyle='rgba(236,236,230,.86)';ctx.fillRect(-MX,RTd(0)-30,W+2*MX,RBd(0)-RTd(0)+60);}
+  if(S.weather==='nevoeiro'&&DUEL){ctx.fillStyle='rgba(236,236,230,.86)';ctx.fillRect(EX0,RTd(0)-30,EX1-EX0,RBd(0)-RTd(0)+60);}
   else if(S.weather==='nevoeiro'){const g=ctx.createLinearGradient(0,20,0,240);g.addColorStop(0,'rgba(236,236,230,.92)');g.addColorStop(0.8,'rgba(236,236,230,.85)');g.addColorStop(1,'rgba(236,236,230,0)');
-    ctx.fillStyle=g;ctx.fillRect(-MX,-MY,W+2*MX,245+MY);}
+    ctx.fillStyle=g;ctx.fillRect(EX0,EY0,EX1-EX0,245-EY0);}
   if(S.weather==='chuva'){ctx.strokeStyle='rgba(60,80,100,.35)';ctx.lineWidth=1;ctx.beginPath();
     for(const d of drops){const y=(d[1]+S.t*420*d[2])%H,x=(d[0]-S.t*60)%W;const xx=x<0?x+W:x;ctx.moveTo(xx,y);ctx.lineTo(xx-4,y+12);}ctx.stroke();}
   if(S.weather==='noite'){
     octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,ovc.width,ovc.height);worldT(octx);
-    octx.globalCompositeOperation='source-over';octx.fillStyle='rgba(12,16,40,.55)';octx.fillRect(-MX,-MY,W+2*MX,H+2*MY);
+    octx.globalCompositeOperation='source-over';octx.fillStyle='rgba(12,16,40,.55)';octx.fillRect(EX0,EY0,EX1-EX0,EY1-EY0);
     octx.globalCompositeOperation='destination-out';
     const hole=(x,y,r)=>{const g=octx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');octx.fillStyle=g;octx.beginPath();octx.arc(x,y,r,0,Math.PI*2);octx.fill();};
     each(()=>{S.towers.forEach(t=>hole(t.x,t.y,70));if(!S.hero.dead)hole(S.hero.x,S.hero.y,55);LV.marks.forEach(m=>hole(m.x,m.y,50));
@@ -3407,14 +3412,14 @@ function drawScreen(P){
 // minimapa no canto quando há zoom (no duelo sobe para dar lugar ao botão das tropas)
 function drawMini(){
   if(VIEW.z>1.01){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
-    const cw=cv.width/dpr,ch=cv.height/dpr,ew=W+2*MX,eh=H+2*MY,vw=Math.min(cw<500?78:132,cw*0.24),vh=Math.min(vw*eh/ew,ch*(cw<500?0.2:0.3)),vw2=vh*ew/eh,x0=cw-vw2-12,y0=ch-vh-12-(DUEL?84:0);
+    const cw=cv.width/dpr,ch=cv.height/dpr,ew=EX1-EX0,eh=EY1-EY0,vw=Math.min(cw<500?78:132,cw*0.24),vh=Math.min(vw*eh/ew,ch*(cw<500?0.2:0.3)),vw2=vh*ew/eh,x0=cw-vw2-12,y0=ch-vh-12-(DUEL?84:0);
     ctx.fillStyle='rgba(46,36,25,.35)';ctx.fillRect(x0+3,y0+4,vw2,vh);
     ctx.drawImage(bgc,0,0,bgc.width,bgc.height,x0,y0,vw2,vh);
     ctx.fillStyle='rgba(233,220,188,.25)';ctx.fillRect(x0,y0,vw2,vh);
     ctx.strokeStyle='#3e3222';ctx.lineWidth=2;ctx.strokeRect(x0,y0,vw2,vh);
-    const rx=x0+(VIEW.ox+MX)/ew*vw2,ry=y0+(VIEW.oy+MY)/eh*vh,rw=vw2/VIEW.z,rh=vh/VIEW.z;
+    const rx=x0+(VIEW.ox-EX0)/ew*vw2,ry=y0+(VIEW.oy-EY0)/eh*vh,rw=VW()/ew*vw2,rh=VH()/eh*vh;
     ctx.fillStyle='rgba(155,34,38,.12)';ctx.fillRect(rx,ry,rw,rh);ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.strokeRect(rx,ry,rw,rh);
-    (DUEL?DUEL.sides.flatMap(d=>d.S.enemies):S.enemies).forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':en.pt?'#2f4a73':'#b8302a';ctx.fillRect(x0+(en.x+MX)/ew*vw2-1.5,y0+(en.y+MY)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
+    (DUEL?DUEL.sides.flatMap(d=>d.S.enemies):S.enemies).forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':en.pt?'#2f4a73':'#b8302a';ctx.fillRect(x0+(en.x-EX0)/ew*vw2-1.5,y0+(en.y-EY0)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
     ctx.restore();}
 
 }
@@ -3422,11 +3427,12 @@ function drawMini(){
 /* ---- 08-zoom-acoes-interface.js ---- */
 /* ================= Zoom ================= */
 const VW=()=>(W+2*MX)/VIEW.z,VH=()=>(H+2*MY)/VIEW.z;
-// o mapa pode ser puxado um pouco para lá das pontas (OVP px de ecrã), para as bandeiras e a heroína junto às margens saírem de baixo dos botões
-const OVP=()=>Math.min(140,Math.max(90,innerWidth*0.22));
-function clampView(){const m=OVP()/(scale*VIEW.z);VIEW.ox=Math.max(-MX-m,Math.min(W+MX-VW()+m,VIEW.ox));VIEW.oy=Math.max(-MY-m,Math.min(H+MY-VH()+m,VIEW.oy));}
+// o mapa pode ser puxado para lá do que se vê sem zoom (OVP px de ecrã a cada lado), para as bandeiras e a heroína junto às margens saírem de baixo dos botões;
+// essa folga também é mapa (o fundo é desenhado até lá). A norte há mais TOPX unidades, para se ver mais da Galiza (ou do mar, em Âncora)
+const OVP=()=>Math.min(140,Math.max(90,innerWidth*0.22)),TOPX=120,bgPx=()=>(EX1-EX0)*(EY1-EY0)*(scale*dpr)**2;
+function clampView(){VIEW.ox=Math.max(EX0,Math.min(EX1-VW(),VIEW.ox));VIEW.oy=Math.max(EY0,Math.min(EY1-VH(),VIEW.oy));}
 let bzT=null;
-function bgZoomCheck(){const want=VIEW.z>1.5?2:1;const nb=(cv.width*cv.height*want*want>24e6)?1:want;
+function bgZoomCheck(){const nb=VIEW.z>1.5?Math.max(1,Math.min(2,Math.sqrt(24e6/bgPx()))):1;
   if(nb!==BZ){clearTimeout(bzT);bzT=setTimeout(()=>{BZ=nb;drawBG();},160);}}
 function setZoom(nz,wx,wy,sx,sy){
   nz=Math.max(1,Math.min(DUEL?5:3,nz));
@@ -3846,7 +3852,7 @@ function menuSvg(V){
   // longe do rio, das vilas, do mar e dos títulos: onde se pode pôr colinas e árvores
   const TOWNS=[[1440,425],[1390,322],[1030,485],[690,555],[465,650],[215,810],[1000,372],[675,455],[440,560],[230,585]];
   const dRiver=(x,y)=>{let m=1e9;for(const q of RP)m=Math.min(m,Math.hypot(q[0]-x,q[1]-y));return m;};
-  const tY1=V.port?V.y+(330-V.y)*0.42:110,tY2=V.port?V.y+V.h-(V.y+V.h-900)*0.42:950;
+  const tY1=Math.max(V.port?V.y+(330-V.y)*0.42:110,V.y+(V.top||0)+(V.port?100:60)),tY2=V.port?V.y+V.h-(V.y+V.h-900)*0.42:950;
   const cx=V.port?V.x+V.w-150:1470,cy=V.port?Math.min(V.y+V.h-150,1300):850,tX=V.port?V.x+V.w/2+80:930,tW=V.port?340:520;
   const KEEP=[[tX-tW,tY1-(V.port?95:45),tX+tW,tY1+(V.port?85:25)],[tX-tW,tY2-(V.port?95:45),tX+tW,tY2+(V.port?85:25)],[cx-120,cy-130,cx+120,cy+110],
     [740,395,980,485]];
@@ -3913,7 +3919,8 @@ function menuSvg(V){
 </svg>`;
 }
 // o mapa refaz-se quando a proporção do ecrã muda (rodar o telemóvel)
-function menuBgBuild(){const bg=$('menubg');if(!bg)return;const V=menuVB(innerWidth,innerHeight),k=[V.x,V.y|0,V.w,V.h|0].join();
+function menuBgBuild(){const bg=$('menubg');if(!bg)return;const V=menuVB(innerWidth,innerHeight);V.top=(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'))||0)*V.w/innerWidth;
+  const k=[V.x,V.y|0,V.w,V.h|0,V.top|0].join();
   if(bg.dataset.k!==k){bg.dataset.k=k;MBG.V=V;bg.innerHTML=menuSvg(V);}}
 addEventListener('resize',()=>{if(MBG.on)menuBgBuild();});
 function menuBgShow(){
@@ -4755,11 +4762,11 @@ function endCard(tag,where,title,good,body,it){
 function resize(){
   const st=$('stage'),bw=st.clientWidth-6,bh=st.clientHeight-6;
   scale=Math.max(0.2,Math.min(bw/W,bh/H));dpr=Math.min(window.devicePixelRatio||1,2.5);
-  MX=Math.max(0,(bw/scale-W)/2);MY=Math.max(0,(bh/scale-H)/2);
+  MX=Math.max(0,(bw/scale-W)/2);MY=Math.max(0,(bh/scale-H)/2);{const p=OVP()/scale;EX0=-MX-p;EX1=W+MX+p;EY0=-MY-p-TOPX;EY1=H+MY+p;}
   cv.style.width=Math.floor(bw)+'px';cv.style.height=Math.floor(bh)+'px';
   cv.width=Math.round(bw*dpr);cv.height=Math.round(bh*dpr);ovc.width=cv.width;ovc.height=cv.height;
   if(VIEW.z<=1.001){VIEW.z=1;VIEW.ox=-MX;VIEW.oy=-MY;}else clampView();
-  if(cv.width*cv.height*BZ*BZ>24e6)BZ=1;
+  if(bgPx()*BZ*BZ>24e6)BZ=1;
   drawBG();
 }
 // textos fixos do HTML no idioma escolhido
