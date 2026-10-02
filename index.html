@@ -347,6 +347,11 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
 #hud .sv b{font-size:1.15rem}
 #hud .bar{flex:0 0 auto;display:flex;gap:.35rem;margin-left:auto}
 #hud .bar button:not(#bWave){width:42px;height:42px;min-width:0;min-height:0;padding:0;border-radius:50%;background:var(--bg);background:var(--glass);box-shadow:0 3px 10px var(--shadow)}
+/* velocidade: retangular, metade esquerda desce e metade direita sobe */
+#hud .bar button#bSpeed{width:78px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;padding:0 .55rem;font-variant-numeric:tabular-nums}
+#bSpeed::before,#bSpeed::after{content:'';border:5px solid transparent;opacity:.6}
+#bSpeed::before{border-left-width:0;border-right:7px solid currentColor}
+#bSpeed::after{border-right-width:0;border-left:7px solid currentColor}
 #bWave{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);
   min-width:min(16rem,64vw);min-height:50px;border-radius:999px;font-size:1.05rem;box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 0 0 2px rgba(251,241,220,.35)}
 #bWave:not(:disabled):active{transform:translateX(-50%) translateY(1px) scale(.97)}
@@ -3733,7 +3738,7 @@ document.querySelectorAll('.ab').forEach(el=>el.addEventListener('click',()=>{
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 document.addEventListener('touchmove',e=>{if(e.touches.length>1&&e.target!==cv)e.preventDefault();},{passive:false});
 $('bWave').addEventListener('click',()=>{audio();if(S)act({a:'wave'});});
-$('bSpeed').addEventListener('click',()=>{if(!S)return;if(S.remote||(DUEL&&DUEL.net))return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));S.speed=S.speed>=5?1:S.speed+1;$('bSpeed').textContent='×'+S.speed;});
+$('bSpeed').addEventListener('click',e=>{if(!S)return;if(S.remote||(DUEL&&DUEL.net))return toast(tr('Só o anfitrião controla a velocidade.','Only the host controls the speed.'));const r=e.currentTarget.getBoundingClientRect(),d=e.detail&&e.clientX<r.left+r.width/2?-1:1;S.speed=(S.speed-1+d+5)%5+1;$('bSpeed').textContent='×'+S.speed;});
 $('bPause').addEventListener('click',()=>{if(!S)return;if(DUEL&&DUEL.net)return toast(tr('No duelo online não há pausa.','There is no pause in an online duel.'));if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
 $('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').innerHTML=ic(SND_IC[sndMode]);audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
 $('bSound').innerHTML=ic(SND_IC[sndMode]);
