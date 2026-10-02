@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Simulador de balanceamento: corre o jogo verdadeiro (index.html) sem desenhar, com um bot a jogar.
    Uso:  NODE_PATH=$(npm root -g) node sim.js [--mapas valenca,moncao] [--dif 0,1,2] [--herois padeira]
-           [--estr base,misto,portas] [--n 20] [--par 2] [--detalhe] [--curto] [--patch "TYPES.cal.cost=60"] [--csv jogos.csv] [--html index.html]
+           [--estr base,misto,portas] [--n 20] [--par 2] [--detalhe] [--porta] [--curto] [--patch "TYPES.cal.cost=60"] [--csv jogos.csv] [--html index.html]
            [--def '{"nome":{"hero":"caca","mix":{"bes":2,"cal":1}}}']   (estratégias à experiência, por cima do bot-base)
          node sim.js --teste     (confirma que a mesma semente dá sempre a mesma partida)
          node sim.js --geo       (bandeiras de cada mapa e o que cada uma alcança)
@@ -44,6 +44,8 @@ function PAGE(){
   // onde morre quem vem por cada estrada (sem contar as lendas): fração do caminho, se chegou à primeira porta e quem o matou
   let dth=[];const kl=kill;kill=(e,src)=>{if(!e.dead&&!e.f.boss){const o=dth[e.p]||(dth[e.p]={n:0,pr:0,gate:0,by:{},gt:{},nt:{}}),g=LV.pathGates[e.p][0];o.n++;o.pr+=e.d/PATHS[e.p].len;if(g&&e.d>=g.d-40){o.gate++;o.gt[e.t]=(o.gt[e.t]||0)+1;}o.nt[e.t]=(o.nt[e.t]||0)+1;
     const k=src&&TYPES[src.k]?src.k:src===S.hero?'heroína':'outro';o.by[k]=(o.by[k]||0)+1;}kl(e,src);};
+  // por vaga e por tipo (sem as lendas): [quantos nasceram, quantos chegaram à primeira porta da sua estrada], mortos ou não
+  let gw=[];const mf=mkFoe;mkFoe=(t,p,d)=>{const e=mf(t,p,d);e.w=S.wave;if(!e.f.boss){const o=gw[e.w]||(gw[e.w]={});(o[t]||(o[t]=[0,0]))[0]++;}return e;};
   const KS=Object.keys(TYPES),hyp=Math.hypot;
 
   // por mapa: o que cada bandeira alcança com cada tipo de torre
@@ -135,13 +137,14 @@ function PAGE(){
       for(const q of c){if(out.sug.length>=10)break;if(!out.sug.some(o=>hyp(o.x-q.x,o.y-q.y)<50))out.sug.push(q);}
       return out;},
     run(c){
-      sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};dth=[];newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
+      sd=c.seed|0;nGate=0;leakT={};leakP=[];brokeS={};dth=[];gw=[];newGame(c.lvl,c.di,c.hero);S.bot=true;S.started=true;// S.bot: as bênçãos escolhem-se sozinhas
       const think=mkBot(c.st),lives=[S.lives],idle=[],top=SLOTS.map(()=>0),end=c.ondas||0;if(end)S.infinite=true;// --ondas: modo infinito até essa vaga
       // ouro que custa pôr todas as bandeiras no nível 5 com esta mistura (sem reparações)
       const full=k=>TYPES[k].cost+TYPES[k].up.reduce((a,b)=>a+b,0),mx=Object.keys(c.st.mix),need=SLOTS.length*mx.reduce((a,k)=>a+c.st.mix[k]*full(k),0)/mx.reduce((a,k)=>a+c.st.mix[k],0);
       let maxW=0,goldW=0;
       think();startWave(false);
       for(let n=1,w=1;!S.over&&S.t<12000&&!(end&&S.wave>end);n++){update(0.02);
+        for(const e of S.enemies)if(!e.gs&&!e.dead&&!e.ride&&!e.f.boss&&e.w!=null){const q=LV.pathGates[e.p][0];if(q&&e.d>=q.d-40){e.gs=1;gw[e.w][e.t][1]++;}}
         if(n%25===0){think();
           // nível mais alto a que cada bandeira já chegou: as quedas não contam
           if(!maxW){S.towers.forEach(t=>{if(t.lv>top[t.si])top[t.si]=t.lv;});if(top.every(v=>v>=5))maxW=S.wave;}
@@ -151,7 +154,7 @@ function PAGE(){
       const dmg={},cnt={},spent={};let broke=0;
       S.towers.forEach(t=>{dmg[t.k]=(dmg[t.k]||0)+(t.dmgDone||0);cnt[t.k]=(cnt[t.k]||0)+1;spent[t.k]=(spent[t.k]||0)+t.spent;broke+=t.deaths||0;});
       return{lvl:c.lvl,di:c.di,hero:c.hero,estr:c.name,seed:c.seed,win:S.win?1:0,wave:S.wave,spent,maxW,goldW,need:Math.round(need),lvPct:top.reduce((a,b)=>a+b,0)/(5*top.length),lives:S.lives,t:Math.round(S.t),kills:S.stats.kills,
-        earned:S.stats.gold,gold:Math.round(S.gold),dmg,cnt,broke,gates:nGate,heroLv:S.hero.lv,heroK:S.hero.kills,leakT,leakP,brokeS,dth,
+        earned:S.stats.gold,gold:Math.round(S.gold),dmg,cnt,broke,gates:nGate,heroLv:S.hero.lv,heroK:S.hero.kills,leakT,leakP,brokeS,dth,gw,
         // vidas perdidas em cada vaga e ouro parado no início de cada vaga
         leak:lives.slice(1).map((v,i)=>Math.max(0,lives[i]-v)),idle,timeout:!S.over&&!end};
     }};
@@ -208,6 +211,13 @@ function report(R){
     const lk=[];g.forEach(r=>r.leak.forEach((v,i)=>lk[i]=(lk[i]||0)+v/g.length));const wi=lk.indexOf(Math.max(...lk));
     console.log(pad(lvl,9)+pad(DN[di],11)+pad(hero,9)+pad(estr,12)+String(g.length).padStart(3)+num(avg(g,r=>r.win)*100,0)+num(avg(g,r=>r.wave))+num(avg(g,r=>r.lives))
       +num(avg(g,r=>r.broke))+'  '+num(avg(g,r=>r.gates))+'       '+pad(sh,17)+(lk[wi]>0?`  ${wi+1} (−${lk[wi].toFixed(1)})`:'  —'));
+    if(A.porta){// por vaga: que parte dos inimigos chega à primeira porta (mortos lá ou não) e de que tipos, em média por partida que lá chegou
+      const W=[],T={};g.forEach(r=>r.gw.forEach((o,w)=>{if(!o)return;const x=W[w]||(W[w]={n:0,o:{}});x.n++;
+        Object.entries(o).forEach(([t,[n,a]])=>{for(const y of [x.o[t]||(x.o[t]=[0,0]),T[t]||(T[t]=[0,0])]){y[0]+=n;y[1]+=a;}});}));
+      const ln=(tt,o,k)=>{const E=Object.entries(o),n=E.reduce((s,x)=>s+x[1][0],0),a=E.reduce((s,x)=>s+x[1][1],0);
+        console.log('     '+pad(tt,8)+String(Math.round(a/(n||1)*100)).padStart(3)+'% chegam à porta ('+(a/k).toFixed(1)+' de '+(n/k).toFixed(1)+'): '
+          +E.filter(x=>x[1][1]).sort((x,y)=>y[1][1]-x[1][1]).map(([t,[n,a]])=>t+' '+(a/k).toFixed(1)+' ('+Math.round(a/n*100)+'%)').join(', '));};
+      W.forEach((x,w)=>ln('vaga '+w+':',x.o,x.n));ln('total:',T,g.length);}
     if(A.detalhe){// médias por partida: vidas perdidas por tipo de inimigo e por estrada, torres caídas por bandeira, torres no fim, ouro parado
       const sum=f=>{const o={};g.forEach(r=>Object.entries(f(r)).forEach(([k,v])=>o[k]=(o[k]||0)+(v||0)/g.length));
         return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>k+' '+v.toFixed(1)).join(', ');};
