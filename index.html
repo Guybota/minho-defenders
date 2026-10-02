@@ -3490,7 +3490,7 @@ function drawMini(){
 const VW=()=>(W+2*MX)/VIEW.z,VH=()=>(H+2*MY)/VIEW.z;
 // o mapa pode ser puxado para lá do que se vê sem zoom (OVP px de ecrã a cada lado), para as bandeiras e a heroína junto às margens saírem de baixo dos botões;
 // essa folga também é mapa (o fundo é desenhado até lá). A norte há mais TOPX unidades, para se ver mais da Galiza (ou do mar, em Âncora)
-const OVP=()=>Math.min(140,Math.max(90,innerWidth*0.22)),TOPX=120,bgPx=()=>(EX1-EX0)*(EY1-EY0)*(scale*dpr)**2;
+const OVP=()=>Math.min(140,Math.max(90,innerWidth*0.22)),TOPX=40,bgPx=()=>(EX1-EX0)*(EY1-EY0)*(scale*dpr)**2;
 function clampView(){VIEW.ox=Math.max(EX0,Math.min(EX1-VW(),VIEW.ox));VIEW.oy=Math.max(EY0,Math.min(EY1-VH(),VIEW.oy));}
 let bzT=null;
 function bgZoomCheck(){const nb=VIEW.z>1.5?Math.max(1,Math.min(2,Math.sqrt(24e6/bgPx()))):1;
