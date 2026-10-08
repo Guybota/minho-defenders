@@ -115,8 +115,7 @@ function PAGE(){
       hero(land);
       for(let n=0;n<8;n++){// gasta enquanto houver ouro para o plano seguinte
         const ruin=S.towers.find(t=>t.broken&&!(t.fixT>0)),want=st.base+Math.floor(S.wave*st.wide);
-        const recon=S.lives<=S.startLives*0.4?{c:workCost(WORKS.find(w=>w.k==='recon')),go:()=>doAct({a:'work',k:'recon'},1)}:null;
-        const plan=ruin?{c:fixCost(ruin),go:()=>doAct({a:'fix',i:ruin.si},1)}:(S.towers.length<want&&build())||upgrade()||build()||recon||sink();
+        const plan=ruin?{c:fixCost(ruin),go:()=>doAct({a:'fix',i:ruin.si},1)}:(S.towers.length<want&&build())||upgrade()||build()||sink();
         if(!plan||S.gold<plan.c)return;
         const g=S.gold;plan.go();if(S.gold===g)return;
       }

@@ -425,6 +425,7 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
 .sd.lock .sc{color:var(--red)}
 .sd.ready{animation:ready .6s ease-out}
 body:not(.duel) #sendT,body:not(.duel) #send{display:none}
+body.duel #hud .bar button#bSpeed,body.duel #bPause{display:none}
 body.send-open #zoomb{opacity:0;pointer-events:none}
 @media (orientation:portrait),(max-width:699px){
   #sendT{width:56px;height:56px}#send{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 64px);grid-template-columns:repeat(2,7.9rem)}
@@ -945,12 +946,11 @@ HEROES.arren={name:tr('A Arrenegada','The Arrenegada'),short:tr('Arrenegada','Ar
   ups:[[{k:'dmg',name:tr('Roca de carvalho','Oak distaff'),desc:tr('+35% de dano','+35% damage')},{k:'hp',name:tr('Saias de burel','Burel skirts'),desc:tr('+40% de vida e recupera o dobro','+40% health, heals twice as fast')}],
     [{k:'aura',name:tr('Língua afiada','Sharp tongue'),desc:tr('As bocas chegam mais longe e abrandam 35%','Her insults reach further and slow by 35%')},{k:'block',name:tr('Braço de ferro','Iron grip'),desc:tr('Segura mais 2 inimigos','Holds 2 more enemies')}],
     [{k:'spBig',name:tr('Desafio duplo','Double duel'),desc:tr('O desafio apanha os dois mais fortes','The duel takes on the two strongest')},{k:'spFast',name:tr('Pavio curto','Short fuse'),desc:tr('Especial recarrega 40% mais depressa','Special recharges 40% faster')}]]};
-/* obras na praça: tocar no coração da praça abre o painel. once: só uma vez; recon repete-se, cada vez mais caro */
+/* obras na praça: tocar no coração da praça abre o painel. once: só uma vez */
 const WORKS=[
   {k:'muralha',ic:'bricks',once:true,cost:300,name:tr('Reforçar muralhas','Reinforce the walls'),desc:tr('Portas com +60% de vida, já reparadas; torres com +20%','Gates get +60% health, repaired now; towers +20%')},
   {k:'cisterna',ic:'cauldron',once:true,cost:250,name:tr('Cisterna','Cistern'),desc:tr('O azeite recarrega 25% mais depressa','Boiling oil reloads 25% faster')},
-  {k:'fosso',ic:'swim',once:true,cost:350,name:tr('Fosso com água','Water moat'),desc:tr('Quem anda em terra vai 10% mais devagar','Enemies on land move 10% slower')},
-  {k:'recon',ic:'castle',cost:200,name:tr('Reconstruir a praça','Rebuild the fortress'),desc:tr('Recupera 5 vidas; cada vez mais caro','Recover 5 lives; pricier each time')}];
+  {k:'fosso',ic:'swim',once:true,cost:350,name:tr('Fosso com água','Water moat'),desc:tr('Quem anda em terra vai 10% mais devagar','Enemies on land move 10% slower')}];
 const workCost=w=>w.once?w.cost:w.cost*(1+((S.works||{})[w.k]||0));
 // treino da heroína com ouro: meio nível de experiência; no nível 10, oferendas (+8% de vida e dano, até 5)
 const trainCost=h=>80+h.lv*30,giftCost=h=>300*((h.gift||0)+1);
@@ -1002,8 +1002,8 @@ const SENDS=[
   {t:'arqc',n:4,c:60,eco:2,w:4},{t:'esc',n:4,c:80,eco:3,w:5},{t:'cont',n:2,c:90,eco:3,w:6},
   {t:'cura',n:2,c:100,eco:3,w:7},{t:'ari',n:1,c:150,eco:5,w:8},{t:'torre',n:1,c:160,eco:5,w:8},
   {t:'bomb',n:1,c:190,eco:6,w:10},{t:'cap',n:1,c:420,eco:10,w:12},{t:'boss',n:1,c:950,eco:0,w:15}];
-// renda: ouro que cai a cada ECO_T segundos (sobe com cada tropa mandada, até ECO_MAX)
-const ECO0=8,ECO_T=6,ECO_MAX=150;
+// renda: ouro que cai a cada ECO_T segundos (sobe com cada tropa mandada, sem máximo)
+const ECO0=8,ECO_T=6;
 
 /* ================= Matança (abates seguidos) ================= */
 // [abates, multiplicador do ouro, grito]; a série acaba se passarem 2,5 s sem abates ou se alguém chegar à praça
@@ -1365,7 +1365,7 @@ function newGame(lvl,di,heroId){
 }
 function mkFoe(t,p,d){
   // vida: os +20% de antes baixados 20% (1,2×0,8); 10% mais lentos que o valor base
-  const f=FOES[t],m=hpMult(Math.max(1,S.wave))*0.96,sp=f.spd*0.9;
+  const f=FOES[t],m=hpMult(Math.max(1,S.wave))*0.96,sp=f.spd*0.9*(DUEL&&!f.boss?1.25:1);// no duelo as tropas vão 25% mais depressa (os chefes não)
   const e={id:++EID,t,p,f,hp:f.hp*m,max:f.hp*m,spd:sp,armor:f.armor,gold:f.gold,r:f.r,col:f.col,leak:f.leak,
     d,slowT:0,slowF:1,stunT:0,eat:false,burnT:0,burnD:0,burnSrc:null,healCd:1.5,bcd:4,off:(Math.random()-0.5)*10,x:0,y:0,a:0,dead:false,cur:sp,blocked:false};
   // elites: a partir da vaga 15 alguns vêm com mais vida, mais armadura e o dobro do ouro (contorno dourado)
@@ -1592,7 +1592,6 @@ function breakGate(i){const G=S.gates[i],g=LV.gates[i];G.broken=true;G.hp=0;
   S.texts.push({x:g.x,y:g.y-26,s:tr('Arrombaram a porta!','They broke the gate!'),t:0,T:2,big:true});}
 function applyWork(k,load){
   if(k==='muralha'){S.gates.forEach(G=>{G.max=GATE_HP*1.6;if(!load){G.hp=G.max;G.broken=false;}});if(!load)S.towers.forEach(t=>{if(!t.broken)t.hp=towerMax(t);});}
-  if(k==='recon'&&!load)S.lives=Math.min(S.startLives,S.lives+5);
 }
 function stunTowers(x,y){let n=0;for(const t of S.towers)if(!t.broken&&Math.hypot(t.x-x,t.y-y)<=62+14){t.disT=Math.max(t.disT||0,4);t.disK='rain';n++;}
   if(n){S.texts.push({x,y:y-40,s:tr('Torres atordoadas!','Towers stunned!'),ic:'arrows',t:0,T:1.8,sp:true});NET.twDirty=true;}}
@@ -3342,7 +3341,7 @@ function draw(){
   if(DUEL){drawWater();for(let i=0;i<2;i++)withSide(i,()=>{DRAW_SIDE=i;drawSideWorld(P,false);});DRAW_SIDE=0;}
   else drawSideWorld(P,true);
   drawWeather();
-  if(DUEL){for(let i=0;i<2;i++)withSide(i,drawTexts);}else drawTexts();
+  if(DUEL){const fog=S.weather==='nevoeiro';for(let i=0;i<2;i++)if(!fog||i===DUEL.me)withSide(i,drawTexts);}else drawTexts();
   if(DUEL){// a camada de ecrã usa a escala de uma praça só (o mundo do duelo é mais alto e os letreiros ficavam minúsculos)
     const o=[scale,MX,MY,H],bw=cv.width/dpr,bh=cv.height/dpr;scale=Math.min(bw/W,bh/900);MX=Math.max(0,(bw/scale-W)/2);MY=Math.max(0,(bh/scale-900)/2);H=900;
     try{drawScreen(P);}finally{[scale,MX,MY,H]=o;}}
@@ -3361,7 +3360,7 @@ function drawSideWorld(P,water){
   if(water)drawWater();
   drawHeart();
   if(LV.heart&&S.started&&!S.over&&!offSide()&&S.sel!=='works'){const g=S.local?Math.max(S.gold,S.gold2):myGold();
-    if(WORKS.some(w=>!(w.once&&S.works[w.k])&&(w.k!=='recon'||S.lives<S.startLives)&&g>=workCost(w))){const b=RM()?0:Math.sin(S.t*4)*2;drawIc(ctx,'hammer',LV.heart.x+22,LV.heart.y-38+b,15);}}
+    if(WORKS.some(w=>!(w.once&&S.works[w.k])&&g>=workCost(w))){const b=RM()?0:Math.sin(S.t*4)*2;drawIc(ctx,'hammer',LV.heart.x+22,LV.heart.y-38+b,15);}}
   drawGates();
   if(S.local){ctx.save();ctx.setLineDash([8,8]);ctx.strokeStyle='rgba(46,36,25,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,riverBot(W/2)+6);ctx.lineTo(W/2,EY1);ctx.stroke();ctx.restore();
     label(ctx,tr('Jogador 1','Player 1'),W/4,riverBot(W/4)+18,13,true,'#2f4a73');label(ctx,tr('Jogador 2','Player 2'),W*3/4,riverBot(W*3/4)+18,13,true,'#9b2226');}
@@ -3412,7 +3411,9 @@ function drawSideWorld(P,water){
 }
 function drawWeather(){
   const each=f=>DUEL?[0,1].forEach(i=>withSide(i,f)):f();
-  if(S.weather==='nevoeiro'&&DUEL){ctx.fillStyle='rgba(236,236,230,.86)';ctx.fillRect(EX0,RTd(0)-30,EX1-EX0,RBd(0)-RTd(0)+60);}
+  if(S.weather==='nevoeiro'&&DUEL){// tapa o rio e a praça do adversário
+    const n=DUEL.me?0:1,xs=[];for(let x=EX0;x<=EX1+20;x+=20)xs.push(x);ctx.fillStyle='rgba(236,236,230,.9)';ctx.beginPath();
+    if(n){ctx.moveTo(EX0,EY0);xs.forEach(x=>ctx.lineTo(x,RBd(x)+30));ctx.lineTo(EX1+20,EY0);}else{ctx.moveTo(EX0,EY1);xs.forEach(x=>ctx.lineTo(x,RTd(x)-30));ctx.lineTo(EX1+20,EY1);}ctx.fill();}
   else if(S.weather==='nevoeiro'){const g=ctx.createLinearGradient(0,20,0,240);g.addColorStop(0,'rgba(236,236,230,.92)');g.addColorStop(0.8,'rgba(236,236,230,.85)');g.addColorStop(1,'rgba(236,236,230,0)');
     ctx.fillStyle=g;ctx.fillRect(EX0,EY0,EX1-EX0,245-EY0);}
   if(S.weather==='chuva'){ctx.strokeStyle='rgba(60,80,100,.35)';ctx.lineWidth=1;ctx.beginPath();
@@ -3480,7 +3481,7 @@ function drawMini(){
     ctx.strokeStyle='#3e3222';ctx.lineWidth=2;ctx.strokeRect(x0,y0,vw2,vh);
     const rx=x0+(VIEW.ox-EX0)/ew*vw2,ry=y0+(VIEW.oy-EY0)/eh*vh,rw=VW()/ew*vw2,rh=VH()/eh*vh;
     ctx.fillStyle='rgba(155,34,38,.12)';ctx.fillRect(rx,ry,rw,rh);ctx.strokeStyle='#9b2226';ctx.lineWidth=2;ctx.strokeRect(rx,ry,rw,rh);
-    (DUEL?DUEL.sides.flatMap(d=>d.S.enemies):S.enemies).forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':en.pt?'#2f4a73':'#b8302a';ctx.fillRect(x0+(en.x-EX0)/ew*vw2-1.5,y0+(en.y-EY0)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
+    (DUEL?DUEL.sides.flatMap((d,i)=>S.weather==='nevoeiro'&&i!==DUEL.me?[]:d.S.enemies):S.enemies).forEach(en=>{ctx.fillStyle=en.f.boss?'#7b0f0f':en.pt?'#2f4a73':'#b8302a';ctx.fillRect(x0+(en.x-EX0)/ew*vw2-1.5,y0+(en.y-EY0)/eh*vh-1.5,en.f.boss?5:3,en.f.boss?5:3);});
     ctx.restore();}
 
 }
@@ -3551,7 +3552,6 @@ function doAct(a,who){
     case'hero':{const h=S.hero;if(h.dead)return;if((h.D.water||!inRiver(a.x,a.y))&&(!DUEL||sideAt(a.x,a.y)===LV.side||(h.D.water&&sideAt(a.x,a.y)===-1))&&a.x>12&&a.x<W-12&&a.y<H-12&&!(LV.southRiver&&a.y>790)){h.tx=a.x;h.ty=a.y;}break;}
     case'heroSp':heroSpecial();break;
     case'work':{const w=WORKS.find(x=>x.k===a.k);if(!w||(w.once&&S.works[w.k]))return;
-      if(w.k==='recon'&&S.lives>=S.startLives){S.texts.push({x:LV.heart.x,y:LV.heart.y-40,s:tr('A praça está inteira!','The fortress is intact!'),t:0,T:1.4,sp:true});return;}
       const c=workCost(w);if(!pay(who,c))return;S.works[w.k]=(S.works[w.k]||0)+1;applyWork(w.k);sfx('coin');jolt(2);
       S.fx.push({k:'ring',x:LV.heart.x,y:LV.heart.y,r:40,t:0,T:0.8,c:'201,151,28'});chips(LV.heart.x,LV.heart.y,10,'#c9971c',0.8);
       S.texts.push({x:LV.heart.x,y:LV.heart.y-44,s:w.name+'!',ic:w.ic,t:0,T:1.8});saveGame();break;}
@@ -3661,7 +3661,7 @@ function renderPanel(){
 
   if(S.sel==='works'){
     p.innerHTML=`<div class="ph"><b>${ic('hammer')} ${tr('Obras na praça','Works in the fortress')}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
-      <p class="hint">${tr('O povo trabalha pelo ouro. Cada obra faz-se uma vez; reconstruir pode repetir-se.','The townsfolk work for gold. Each work is built once; rebuilding can be repeated.')}</p><div class="acts">`+
+      <p class="hint">${tr('O povo trabalha pelo ouro. Cada obra faz-se uma vez.','The townsfolk work for gold. Each work is built once.')}</p><div class="acts">`+
       WORKS.map(w=>{const done=w.once&&S.works[w.k],c=workCost(w);return done?`<button class="br" disabled>${ic(w.ic)} ${w.name}<small>${tr('Feito','Done')}</small></button>`
         :`<button class="main br" data-a="work" data-k="${w.k}" data-cost="${c}" ${g<c?'disabled':''}>${ic(w.ic)} ${w.name} · ${c} ${ic('coin')}<small>${w.desc}</small></button>`;}).join('')+`</div>`;return;}
   if(S.sel==='hero'){
@@ -4306,11 +4306,10 @@ function duelView(){
   VIEW.ox=W/2-VW()/2;VIEW.oy=(DUEL.me?430:DOFF+470)-VH()/2;clampView();bgZoomCheck();
 }
 function duelTick(dt){
-  const sp=DUEL.net?1:DUEL.sides[DUEL.me].S.speed;
-  for(let i=0;i<2&&!DUEL.over;i++)withSide(i,()=>{
+    for(let i=0;i<2&&!DUEL.over;i++)withSide(i,()=>{
     if(S.remote)return guestTick(dt);
     if(S.stop>0){S.stop-=dt;return;}
-    let t=dt*sp;while(t>0&&!DUEL.over){const st=Math.min(0.02,t);update(st);if(DUEL.over)break;duelSide(st);t-=st;if(S.stop>0)break;}
+    let t=dt;while(t>0&&!DUEL.over){const st=Math.min(0.02,t);update(st);if(DUEL.over)break;duelSide(st);t-=st;if(S.stop>0)break;}
   });
 }
 // renda, recargas das tropas, tropas recebidas a desembarcar e o bot
@@ -4330,7 +4329,7 @@ function queueSend(t,n){
 // manda tropas (corre no lado de quem manda)
 function sendTroop(i){
   const D=SENDS[i];if(!D||!DUEL||DUEL.over||S.wave<D.w||!pay(1,D.c))return false;
-  const t=D.t==='boss'?BOSS[LV.id]:D.t;S.eco=Math.min(ECO_MAX,S.eco+D.eco);S.stats.sent+=D.n;
+  const t=D.t==='boss'?BOSS[LV.id]:D.t;S.eco+=D.eco;S.stats.sent+=D.n;
   S.texts.push({x:W/2,y:580,s:tr('A caminho: ','On their way: ')+(D.n>1?D.n+' × ':'')+FOES[t].name+(D.eco?' · '+tr('renda','income')+' +'+D.eco:''),ic:E_IC[t],t:0,T:1.8});
   if(DUEL.net){if(NET.R)NET.R.emit('send',{t,n:D.n}).catch(()=>{});}
   else withSide(1-S.dside,()=>queueSend(t,D.n));
@@ -4402,7 +4401,7 @@ $('send').addEventListener('click',e=>{const b=e.target.closest('.sd');if(!b||!D
   if(S.wave<D.w)return toast(tr('Esta tropa só se pode mandar a partir da vaga ','This troop can only be sent from wave ')+D.w+'.');
   if(sendTroop(+b.dataset.sd))pop(b,'ready');});
 function duelHud(){
-  const F=DUEL.sides[1-DUEL.me].S;setTxt('foeL',String(Math.max(0,F.lives)));setW('mFoe',F.lives/F.startLives);setTxt('eco','+'+S.eco+(S.eco>=ECO_MAX?' '+tr('máx','max'):''));
+  const F=DUEL.sides[1-DUEL.me].S;setTxt('foeL',String(Math.max(0,F.lives)));setW('mFoe',F.lives/F.startLives);setTxt('eco','+'+S.eco);
   let any=false;
   $('send').querySelectorAll('.sd').forEach(b=>{const i=+b.dataset.sd,D=SENDS[i],lock=S.wave<D.w,dis=!lock&&(S.gold<D.c||S.over);
     if(b.classList.contains('lock')!==lock){b.classList.toggle('lock',lock);b.querySelector('.sc').innerHTML=lock?ic('lock')+' '+tr('vaga ','wave ')+D.w:D.c+' '+ic('coin')+(D.eco?' · +'+D.eco:'');}
@@ -4643,7 +4642,7 @@ function showHelp(back){
     <p>${ic('swords')} ${tr('Duelo 1 contra 1: Portugal de um lado do Minho, Castela do outro, contra o bot ou contra outra pessoa. Toca em','1v1 Duel: Portugal on one side of the Minho, Castile on the other, against the bot or another person. Tap')} ${ic('helmet')} ${tr('no canto inferior direito para mandar tropas para o outro lado. Cada tropa custa ouro, mas sobe a tua renda (ouro a cada 6 s). As tropas melhores abrem com as vagas e, na vaga 15, podes mandar a lenda da tua praça. O botão '+ic('fit')+' alterna entre a tua praça e o mapa inteiro.','in the bottom-right corner to send troops across. Each troop costs gold but raises your income (gold every 6 s). Stronger troops unlock with the waves and, from wave 15, you can send your fortress’s legend. The '+ic('fit')+' button switches between your fortress and the whole map.')}</p>
     <p>${ic('crown')} ${tr('Ganha um mapa pela primeira vez e a lenda desse mapa muda de lado: o Mercador das Toalhas (Valença), a Coca (Monção), o Polvo da Lagarteira (Âncora), o Cervo Gigante (Cerveira) e a Arrenegada (Melgaço) passam a poder ser escolhidos como heróis, cada um com o seu especial e as suas melhorias. A Coca voa por cima do rio, o Polvo nada e segura nadadores, o Cervo carrega contra o inimigo mais adiantado, o Mercador faz mais ouro e a Arrenegada desafia o inimigo mais forte.','Win a map for the first time and its legend switches sides: the Towel Merchant (Valença), the Coca (Monção), the Lagarteira Octopus (Âncora), the Giant Stag (Cerveira) and the Arrenegada (Melgaço) can then be picked as heroes, each with its own special and upgrades. The Coca flies over the river, the Octopus swims and holds swimmers, the Stag charges the most advanced enemy, the Merchant makes more gold and the Arrenegada duels the strongest enemy.')}</p>
     <p>${ic('crown')} ${tr('Nas vagas altas chegam o sapador (passa por baixo das portas), o porta-estandarte (dá armadura a quem está perto), o gaiteiro galego (faz os outros andar mais depressa) e o peregrino de Santiago, que as torres ignoram até ele se revelar como espião. A partir da vaga 15 há elites, com contorno dourado: mais fortes, mas dão o dobro do ouro.','In the late waves come the sapper (digs under the gates), the standard-bearer (gives armour to those nearby), the Galician piper (makes the others walk faster) and the Santiago pilgrim, whom the towers ignore until he turns out to be a spy. From wave 15 there are elites, outlined in gold: tougher, but worth double gold.')}</p>
-    <p>${ic('hammer')} ${tr('Onde gastar o ouro no fim: as torres têm um nível 5 com um efeito próprio de cada especialização; tocar na igreja, no paiol ou na torre de menagem abre as obras na praça (muralhas, cisterna, fosso, reconstruir); e no painel da heroína podes pagar treino e, no nível 10, oferendas que a tornam mais forte.','Where to spend gold late on: towers have a level 5 with an effect unique to each specialisation; tapping the church, powder store or keep opens the works in the fortress (walls, cistern, moat, rebuild); and in the heroine’s panel you can pay for training and, at level 10, offerings that make her stronger.')}</p>
+    <p>${ic('hammer')} ${tr('Onde gastar o ouro no fim: as torres têm um nível 5 com um efeito próprio de cada especialização; tocar na igreja, no paiol ou na torre de menagem abre as obras na praça (muralhas, cisterna, fosso); e no painel da heroína podes pagar treino e, no nível 10, oferendas que a tornam mais forte.','Where to spend gold late on: towers have a level 5 with an effect unique to each specialisation; tapping the church, powder store or keep opens the works in the fortress (walls, cistern, moat); and in the heroine’s panel you can pay for training and, at level 10, offerings that make her stronger.')}</p>
     <p class="small">${ic('moon')} À noite as torres veem menos. ${ic('rain')} Com chuva o azeite arrefece e nada arde. ${ic('fog')} Com nevoeiro não se veem as barcas.</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
   $('mcard').querySelector('[data-go="foes"]').addEventListener('click',()=>{audio();showFoes(()=>showHelp(back));});
