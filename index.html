@@ -1017,7 +1017,6 @@ const CARDS=[
   {id:'teotonio',ic:'cross',k:'b',name:tr('Bênção de São Teotónio','Blessing of Saint Theotonius'),desc:tr('+12% de alcance em todas as torres.','+12% range on all towers.'),fx:M=>{M.range*=1.12;}},
   {id:'ferreiros',ic:'hammer',k:'b',name:tr('Ferreiros de Guimarães','Blacksmiths of Guimarães'),desc:tr('+18% de dano em todas as torres.','+18% damage on all towers.'),fx:M=>{M.dmg*=1.18;}},
   {id:'vinho',ic:'wine',k:'b',name:tr('Vinho Verde para a tropa','Vinho Verde for the troops'),desc:tr('Todas as torres disparam 12% mais depressa.','All towers fire 12% faster.'),fx:M=>{M.rate*=0.88;}},
-  {id:'pedreiros',ic:'bricks',k:'b',name:tr('Pedreiros de Braga','Stonemasons of Braga'),desc:tr('Reparam as muralhas: recuperas 6 vidas.','They repair the walls: you recover 6 lives.'),now:true,ok:()=>S.lives<S.startLives,fx:()=>{S.lives=Math.min(S.startLives,S.lives+6);}},
   {id:'sineiro',ic:'bell',k:'b',name:tr('Sineiro madrugador','Early-rising bell-ringer'),desc:tr('Os poderes recarregam 30% mais depressa.','Powers recharge 30% faster.'),fx:M=>{M.cd*=0.7;}},
   {id:'caldo',ic:'bowl',k:'b',name:tr('Caldo verde da avó','Grandma’s caldo verde'),desc:tr('A heroína fica com +40% de vida e de dano.','The heroine gets +40% health and damage.'),fx:M=>{M.hero*=1.4;}},
   {id:'luzia',ic:'eye',k:'b',name:tr('Promessa a Santa Luzia','A vow to Saint Lucy'),desc:tr('As torres veem bem de noite e no nevoeiro.','Towers see clearly at night and in fog.'),once:true,fx:M=>{M.sight=true;}},
