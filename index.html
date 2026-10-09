@@ -4633,7 +4633,7 @@ function applyOpt(){document.documentElement.classList.toggle('big',!!OPT.big);d
 if(RM_Q.addEventListener)RM_Q.addEventListener('change',applyOpt);
 function showHelp(back){
   showModal(`<h2>${tr('Como jogar','How to play')}</h2>
-    <div class="mlist"><button data-go="foes">${ic('helmet')} ${tr('Inimigos e os seus números','Enemies and their stats')}</button></div>
+    <div class="mlist"><button data-go="foes">${ic('helmet')} ${tr('Unidades e os seus números','Units and their stats')}</button></div>
     <p>${tr('Toca numa bandeira para pôr defensores. No nível 3 escolhes uma especialização. Em cada torre podes mudar o alvo preferido.','Tap a flag to place defenders. At level 3 you pick a specialisation. On each tower you can change its preferred target.')}</p>
     <p>${tr('A heroína bloqueia até três inimigos. Toca nela e depois no mapa para a mover. O poder especial está no painel dela.','The heroine blocks up to three enemies. Tap her and then the map to move her. Her special power is in her panel.')}</p>
     <p>${ic('star')} ${tr('A heroína ganha experiência a derrotar inimigos e sobe até ao nível 10. Nos níveis 3, 6 e 9 escolhes uma de duas melhorias no painel dela.','The heroine gains experience by defeating enemies and goes up to level 10. At levels 3, 6 and 9 you pick one of two upgrades in her panel.')}</p>
@@ -4681,7 +4681,7 @@ function showFoes(back){
   // vida e passo como entram em campo (mkFoe) na vaga 1, em Castelhano
   const st=(i,l,v)=>sti(i,l,v,'white-space:nowrap;margin-right:.6rem');
   const L={hp:tr('Vida','Health'),spd:tr('Velocidade','Speed'),arm:tr('Armadura','Armour'),gold:tr('Ouro','Gold'),leak:tr('Vidas que tira à praça','Lives taken from the fortress'),dmg:tr('Dano do tiro','Shot damage'),rate:tr('Tempo entre tiros','Time between shots'),rng:tr('Alcance','Range')};
-  showModal(`<h2>${tr('Inimigos','Enemies')}</h2>
+  showModal(`<h2>${tr('Unidades','Units')}</h2>${unitTabs('foes')}
     <p class="small">${[['heart',L.hp],['boot',L.spd],['shield',L.arm],['coin',L.gold],['castle',L.leak],['swords',L.dmg],['hourglass',L.rate],['target',L.rng]].map(([i,l])=>`<span style="white-space:nowrap">${ic(i)} ${l}</span>`).join(' · ')}</p>
     <p class="small">${tr('Vida na vaga 1 em Castelhano: cresce a cada vaga, e é ×0,75 em Turista e ×1,35 em Capitão Paco. A armadura desconta-se a cada golpe (os besteiros ignoram-na).','Health at wave 1 on Castilian: it grows every wave, and is ×0.75 on Tourist and ×1.35 on Captain Paco. Armour is taken off every hit (crossbowmen ignore it).')}</p>`+
     Object.keys(FOE_INFO).map(k=>{const f=FOES[k],[w,d]=FOE_INFO[k],r=f.ranged;
@@ -4690,6 +4690,7 @@ function showFoes(back){
         r?st('swords',L.dmg,r.dmg)+st('hourglass',L.rate,r.rate+' s')+st('target',L.rng,r.range):''}<small style="display:block">${d}</small></span></div>`;}).join('')+
     `<p class="small">${ic('crown')} ${tr('Elites (a partir da vaga 15, contorno dourado): vida ×1,8, +2 de armadura e o dobro do ouro. Também a partir da vaga 15, todos ganham +15% de vida e +12% de dano a cada 2 vagas.','Elites (from wave 15, gold outline): health ×1.8, +2 armour and double gold. Also from wave 15, everyone gains +15% health and +12% damage every 2 waves.')}</p>`,
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
+  unitTabsOn(back);
   // retratos: os desenhos do jogo (parados) num canvas por linha; ctx e S são emprestados só enquanto se pinta
   const c0=ctx,s0=S;S=S||{t:0,gates:[]};
   try{$('mcard').querySelectorAll('canvas[data-f]').forEach(cn=>{const k=cn.dataset.f,f=FOES[k],z=3*Math.min(2.3,(f.boss?11:k==='torre'||k==='band'||k==='gait'?14:15.5)/f.r);
@@ -4697,6 +4698,47 @@ function showFoes(back){
     ctx=cn.getContext('2d');ctx.scale(z,z);
     if(f.boss)drawBoss(e);else if(k==='bomb')drawBombard(e);else if(k==='ari')drawRam(e);else if(k==='torre')drawSiege(e);else drawChibi(e,false);});}
   finally{ctx=c0;S=s0;}
+}
+/* Unidades: separadores inimigos, torres e heróis */
+const unitTabs=cur=>`<div class="seg utabs" role="group">${[['foes','helmet',tr('Inimigos','Enemies')],['towers','castle',tr('Torres','Towers')],['heroes','crown',tr('Heróis','Heroes')]]
+  .map(([k,i,l])=>`<button data-ut="${k}" aria-pressed="${k===cur}">${ic(i)} ${l}</button>`).join('')}</div>`;
+function unitTabsOn(back){$('mcard').querySelectorAll('[data-ut]').forEach(b=>b.addEventListener('click',()=>{audio();({foes:showFoes,towers:showTowers,heroes:showHeroes})[b.dataset.ut](back);}));}
+// pinta os retratos nos canvas da janela (ctx e S emprestados só enquanto se desenha)
+function paintUnits(sel,f){const c0=ctx,s0=S;S=S||{t:0,gates:[]};try{$('mcard').querySelectorAll(sel).forEach(cn=>{ctx=cn.getContext('2d');f(cn);});}finally{ctx=c0;S=s0;}}
+const UST='white-space:nowrap;margin-right:.6rem',UCV='width="168" height="168" style="flex:none;width:3.5rem;height:3.5rem" aria-hidden="true"';
+function showTowers(back){
+  const st=(i,l,v)=>sti(i,l,v,UST),L={dmg:tr('Dano','Damage'),rng:tr('Alcance','Range'),rate:tr('Tempo entre tiros','Time between shots'),hp:tr('Vida','Health')};
+  const nums=o=>st('swords',L.dmg,Math.round(o.dmg))+st('target',L.rng,Math.round(o.range))+st('hourglass',L.rate,o.rate+' s')+
+    (o.splash?st('stone',tr('Área','Area'),Math.round(o.splash)):'')+(o.slow&&o.slow<1?st('boot',tr('Abranda para','Slows to'),Math.round(o.slow*100)+'%'):'')+
+    (o.burn?st('flame',tr('Arde por segundo','Burn per second'),o.burn.dps+' × '+o.burn.t+' s'):'');
+  showModal(`<h2>${tr('Unidades','Units')}</h2>${unitTabs('towers')}
+    <p class="small">${tr('Constroem-se nas bandeiras. No nível 3 escolhe-se uma de duas especializações; o nível 4 dá +40% de dano e o nível 5 mais +30% e um efeito próprio. As torres que levam dano recuperam vida se passarem 5 s sem levar mais.','Built on the flags. At level 3 you pick one of two specialisations; level 4 gives +40% damage and level 5 another +30% plus a unique effect. Damaged towers recover health after 5 s without being hit.')}</p>`+
+    Object.keys(TYPES).map(k=>{const T=TYPES[k],hp=[150,220,300,400,520].map(v=>v*(TW_HP[k]||1)),lv=i=>({dmg:T.dmg[i],range:T.range[i],rate:T.rate[i],splash:T.splash&&T.splash[i],slow:T.slow&&T.slow[i]});
+      return `<div class="ach"><canvas data-t="${k}" ${UCV}></canvas><span><b>${ic(T.icon)} ${T.name} <small>· ${T.cost} ${ic('coin')}</small></b><small style="display:block">${T.desc}</small>
+        <small style="display:block">${tr('Nível 1','Level 1')}: ${nums(lv(0))}</small><small style="display:block">${tr('Nível 2','Level 2')}: ${nums(lv(1))}</small>
+        <small style="display:block">${st('heart',L.hp,hp[0]+' → '+hp[4])}${st('hammer',tr('Melhorias','Upgrades'),T.up.join(' · '))}</small>`+
+        T.br.map((B,i)=>`<small style="display:block;margin-top:.2rem"><b style="display:inline">${B.name}</b> (${tr('nível 3','level 3')}): ${B.desc}. ${nums(B)}<span style="display:block">${ic('star')} ${tr('Nível 5','Level 5')}: ${T.L5[i]}</span></small>`).join('')+`</span></div>`;}).join(''),
+    [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
+  unitTabsOn(back);
+  paintUnits('canvas[data-t]',cn=>{const z=3*1.25;ctx.scale(z,z);ctx.save();ctx.translate(28*3/z,36*3/z);ctx.lineJoin='round';const t={k:cn.dataset.t,lv:2,br:0,ang:-Math.PI/2,kick:0};
+    if(TMAT[t.k])drawTowerBuilding(ctx,t);else{towerPlatform(ctx,t.lv,towerCol(t.k));ctx.scale(1.18,1.18);drawTowerUnit(ctx,t);}ctx.restore();});
+}
+function showHeroes(back){
+  const st=(i,l,v)=>sti(i,l,v,UST),L={hp:tr('Vida','Health'),dmg:tr('Dano','Damage'),rate:tr('Tempo entre golpes','Time between attacks'),rng:tr('Alcance','Range')};
+  showModal(`<h2>${tr('Unidades','Units')}</h2>${unitTabs('heroes')}
+    <p class="small">${tr('A heroína bloqueia até 3 inimigos e sobe até ao nível 10; nos níveis 3, 6 e 9 escolhe uma de duas melhorias. Ganhar um mapa pela primeira vez traz a lenda desse mapa para o teu lado.','The heroine blocks up to 3 enemies and goes up to level 10; at levels 3, 6 and 9 you pick one of two upgrades. Winning a map for the first time brings that map’s legend over to your side.')}</p>`+
+    Object.keys(HEROES).map(k=>{const D=HEROES[k],lk=heroLocked(k);
+      return `<div class="ach${lk?' off':''}"><canvas data-h="${k}" ${UCV}></canvas><span><b>${ic(D.icon)} ${D.name} <small>· ${D.melee?tr('corpo a corpo','melee'):tr('à distância','ranged')}</small></b>
+        ${lk?`<small style="display:block">${ic('lock')} ${tr('Ganha em ','Win at ')}${LEVELS[D.map].name}${tr(' para desbloquear',' to unlock')}</small>`:''}
+        ${st('heart',L.hp,D.hp)}${st('swords',L.dmg,D.dmg)}${st('hourglass',L.rate,D.rate+' s')}${st('target',L.rng,D.range)}
+        ${D.pass?`<small style="display:block">${D.pass}</small>`:''}<small style="display:block">${ic('star')} <b style="display:inline">${D.sp.name}</b> (${D.sp.cd} s): ${D.sp.desc}</small>`+
+        D.ups.map((u,i)=>`<small style="display:block">${tr('Nível','Level')} ${HERO_TIERS[i]}: ${u.map(x=>`<b style="display:inline">${x.name}</b> (${x.desc})`).join(tr(' ou ',' or '))}</small>`).join('')+`</span></div>`;}).join(''),
+    [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
+  unitTabsOn(back);
+  paintUnits('canvas[data-h]',cn=>{const k=cn.dataset.h,D=HEROES[k];
+    if(D.boss){const f=FOES[D.boss],r=D.r||10,z=3*Math.min(2.3,11/r);ctx.scale(z,z);
+      drawBoss({id:3,hero:1,f,x:28*3/z,y:33*3/z,a:0,r,col:f.col,cur:0,stunT:0,blocked:false,bcd:0,atk:-1,sp:-1});}
+    else{const z=3*1.45*1.1;ctx.scale(z,z);ctx.translate(28*3/z,33*3/z);ctx.lineJoin='round';const a={mv:false,ph:0,blink:false,atk:-1,sp:-1,lv:1};if(k==='padeira')drawPadeira(ctx,a);else drawDeu(ctx,a);}});
 }
 function showAch(back){
   const n=ACH.filter(a=>achDone[a.id]).length;
