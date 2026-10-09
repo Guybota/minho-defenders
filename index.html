@@ -190,9 +190,16 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
   body:is(.inmenu,.inpause) .card>.mbtns{background:linear-gradient(transparent,color-mix(in srgb,var(--bg) 96%,transparent) .7rem)}}
 .stats-end{display:grid;grid-template-columns:auto auto;gap:.2rem 1rem;font-size:.95rem;margin:.6rem 0}
 .stats-end span:nth-child(odd){color:var(--soft)}
+.echart{margin:.2rem 0 .6rem}.echart>svg{width:100%;height:auto;display:block;overflow:visible}
+.echart .ax{stroke:var(--line);stroke-width:1}.echart text{font-size:9px;fill:var(--soft);font-family:Georgia,serif}
+.echart polyline{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}.echart .pg{stroke:#c9971c}.echart .pl{stroke:var(--red)}
+.eleg{display:flex;gap:.9rem;font-size:.82rem;color:var(--soft);align-items:center}.eleg .lg.g{color:color-mix(in srgb,var(--gold) 70%,var(--ink))}.eleg .lg.l{color:var(--red)}.eleg .w{margin-left:auto}
 .ach{display:flex;gap:.6rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px dotted var(--line)}
 .ach .ai{font-size:1.3rem;width:1.8rem;text-align:center}
 .ach.off{opacity:.45}
+.hbtn canvas{display:block;width:2.5rem;height:2.5rem;margin:-.25rem auto -.05rem;border:0!important;background:none!important;box-shadow:none!important}.hbtn>span>.ico{position:absolute;top:.3rem;right:.3rem}.hbtn:disabled canvas{filter:grayscale(1);opacity:.45}
+.hdesc{min-height:2.6em}
+.stars{white-space:nowrap}.estars{text-align:center;font-size:2.2rem;margin:.1rem 0 .3rem!important;line-height:1}.stars .ico.off{opacity:.28;filter:grayscale(1)}
 .ach b{font-weight:400;display:block}
 .ach small{color:var(--soft)}
 table{width:100%;border-collapse:collapse;font-size:.95rem}
@@ -407,6 +414,14 @@ body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0
   /* painel da heroína minimizado: poderes e zoom à mão, por cima da barra */
   body.panel-min #abil,body.panel-min #abilT{opacity:1;transform:translateY(-4.7rem)}
   body.panel-min #abilT,body.panel-min #abil.open .ab,body.panel-min #zoomb{pointer-events:auto}body.panel-min #zoomb{opacity:1}
+}
+/* telemóvel ao alto: HUD compacto numa fila (números, pausa e menu); velocidade e som numa fila curta à direita, para se ver o rio */
+@media (orientation:portrait) and (max-width:520px){
+  #hud{gap:.3rem}#hud .bar{display:contents}
+  #hud .stats{flex:0 1 auto;order:1;border-radius:10px;padding:.05rem .1rem}
+  #hud .st{padding:.15rem .4rem .25rem}#hud .sv b{font-size:1rem}#hud .si{font-size:.95rem}
+  #bPause{order:2;margin-left:auto}#bMenu{order:3}#bSpeed{order:4;margin-left:auto}#bSound{order:5}
+  #hud .bar button:not(#bWave){width:36px;height:36px}#hud .bar button#bSpeed{width:66px;height:30px;padding:0 .4rem;font-size:.9rem}#hud .bar button#bSound{height:30px;width:30px}
 }
 /* ---------- Duelo: botão das tropas no canto inferior direito, como o dos poderes ---------- */
 #sendT{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem);width:64px;height:64px;min-height:0;padding:0;border-radius:50%;
@@ -1445,6 +1460,7 @@ function startWave(early,who){
   if(S.spawning||S.over)return;
   if(!S.infinite&&S.wave>=MAXW)return;
   if(early&&S.nextT!=null){const b=Math.ceil(S.nextT);if(S.local)addGold('all',Math.ceil(b/2));else addGold(who||1,b);S.texts.push({x:W/2,y:490,s:tr('Chamada cedo: +','Called early: +')+b+' ¤',t:0,T:1.6});}
+  (S.stats.hist||(S.stats.hist=[])).push([S.wave,S.gold,S.lives]);// para o gráfico do fim
   S.nextT=null;S.wave++;S.queue=waveDef(S.wave);S.spawning=true;S.spawnT=0;S.started=true;
   S.weather=S.wave<=2?'sol':pick(['sol','sol','sol','noite','noite','chuva','chuva','nevoeiro','nevoeiro']);
   S.texts.push({x:W/2,y:430,s:S.wave%10===0?tr('Cuidado: vem aí uma lenda!','Watch out: a legend is coming!'):S.wave%5===0?pick(Q.cap):pick(Q.wave),t:0,T:2.4,big:true});
@@ -3283,7 +3299,9 @@ function nextWaveInfo(){
   const cnt={};waveDef(w).forEach(q=>cnt[q.t]=(cnt[q.t]||0)+1);
   const paths=new Set([0,1]);if(S.cOpen||w>=10)paths.add(2);if(Object.keys(cnt).some(t=>FOES[t].swim))paths.add(2);
   const boss=Object.keys(cnt).find(t=>FOES[t].boss);
-  const v={w,cnt,paths:[...paths],boss};nextCache={w,lv:LV.id,v};return v;
+  // tipos que não vinham na vaga anterior (aparecem destacados no aviso)
+  const prev=w>1?new Set(waveDef(w-1).map(q=>q.t)):new Set(Object.keys(cnt)),nw=Object.keys(cnt).filter(t=>!prev.has(t)&&!FOES[t].boss);
+  const v={w,cnt,paths:[...paths],boss,nw};nextCache={w,lv:LV.id,v};return v;
 }
 function drawPathArrows(){
   const n=nextWaveInfo();if(!n)return;
@@ -3310,13 +3328,20 @@ function drawWavePreview(){
   const cw=cells.map(s=>ctx.measureText(s).width+32);
   ctx.font="bold 13px Georgia,serif";const hw=ctx.measureText(head).width;
   const bossTxt=n.boss?tr('Lenda','Legend')+': '+FOES[n.boss].name:'';
-  const w=Math.min(W-24,Math.max(hw,cw.reduce((a,b)=>a+b,0),n.boss?ctx.measureText(bossTxt).width:0)+20),h=n.boss?62:44,x0=W/2-w/2,y0=hudTop();
+  const nwTxt=n.nw.length?tr('Novo','New')+': '+n.nw.map(t=>FOES[t].name).join(', '):'';
+  ctx.font="italic 12px Georgia,serif";const nwW=nwTxt?ctx.measureText(nwTxt).width+18:0;ctx.font="bold 13px Georgia,serif";
+  const w=Math.min(W-24,Math.max(hw,cw.reduce((a,b)=>a+b,0),n.boss?ctx.measureText(bossTxt).width:0,nwW)+20),h=44+(n.boss?18:0)+(nwTxt?17:0),x0=W/2-w/2,y0=hudTop();
   ctx.fillStyle='rgba(251,243,223,.93)';ctx.strokeStyle=n.boss?'#9b2226':'#3e3222';ctx.lineWidth=n.boss?2:1.2;
   ctx.fillRect(x0,y0,w,h);ctx.strokeRect(x0,y0,w,h);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=n.boss?'#9b2226':'#2e2419';ctx.fillText(head,W/2,y0+12);
   ctx.font="13px Georgia,serif";ctx.fillStyle='#2e2419';ctx.textAlign='left';
-  let x=W/2-cw.reduce((a,b)=>a+b,0)/2+6;cells.forEach((s,i)=>{drawIc(ctx,E_IC[items[i][0]],x+8,y0+31,17);ctx.fillText(s,x+19,y0+31);x+=cw[i];});
-  if(n.boss){ctx.textAlign='center';ctx.font="italic bold 13px Georgia,serif";ctx.fillStyle='#9b2226';ctx.fillText(bossTxt,W/2+9,y0+50);drawIc(ctx,'warn',W/2-ctx.measureText(bossTxt).width/2-4,y0+50,15);}
+  let x=W/2-cw.reduce((a,b)=>a+b,0)/2+6;cells.forEach((s,i)=>{const nv=n.nw.includes(items[i][0]);
+    if(nv){ctx.fillStyle='rgba(232,194,74,.55)';ctx.beginPath();ctx.arc(x+8,y0+31,10.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2e2419';}
+    drawIc(ctx,E_IC[items[i][0]],x+8,y0+31,17);ctx.fillText(s,x+19,y0+31);x+=cw[i];});
+  let yl=y0+50;
+  if(n.boss){ctx.textAlign='center';ctx.font="italic bold 13px Georgia,serif";ctx.fillStyle='#9b2226';ctx.fillText(bossTxt,W/2+9,yl);drawIc(ctx,'warn',W/2-ctx.measureText(bossTxt).width/2-4,yl,15);yl+=18;}
+  if(nwTxt){ctx.textAlign='center';ctx.font="italic 12px Georgia,serif";ctx.fillStyle='#7a5a10';const tw=Math.min(ctx.measureText(nwTxt).width,w-30);
+    ctx.fillStyle='rgba(232,194,74,.8)';ctx.beginPath();ctx.arc(W/2-tw/2-6,yl-1,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#5c430c';ctx.fillText(nwTxt,W/2+5,yl,w-30);}
 }
 
 // água viva: reflexos que descem o rio, ondinhas à volta das ínsuas e ondas na costa
@@ -3854,6 +3879,8 @@ function drawSlot(s,i,can){
   const pulse=rm?0:Math.sin(t*3+ph),R=15+(sel?1.5+pulse*0.6:0);
   const side=S.local?(sideOf(s)===1?'47,74,115':'155,34,38'):null;
   ctx.save();
+  // sem ouro para construir: mais pequeno e esbatido, para o mapa não ficar cheio de bandeiras
+  if(!can&&!sel){ctx.globalAlpha=0.5;ctx.translate(x,y);ctx.scale(0.78,0.78);ctx.translate(-x,-y);}
   // sombra e brilho
   ctx.fillStyle='rgba(46,36,25,.22)';ctx.beginPath();ctx.ellipse(x+2,y+3,R+1,R*0.72,0,0,Math.PI*2);ctx.fill();
   if(can&&!sel){ctx.globalAlpha=0.22+0.14*pulse;ctx.translate(x,y);sprite(ctx,'slotG',-R-9,-R-9,2*R+18,2*R+18,c=>{const g=c.createRadialGradient(0,0,R*0.6,0,0,R+9);g.addColorStop(0,'rgba(232,194,74,1)');g.addColorStop(1,'rgba(232,194,74,0)');
@@ -4472,6 +4499,12 @@ function showModal(html,buttons){
     b.onclick=()=>{audio();if(!bt.keep)closeModal();bt.fn&&bt.fn();};box.appendChild(b);});}
   $('modal').hidden=false;c.scrollTop=0;pop(c,'enter');const f=c.querySelector('button.main')||c.querySelector('button');if(f)f.focus({preventScroll:true});
 }
+// estrelas por mapa e dificuldade (vidas que sobram no fim: 80% ou mais 3, 40% ou mais 2, senão 1) e melhor vaga no infinito
+const starsOf=()=>S.lives>=S.startLives*0.8?3:S.lives>=S.startLives*0.4?2:1;
+function starRow(n){return `<span class="stars" aria-label="${n} ${tr('estrelas','stars')}">${[0,1,2].map(i=>ic('star',i<n?'':'off')).join('')}</span>`;}
+function mapProg(lvl){const st=LS.get('stars',{})[lvl]||{},inf=LS.get('infbest',{})[lvl];let di=-1;for(let d=2;d>=0;d--)if(st[d]){di=d;break;}
+  if(di<0&&!inf)return bestTxt(lvl);
+  return (di>=0?starRow(st[di])+' '+DIFFS[di].name:'')+(inf?(di>=0?' · ':'')+ic('infinite')+' '+inf:'');}
 function bestTxt(lvl){const b=LS.get('best-'+lvl,null);return b?scoreTxt(b.sc):tr('Ainda por defender','Not yet defended');}
 const CAMP_TXT={
   moncao:[tr('Capítulo I · Monção','Chapter I · Monção'),tr('Ano de 1368. As hostes de Castela cercam Monção pela margem do Minho. Lá dentro há pouco pão e muita teimosia. Deu-la-Deu Martins já tem um plano, mas primeiro é preciso aguentar as muralhas. E dizem que a Coca anda acordada.','Year 1368. The armies of Castile besiege Monção from the banks of the Minho. Inside there is little bread and plenty of stubbornness. Deu-la-Deu Martins already has a plan, but first the walls must hold. And they say the Coca is awake.')],
@@ -4531,12 +4564,13 @@ function showMenu(){
 }
 function showSetup(){
   menuBgShow();
-  const m=menuSel.mode,lv=LEVEL_ORDER.map(id=>`<button data-m="lvl" data-v="${id}" aria-pressed="${menuSel.lvl===id}">${LEVELS[id].name}<small>${bestTxt(id)}</small></button>`).join('');
+  const m=menuSel.mode,lv=LEVEL_ORDER.map(id=>`<button data-m="lvl" data-v="${id}" aria-pressed="${menuSel.lvl===id}">${LEVELS[id].name}<small>${mapProg(id)}</small></button>`).join('');
   const prog=campProg();
   const ch=CAMP.map((id,i)=>`<button data-m="chap" data-v="${i}" aria-pressed="${menuSel.chap===i}" ${i>prog?'disabled':''}>${i>prog?ic('lock')+' ':i<prog?ic('check')+' ':''}${CAMP_TXT[id][0].split(' · ')[0]}<small>${LEVELS[id].name}</small></button>`).join('');
   const df=DIFFS.map((d,i)=>`<button data-m="di" data-v="${i}" aria-pressed="${menuSel.di===i}">${d.name}<small>${d.desc}</small></button>`).join('');
   if(heroLocked(menuSel.hero))menuSel.hero='padeira';
-  const hr=Object.entries(HEROES).map(([k,h])=>{const lk=heroLocked(k);return`<button data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}" ${lk?'disabled':''} title="${h.pass||''}">${ic(lk?'lock':h.icon)} ${h.short}<small>${lk?tr('Ganha em ','Win at ')+LEVELS[h.map].name:h.sp.name}</small></button>`;}).join('');
+  const hr=Object.entries(HEROES).map(([k,h])=>{const lk=heroLocked(k);return`<button class="hbtn" data-m="hero" data-v="${k}" aria-pressed="${menuSel.hero===k}" ${lk?'disabled':''} title="${h.pass||''}"><canvas data-h="${k}" width="168" height="168" aria-hidden="true"></canvas><span>${lk?ic('lock')+' ':''}${h.short}</span><small>${lk?tr('Ganha em ','Win at ')+LEVELS[h.map].name:h.sp.name}</small></button>`;}).join('');
+  const hdesc=k=>{const h=HEROES[k];return `${ic(h.icon)} <b>${h.name}</b> · ${h.melee?tr('corpo a corpo','melee'):tr('à distância','ranged')}. ${h.pass?h.pass+' ':''}<b>${h.sp.name}</b>: ${h.sp.desc}`;};
   let body='';
   if(m==='campanha')body=`<h3>${tr('Capítulo','Chapter')}</h3><div class="seg">${ch}</div><p class="small">${prog>=CAMP.length?tr('Campanha terminada. Podes voltar a jogar qualquer capítulo.','Campaign complete. You can replay any chapter.'):tr('Ganha um capítulo para abrir o seguinte.','Win a chapter to unlock the next.')}</p>`;
   else if(m==='livre')body=`<h3>${tr('Mapa','Map')}</h3><div class="seg">${lv}</div>`;
@@ -4558,11 +4592,11 @@ function showSetup(){
   btns.push({label:tr('Voltar','Back'),keep:true,fn:showMenu});
   const title={campanha:[ic('castle')+' '+tr('Campanha','Campaign'),tr('Cinco capítulos, de Monção a Âncora, em 1368.','Five chapters, from Monção to Âncora, in 1368.')],livre:[ic('map')+' '+tr('Jogo livre','Free play'),tr('Escolhe a praça e defende-a como quiseres.','Pick a fortress and defend it your way.')],coop:[ic('duo')+' '+tr('Cooperativo','Co-op'),tr('Defendam a mesma praça a dois.','Defend the same fortress together.')],
     duelo:[ic('swords')+' '+tr('Duelo 1 contra 1','1v1 Duel'),tr('Portugal contra Castela, com o Minho pelo meio.','Portugal against Castile, with the Minho in between.')]}[m];
-  showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Herói','Hero')}</h3><div class="seg">${hr}</div>`,btns);
-  const mc=$('mcard');
+  showModal(`<h2>${title[0]}</h2><p class="small">${title[1]}</p>${body}<h3>${tr('Dificuldade','Difficulty')}</h3><div class="seg">${df}</div><h3>${tr('Herói','Hero')}</h3><div class="seg">${hr}</div><p class="small hdesc" id="hdesc">${hdesc(menuSel.hero)}</p>`,btns);
+  const mc=$('mcard');paintUnits('canvas[data-h]',paintHero);
   mc.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.m;menuSel[k]=(k==='di'||k==='chap'||k==='dside')?+b.dataset.v:b.dataset.v;
-    mc.querySelectorAll(`[data-m="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+    mc.querySelectorAll(`[data-m="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));if(k==='hero')$('hdesc').innerHTML=hdesc(b.dataset.v);}));
   const jn=m==='duelo'?joinDuel:joinCoop;
   const cj=$('cJoin');if(cj)cj.addEventListener('click',()=>{saveSel();jn($('cCode').value);});
   const cc=$('cCode');if(cc)cc.addEventListener('keydown',e=>{if(e.key==='Enter'){saveSel();jn(cc.value);}});
@@ -4738,10 +4772,13 @@ function showHeroes(back){
         D.ups.map((u,i)=>`<small style="display:block">${tr('Nível','Level')} ${HERO_TIERS[i]}: ${u.map(x=>`<b style="display:inline">${x.name}</b> (${x.desc})`).join(tr(' ou ',' or '))}</small>`).join('')+`</span></div>`;}).join(''),
     [{label:tr('Voltar','Back'),main:true,keep:true,fn:back}]);
   unitTabsOn(back);
-  paintUnits('canvas[data-h]',cn=>{const k=cn.dataset.h,D=HEROES[k];
+  paintUnits('canvas[data-h]',paintHero);
+}
+// retrato parado do herói (num canvas de 168×168; ctx e S já emprestados por paintUnits)
+function paintHero(cn){const k=cn.dataset.h,D=HEROES[k];
     if(D.boss){const f=FOES[D.boss],r=D.r||10,z=3*Math.min(2.3,11/r);ctx.scale(z,z);
       drawBoss({id:3,hero:1,f,x:28*3/z,y:33*3/z,a:0,r,col:f.col,cur:0,stunT:0,blocked:false,bcd:0,atk:-1,sp:-1});}
-    else{const z=3*1.45*1.1;ctx.scale(z,z);ctx.translate(28*3/z,33*3/z);ctx.lineJoin='round';const a={mv:false,ph:0,blink:false,atk:-1,sp:-1,lv:1};if(k==='padeira')drawPadeira(ctx,a);else drawDeu(ctx,a);}});
+    else{const z=3*1.45*1.1;ctx.scale(z,z);ctx.translate(28*3/z,33*3/z);ctx.lineJoin='round';const a={mv:false,ph:0,blink:false,atk:-1,sp:-1,lv:1};if(k==='padeira')drawPadeira(ctx,a);else drawDeu(ctx,a);}
 }
 function showAch(back){
   const n=ACH.filter(a=>achDone[a.id]).length;
@@ -4776,6 +4813,9 @@ function endGame(win){
     [0,600,1500].forEach(ms=>setTimeout(()=>{if(NET.R)NET.R.emit('end',d).catch(()=>{});},ms));
     if(win)unlock('amigos');
   }
+  if(!S.coop&&!S.daily){
+    if(win&&!S.infinite){const all=LS.get('stars',{}),m=all[S.lvl]||(all[S.lvl]={});S.stars=starsOf();m[S.di]=Math.max(m[S.di]||0,S.stars);LS.set('stars',all);}
+    if(S.infinite){const ib=LS.get('infbest',{});if(S.wave>(ib[S.lvl]||0)){ib[S.lvl]=S.wave;LS.set('infbest',ib);}}}
   if(!S.coop){const wave=win?S.wave:Math.max(0,S.wave-(S.infinite?0:1));submitScore(S.lvl,S.infinite?S.wave:(win?MAXW:wave),S.di);clearSave();}
   if(win){
     sfx('win');setTimeout(()=>say(tr('Conseguiste! Viva Portugal!','You did it! Long live Portugal!'),'pt-PT',true),700);
@@ -4826,7 +4866,7 @@ function showEnd(win){
   if(win&&!S.infinite)setTimeout(confetti,250);else if(!win)defeatFx(true);
   const st=S.stats,best=S.towers.slice().sort((a,b)=>(b.dmgDone||0)-(a.dmgDone||0))[0];
   const mm=Math.floor(st.time/60),ss=String(Math.floor(st.time%60)).padStart(2,'0');
-  const stats=`<div class="stats-end">
+  const stats0=`<div class="stats-end">
     <span>${tr('Espanhóis despachados','Spaniards dispatched')}</span><span>${st.kills}</span>
     <span>${tr('Toalhas salvas','Towels saved')}</span><span>${st.kills*2}</span>
     <span>${tr('Ouro ganho','Gold earned')}</span><span>${st.gold} ${ic('coin')}</span>
@@ -4836,11 +4876,11 @@ function showEnd(win){
     ${S.cards.length?`<span>${tr('Bênçãos e pactos','Blessings & pacts')}</span><span>${S.cards.map(id=>{const c=CARDS.find(x=>x.id===id);return c?ic(c.ic):'';}).join(' ')}</span>`:''}
     <span>${tr('Sino tocado','Bell rung')}</span><span>${st.bells} ${tr('vezes','times')}</span>
     <span>${tr('Tempo de cerco','Siege time')}</span><span>${mm}:${ss}</span></div>`;
-  const M=END_MSG[S.lvl],coopNet=S.coop&&!S.local,where=LV.full||tr('Cerco de ','Siege of ')+LV.name;
+  const M=END_MSG[S.lvl],coopNet=S.coop&&!S.local,stats=stats0+endChart(),where=LV.full||tr('Cerco de ','Siege of ')+LV.name;
   let tag,title,body,it;
   if(win&&!S.infinite){
     tag=tr('Vitória','Victory');title=tr('Conseguiste! Fodeste os Espanhóis todos','You did it! You kicked every Spaniard’s arse');
-    body=M.win.map(t=>'<p>'+t+'</p>').join('')+stats+`<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`;
+    body=`<p class="estars">${starRow(starsOf())}</p>`+M.win.map(t=>'<p>'+t+'</p>').join('')+stats+`<p class="small">${tr(`Vidas restantes: ${S.lives}. Espanhóis que voltaram sem toalhas: todos.`,`Lives left: ${S.lives}. Spaniards who went home without towels: all of them.`)}</p>`;
     it=coopNet?[{l:ic('map')+' Menu',main:1,fn:()=>{netLeave();showMenu();}}]:[
       ...(S.campaign!=null?[S.campaign<CAMP.length-1?{l:ic('castle')+' '+tr('Próximo capítulo','Next chapter'),main:1,fn:()=>{menuSel.chap=S.campaign+1;showChapter(S.campaign+1);}}
           :{l:ic('scroll')+' '+tr('Epílogo','Epilogue'),main:1,fn:()=>showModal(tr('<h2>O Alto Minho está livre</h2><p>','<h2>The Alto Minho is free</h2><p>')+EPILOGO+'</p>',[{label:'Menu',main:true,keep:true,fn:showMenu}])}]:[]),
@@ -4858,6 +4898,16 @@ function showEnd(win){
       {l:ic('map')+' Menu',fn:showMenu}];
   }
   endCard(tag,where,title,win&&!S.infinite,body,it);
+}
+// gráfico do fim: ouro na mão e vidas da praça no início de cada vaga
+function endChart(){
+  const h=(S.stats.hist||[]).concat([[S.wave,S.gold,S.lives]]);if(h.length<3)return'';
+  const W0=300,H0=84,n=h.length-1,mg=Math.max(50,...h.map(p=>p[1])),ml=Math.max(1,S.startLives,...h.map(p=>p[2]));
+  const X=i=>(6+i/n*(W0-12)).toFixed(1),line=(k,m)=>h.map((p,i)=>X(i)+','+(H0-6-p[k]/m*(H0-14)).toFixed(1)).join(' ');
+  const ticks=[...new Set([0,Math.round(n/2),n])].map(i=>`<text x="${X(i)}" y="${H0+9}" text-anchor="middle">${h[i][0]}</text>`).join('');
+  return `<div class="echart"><div class="eleg"><span class="lg g">${ic('coin')} ${tr('Ouro','Gold')}</span><span class="lg l">${ic('castle')} ${tr('Vidas','Lives')}</span><span class="lg w">${tr('por vaga','per wave')}</span></div>
+    <svg viewBox="0 -2 ${W0} ${H0+14}" role="img" aria-label="${tr('Ouro e vidas por vaga','Gold and lives per wave')}"><line x1="6" x2="${W0-6}" y1="${H0-6}" y2="${H0-6}" class="ax"/>
+    <polyline points="${line(1,mg)}" class="pg"/><polyline points="${line(2,ml)}" class="pl"/>${ticks}</svg></div>`;
 }
 // cartão de fim (vitória/derrota, também no duelo): o mesmo do menu principal e da pausa, por cima do mapa desfocado
 function endCard(tag,where,title,good,body,it){
