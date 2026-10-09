@@ -4510,6 +4510,7 @@ function showMenu(){
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Defende as praças do Alto Minho das barcas de Castela.','Defend the fortresses of the Alto Minho from the boats of Castile.')}</p>
     <p class="status">${tr('Praças por defender','Fortresses to defend')}: ${LEVEL_ORDER.filter(k=>!LS.get('wins',{})[k]).length} · ${tr('Barcas no rio','Boats on the river')}: <b>${threat}</b></p>
     <div class="mlist">${it.map(([k,l,hot])=>`<button data-go="${k}"${hot?' class="main"':''}>${l}</button>`).join('')}
+      <button data-go="foes">${ic('helmet')} ${tr('Unidades','Units')}</button>
       <div class="row"><button data-go="rec">${ic('trophy')} ${tr('Recordes','Leaderboard')}</button><button data-go="ach">${ic('medal')} ${tr('Conquistas','Achievements')}</button></div>
       <div class="row"><button data-go="opt">${ic('gear')} ${tr('Opções','Options')}</button><button data-go="help">${ic('help')} ${tr('Como jogar','How to play')}</button></div>
       <div class="langs" role="group" aria-label="${tr('Língua','Language')}"><button data-go="lang-pt" aria-pressed="${LANG==='pt'}">${ic('globe')} Português</button><button data-go="lang-en" aria-pressed="${LANG==='en'}">${ic('globe')} English</button></div></div>
@@ -4521,6 +4522,7 @@ function showMenu(){
     else if(k==='ach')showAch(showMenu);
     else if(k==='opt')showOpts(showMenu);
     else if(k==='help')showHelp(showMenu);
+    else if(k==='foes')showFoes(showMenu);
     else if(k.startsWith('lang-'))setLang(k.slice(5));
     else{menuSel.mode=k;LS.set('mode',k);showSetup();}}));
 }
@@ -4588,6 +4590,7 @@ function pauseMenu(){
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Em pausa','Paused')} · ${LV.full||tr('Cerco de ','Siege of ')+LV.name}</p>
     <p class="status">${tr('Vaga','Wave')} ${Math.max(1,S.wave)} · ${tr('Vidas','Lives')} ${S.lives} · <b>${tr('Castela à espera','Castile waits')}</b></p>
     <div class="mlist">${it.map(([k,l,hot])=>`<button data-go="${k}"${hot?' class="main"':''}>${l}</button>`).join('')}
+      <button data-go="foes">${ic('helmet')} ${tr('Unidades','Units')}</button>
       <div class="row"><button data-go="opt">${ic('gear')} ${tr('Opções','Options')}</button><button data-go="help">${ic('help')} ${tr('Como jogar','How to play')}</button></div>
       <div class="row"><button data-go="rec">${ic('trophy')} ${tr('Recordes','Leaderboard')}</button><button data-go="ach">${ic('medal')} ${tr('Conquistas','Achievements')}</button></div></div>
     ${S.coop?'':`<p class="small ptip">${tr('A partida é guardada automaticamente no fim de cada vaga.','The game saves automatically at the end of each wave.')}</p>`}</div>`,[]);
@@ -4598,6 +4601,7 @@ function pauseMenu(){
     else if(k==='menu')showMenu();
     else if(k==='opt')showOpts(pauseMenu);
     else if(k==='help')showHelp(pauseMenu);
+    else if(k==='foes')showFoes(pauseMenu);
     else if(k==='rec')showBoard(S.lvl,pauseMenu);
     else if(k==='ach')showAch(pauseMenu);}));
 }
