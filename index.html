@@ -199,7 +199,7 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .ach.off{opacity:.45}
 .hbtn canvas{display:block;width:2.5rem;height:2.5rem;margin:-.25rem auto -.05rem;border:0!important;background:none!important;box-shadow:none!important}.hbtn>span>.ico{position:absolute;top:.3rem;right:.3rem}.hbtn:disabled canvas{filter:grayscale(1);opacity:.45}
 .hdesc{min-height:2.6em}
-.stars{white-space:nowrap}.estars{text-align:center;font-size:2.2rem;margin:.1rem 0 .3rem!important;line-height:1}.stars .ico.off{opacity:.28;filter:grayscale(1)}
+.stars{white-space:nowrap}.dly{font-size:.8rem;color:var(--soft);margin-left:.35rem}.dly .ico{width:.85em;height:.85em}.dly.new{position:absolute;top:5px;right:5px;width:9px;height:9px;margin:0;border-radius:50%;background:var(--gold);border:1.5px solid var(--bg);animation:pulse 1.4s ease-out infinite}.estars{text-align:center;font-size:2.2rem;margin:.1rem 0 .3rem!important;line-height:1}.stars .ico.off{opacity:.28;filter:grayscale(1)}
 .ach b{font-weight:400;display:block}
 .ach small{color:var(--soft)}
 table{width:100%;border-collapse:collapse;font-size:.95rem}
@@ -395,6 +395,13 @@ body{grid-template-rows:minmax(0,1fr);grid-template-areas:"stage"}
   box-shadow:0 3px 10px var(--shadow);pointer-events:none;animation:pausedPulse 1.8s ease-in-out infinite}
 #pausedTag .ico{width:1em;height:1em}
 @keyframes pausedPulse{50%{opacity:.6}}
+/* desfazer: aparece uns segundos no canto inferior direito depois de construir ou melhorar */
+#undoB{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + .5rem);bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 72px);min-height:44px;padding:.3rem .8rem;border-radius:999px;
+  background:var(--glass);border:1.5px solid var(--line);box-shadow:0 3px 10px var(--shadow);display:flex;align-items:center;gap:.35rem;font-size:.95rem;overflow:hidden;animation:cardIn .22s ease-out}
+#undoB[hidden]{display:none}
+#undoB i{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:var(--p,100%)}
+body.paused #undoB{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem + 112px)}
+body.panel-open #undoB{opacity:0;pointer-events:none}
 #stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(155,34,38,0);transition:box-shadow .3s;z-index:1}
 body.paused #stage::after{box-shadow:inset 0 0 0 4px rgba(155,34,38,.55),inset 0 0 40px rgba(46,36,25,.25)}
 @media (orientation:portrait),(max-width:699px){body.panel-open #pausedTag{bottom:calc(env(safe-area-inset-bottom,0px) + .8rem)}}
@@ -498,6 +505,7 @@ html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition
 <nav id="send" aria-label="Mandar tropas"></nav>
 <div id="menubg" hidden aria-hidden="true"></div>
 <div id="toast"></div>
+<button id="undoB" hidden></button>
 <div id="pausedTag" hidden><span data-ic="pause"></span><span id="pausedTxt">Em pausa</span></div>
 <div id="modal" hidden><div class="card" id="mcard"></div></div>
 
@@ -597,7 +605,7 @@ const ICONS=(()=>{
     banner:s('M6 2.5v19',null,1.8)+s('M6.5 3.5h12l-2.5 4 2.5 4h-12z','#b8302a')+f('M6.5 6.4h10.2l-.7 1.1.7 1.1H6.5z',GL),
     bagpipe:s('M5 14c0-4 3-6.5 7-6.5s6 3 5 6.5-4 5-7 5-5-1.8-5-5z','#6a8f3a')+s('M14 8l4-5.5M16 9.5l5-3.5M9 7.5L7 2',WD,1.6)+s('M7 17.5l-3 4',null,1.8),
     shell:s('M12 20.5L3.5 9a9.5 9.5 0 0 1 17 0z','#e8dcc0')+s('M12 20.5L7 7.5M12 20.5V6.5M12 20.5l5-13',null,.9),
-    close:s('M6 6l12 12M18 6L6 18',null,2.4),zin:s('M12 5v14M5 12h14',null,2.4),zout:s('M5 12h14',null,2.4),fit:s('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',null,2),
+    close:s('M6 6l12 12M18 6L6 18',null,2.4),undo:s('M5 9h9.5a4.75 4.75 0 0 1 0 9.5H9',null,2.2)+s('M8.5 5.2 4.7 9l3.8 3.8',null,2.2),zin:s('M12 5v14M5 12h14',null,2.4),zout:s('M5 12h14',null,2.4),fit:s('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',null,2),
     flagx:s('M5 2.5v19',null,1.8)+s('M5.5 3.5h7v10h-7z',P,1)+f('M8.3 5.5h1.4v6H8.3zM6.3 7.8h5.4v1.4H6.3z','#2f4a9e')+s('M12.5 3.5h7l-1.6 5 1.6 5h-7z',R,1)+f('M12.5 7.2h6.3l-.4 1.3.4 1.3h-6.3z',GL)+s('M3 21.5h5',null,1.6),
     foe:s('M3.5 21V10h3v2h2.2v-2h2.1v2h2.4v-2h2.1v2h2.2v-2h3v11z','#b5563a')+s('M9.8 21v-3.6a2.2 2.2 0 0 1 4.4 0V21',K)+s('M12 10V3.2l4.2 1.5L12 6.2',GL)+s('M5 15h2M17 15h2',null,1.1),
     dragon:s('M3 17c2-1 4-1 6 0 1-4 4-6.5 8-6.5l1.5-3 1 3.2 2.5.8-2.5 1.8c-2 .5-3.5 2-4 4.2-1 3.5-4 5-7.5 4.5-2.5-.4-4-2-5-4z',GR)+s('M9.5 12.5L6 4.5l7 5',GD)+`<circle cx="18" cy="11.8" r=".8" fill="${K}"/>`+s('M4 21l1.5-2.5M8 21.8l.5-2.5',null,1.2),
@@ -618,7 +626,7 @@ const ICONS=(()=>{
 })();
 const icSvg=(n,ink)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${(ICONS[n]||'').replace(/"K"/g,'"'+ink+'"')}</svg>`;
 // os ícones só de tinta (pausa, som, menu…) seguem a cor do texto; os outros são «autocolantes» com contorno fixo
-const IC_MONO=new Set(['pause','play','snd0','snd1','snd2','menu','fog','infinite','close','zin','zout','fit']);
+const IC_MONO=new Set(['undo','pause','play','snd0','snd1','snd2','menu','fog','infinite','close','zin','zout','fit']);
 function ic(n,cls){return icSvg(n,IC_MONO.has(n)?'currentColor':'#2e2419').replace('<svg ','<svg class="ico'+(cls?' '+cls:'')+'" aria-hidden="true" focusable="false" ');}
 // número com o ícone do stat à frente (coração vida, espadas dano, alvo alcance, ampulheta recarga…); o nome fica no title e no aria-label
 const sti=(i,l,v,css)=>`<span role="img" aria-label="${l} ${v}" title="${l}"${css?` style="${css}"`:''}>${ic(i)} ${v}</span>`;
@@ -1329,10 +1337,22 @@ const ACH=[
   {id:'infinito',ic:'infinite',name:tr('Infinito e mais além','To infinity and beyond'),desc:tr('Chega à vaga 30 no modo infinito.','Reach wave 30 in endless mode.')},
   {id:'maispaco',ic:'helmet',name:tr('Mais Paco que o Paco','More Paco than Paco'),desc:tr('Ganha na dificuldade Capitão Paco.','Win on Captain Paco difficulty.')},
   {id:'minho',ic:'castle',name:tr('Senhor do Alto Minho','Lord of the Alto Minho'),desc:tr('Ganha em todos os mapas.','Win on every map.')},
-  {id:'lendas',ic:'dragon',name:tr('Caçador de lendas','Legend hunter'),desc:tr('Derrota a Coca, o Mercador, o Polvo e o Cervo.','Defeat the Coca, the Merchant, the Octopus and the Stag.')},
+  {id:'lendas',ic:'dragon',name:tr('Caçador de lendas','Legend hunter'),desc:tr('Derrota a Coca, o Mercador, o Polvo, o Cervo e a Arrenegada.','Defeat the Coca, the Merchant, the Octopus, the Stag and the Arrenegada.')},
   {id:'campanha',ic:'scroll',name:tr('Alto Minho livre','The Alto Minho is free'),desc:tr('Termina a campanha.','Finish the campaign.')},
   {id:'amigos',ic:'duo',name:tr('Amigos para sempre','Friends forever'),desc:tr('Ganha um mapa em cooperativo.','Win a map in co-op.')},
-  {id:'aljubarrota',ic:'swords',name:tr('Isto é Aljubarrota!','This is Aljubarrota!'),desc:tr('Faz uma matança de 40 abates seguidos.','Reach a 40-kill streak.')}
+  {id:'aljubarrota',ic:'swords',name:tr('Isto é Aljubarrota!','This is Aljubarrota!'),desc:tr('Faz uma matança de 40 abates seguidos.','Reach a 40-kill streak.')},
+  {id:'portas',ic:'gate',name:tr('Aqui ninguém entra','Nobody gets in'),desc:tr('Ganha um mapa sem deixar arrombar nenhuma porta.','Win a map without letting any gate be broken.')},
+  {id:'nivel5',ic:'star',name:tr('Obra-prima','Masterpiece'),desc:tr('Leva uma torre ao nível 5.','Take a tower to level 5.')},
+  {id:'arsenal',ic:'castle',name:tr('Arsenal completo','Full arsenal'),desc:tr('Tem os quatro tipos de torre no nível 5 ao mesmo tempo.','Have all four tower types at level 5 at the same time.')},
+  {id:'heroi10',ic:'crown',name:tr('Lenda viva','Living legend'),desc:tr('Leva um herói ao nível 10.','Take a hero to level 10.')},
+  {id:'viracasaca',ic:'flagx',name:tr('Vira-casacas','Turncoat'),desc:tr('Ganha um mapa com uma lenda castelhana como herói.','Win a map with a Castilian legend as your hero.')},
+  {id:'pressa',ic:'hourglass',name:tr('Quem espera desespera','Waiting is for the weak'),desc:tr('Chama 10 vagas mais cedo num jogo.','Call 10 waves early in one game.')},
+  {id:'cofre',ic:'coinbag',name:tr('Cofre cheio','Full coffers'),desc:tr('Junta 2000 de ouro ao mesmo tempo.','Hold 2000 gold at once.')},
+  {id:'obras',ic:'bricks',name:tr('Mestre de obras','Master builder'),desc:tr('Faz todas as obras na praça num jogo.','Build every work in the fortress in one game.')},
+  {id:'estrelas',ic:'star',name:tr('Constelação do Minho','Minho constellation'),desc:tr('Ganha três estrelas em todos os mapas.','Earn three stars on every map.')},
+  {id:'rio',ic:'swim',name:tr('Dono do rio','Master of the river'),desc:tr('Ganha um duelo 1 contra 1.','Win a 1v1 duel.')},
+  {id:'diario',ic:'scroll',name:tr('Pregão do dia','Today’s proclamation'),desc:tr('Ganha um desafio do dia.','Win a daily challenge.')},
+  {id:'diario7',ic:'medal',name:tr('Semana cheia','A full week'),desc:tr('Ganha 7 desafios do dia.','Win 7 daily challenges.')}
 ];
 let achDone=LS.get('ach',{});
 function unlock(id){if(achDone[id]||offSide())return;achDone[id]=Date.now();LS.set('ach',achDone);const a=ACH.find(x=>x.id===id);
@@ -1451,7 +1471,7 @@ function updateBoats(dt){
     placeBoat(b);}
   S.boats=S.boats.filter(b=>b.al>0);
 }
-function addGold(who,a){S.stats.gold+=a;if(!S.coop){S.gold+=a;return;}
+function addGold(who,a){S.stats.gold+=a;if(S.gold+a>=2000&&!DUEL)unlock('cofre');if(!S.coop){S.gold+=a;return;}
   if(who===1)S.gold+=a;else if(who===2)S.gold2+=a;else if(who==='all'){S.gold+=a;S.gold2+=a;}else{const h=Math.ceil(a*0.6);S.gold+=h;S.gold2+=h;}}
 const goldOf=w=>w===2?S.gold2:S.gold;
 function pay(w,c){if(goldOf(w)<c)return false;if(w===2)S.gold2-=c;else S.gold-=c;return true;}
@@ -1459,7 +1479,7 @@ const myGold=()=>S.me===2?S.gold2:S.gold;
 function startWave(early,who){
   if(S.spawning||S.over)return;
   if(!S.infinite&&S.wave>=MAXW)return;
-  if(early&&S.nextT!=null){const b=Math.ceil(S.nextT);if(S.local)addGold('all',Math.ceil(b/2));else addGold(who||1,b);S.texts.push({x:W/2,y:490,s:tr('Chamada cedo: +','Called early: +')+b+' ¤',t:0,T:1.6});}
+  if(early&&S.nextT!=null){const b=Math.ceil(S.nextT);S.stats.early=(S.stats.early||0)+1;if(S.stats.early>=10)unlock('pressa');if(S.local)addGold('all',Math.ceil(b/2));else addGold(who||1,b);S.texts.push({x:W/2,y:490,s:tr('Chamada cedo: +','Called early: +')+b+' ¤',t:0,T:1.6});}
   (S.stats.hist||(S.stats.hist=[])).push([S.wave,S.gold,S.lives]);// para o gráfico do fim
   S.nextT=null;S.wave++;S.queue=waveDef(S.wave);S.spawning=true;S.spawnT=0;S.started=true;
   S.weather=S.wave<=2?'sol':pick(['sol','sol','sol','noite','noite','chuva','chuva','nevoeiro','nevoeiro']);
@@ -1540,7 +1560,7 @@ function kill(e,src){
   if(e.t==='mini'){S.stats.minis++;if(S.stats.minis>=50)unlock('sardinha');}
   if(e.t==='cont'){S.stats.cont++;if(S.stats.cont>=25)unlock('fiscal');}
   if(e.f.boss){
-    if(!offSide()){const b=LS.get('bosses',{});b[e.t]=1;LS.set('bosses',b);if(['merc','coca','polvo','cervo'].every(k=>b[k]))unlock('lendas');}
+    if(!offSide()){const b=LS.get('bosses',{});b[e.t]=1;LS.set('bosses',b);if(['merc','coca','polvo','cervo','arren'].every(k=>b[k]))unlock('lendas');}
     S.texts.push({x:e.x,y:e.y-34,s:e.f.death,t:0,T:3,sp:true});smoke(e.x,e.y,18);sfx('boom');
     jolt(12);S.stop=0.22;S.flash=Math.max(S.flash,0.3);S.flashC='255,236,190';chips(e.x,e.y,22,e.col,1.8);
     S.fx.push({k:'boom',x:e.x,y:e.y,r:55,t:0,T:0.7});
@@ -1607,7 +1627,7 @@ function updateEproj(dt){
 const GATE_HP=450;
 // força com que cada inimigo arromba uma porta (por segundo)
 const gateDps=e=>(e.t==='ari'?55:e.f.boss?40:e.t==='cap'?25:e.t==='torre'?14:e.t==='esc'?8:e.t==='mini'?3:5)*S.diff.dmg*edm(e);
-function breakGate(i){const G=S.gates[i],g=LV.gates[i];G.broken=true;G.hp=0;
+function breakGate(i){const G=S.gates[i],g=LV.gates[i];G.broken=true;G.hp=0;S.stats.gateLost=1;
   S.fx.push({k:'boom',x:g.x,y:g.y,r:30,t:0,T:0.6});smoke(g.x,g.y,10);chips(g.x,g.y,14,'#7a5230',1.3);sfx('smash');jolt(5);
   S.texts.push({x:g.x,y:g.y-26,s:tr('Arrombaram a porta!','They broke the gate!'),t:0,T:2,big:true});}
 function applyWork(k,load){
@@ -1638,7 +1658,7 @@ function useAbility(k,x,y,who){
 }
 function heroXP(n){
   const h=S.hero;if(h.lv>=HERO_MAX||S.remote)return;h.xp+=n;
-  while(h.lv<HERO_MAX&&h.xp>=xpNeed(h.lv)){h.xp-=xpNeed(h.lv);h.lv++;h.heal=1;
+  while(h.lv<HERO_MAX&&h.xp>=xpNeed(h.lv)){h.xp-=xpNeed(h.lv);h.lv++;h.heal=1;if(h.lv>=HERO_MAX)unlock('heroi10');
     S.fx.push({k:'ring',x:h.x,y:h.y,r:34,t:0,T:0.8,c:'201,151,28'});chips(h.x,h.y,10,'#e8c24a',0.8);sfx('ach');
     S.texts.push({x:h.x,y:h.y-40,s:h.D.short+tr(' sobe ao nível ',' reaches level ')+h.lv+'!',ic:'star',t:0,T:2});
     if(HERO_TIERS.includes(h.lv))S.texts.push({x:W/2,y:500,s:tr('Nova melhoria da heroína: toca nela para escolher','New heroine upgrade: tap her to choose'),ic:'star',t:0,T:3,big:true});
@@ -3254,13 +3274,14 @@ function drawRadial(){
     ctx.fillStyle='#2e2419';ctx.font=`bold ${14*k}px Georgia,serif`;ctx.fillText(t1,s.x,ly-6*k);drawIc(ctx,'coin',s.x+ctx.measureText(t1).width/2-8*k,ly-6*k,15*k);
     ctx.fillStyle='#9b2226';ctx.font=`italic ${11*k}px Georgia,serif`;ctx.fillText(t2,s.x,ly+8*k);}
   bs.forEach(b=>{
-    const T=TYPES[b.key],ok=g>=T.cost,x=s.x+(b.x-s.x)*e,y=s.y+(b.y-s.y)*e,armed=arm===b.key,r=b.r*(0.6+0.4*e)*(armed?1.22+0.05*Math.sin(S.t*6):arm?0.9:1);
+    const T=TYPES[b.key],ban=banned(b.key),ok=g>=T.cost&&!ban,x=s.x+(b.x-s.x)*e,y=s.y+(b.y-s.y)*e,armed=arm===b.key,r=b.r*(0.6+0.4*e)*(armed?1.22+0.05*Math.sin(S.t*6):arm?0.9:1);
     ctx.globalAlpha=ok?1:0.55;
     if(armed){ctx.fillStyle='rgba(232,194,74,.35)';ctx.beginPath();ctx.arc(x,y,r+6*k,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle=armed?'#fff6d8':ok?'#fbf3df':'#d9ccb0';ctx.strokeStyle=armed?'#c9971c':ok?towerCol(b.key):'#8a7350';ctx.lineWidth=(armed?3.5:2.5)*k;
     ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
     drawIc(ctx,T.icon,x,y-3*k,r*1.05);ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font=`bold ${Math.round(10*k*10)/10}px Georgia,serif`;ctx.fillStyle=ok?'#7a5a10':'#8a2a22';ctx.fillText(T.cost,x,y+r*0.62);
+    if(ban){ctx.globalAlpha=0.9;ctx.strokeStyle='#9b2226';ctx.lineWidth=3*k;ctx.beginPath();ctx.moveTo(x-r*0.7,y+r*0.7);ctx.lineTo(x+r*0.7,y-r*0.7);ctx.stroke();}
     ctx.globalAlpha=1;
   });
   ctx.restore();
@@ -3271,7 +3292,8 @@ function radialHit(x,y){
     if(b.fix){const t=SLOTS[S.sel].tower;if(myGold()<fixCost(t)){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Falta ouro','Not enough gold'),t:0,T:1,sp:true});sfx('hit');}
       else act({a:'fix',i:S.sel});return true;}
     const T=TYPES[b.key];
-    if(myGold()<T.cost){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Falta ouro','Not enough gold'),t:0,T:1,sp:true});sfx('hit');S.radArm=null;}
+    if(banned(b.key)){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Proibida no desafio de hoje','Banned in today’s challenge'),t:0,T:1.2,sp:true});sfx('hit');S.radArm=null;}
+    else if(myGold()<T.cost){S.texts.push({x:b.x,y:b.y-22*radK(),s:tr('Falta ouro','Not enough gold'),t:0,T:1,sp:true});sfx('hit');S.radArm=null;}
     else if(S.radArm!==b.key){S.radArm=b.key;S.radArmT=performance.now();sfx('coin');}// 1.º toque: escolhe e mostra o alcance
     else{const i=S.sel;S.radArm=null;S.sel=null;act({a:'build',i,k:b.key});}// 2.º toque: constrói
     return true;}}
@@ -3559,6 +3581,15 @@ $('zoomb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
   if(z==='in')setZoom(VIEW.z*1.35);else if(z==='out')setZoom(VIEW.z/1.35);else if(DUEL&&VIEW.z<1.05)duelView();else{setZoom(1);VIEW.ox=-MX;VIEW.oy=-MY;}});
 
 /* ================= Ações (locais ou do parceiro) ================= */
+// desfazer a última construção ou melhoria: reembolso total durante 6 s de jogo, se a torre ainda não fez dano desde então
+const banned=k=>!!(S&&S.daily&&S.daily.ban===k);
+function markUndo(i,who,cost,prev,t){S.undo={i,who,cost,prev,t,dmg:t.dmgDone||0,until:S.t+6};}
+function undoOk(i,who){const u=S&&S.undo;return !!u&&u.i===i&&u.who===who&&S.t<u.until&&SLOTS[i].tower===u.t&&(u.t.dmgDone||0)===u.dmg&&!u.t.broken;}
+let undoK='';
+function undoBtn(){const b=$('undoB'),u=S&&!S.over&&S.undo&&S.undo.who===(S.me||1)?S.undo:null;
+  if(!u){if(!b.hidden){b.hidden=true;undoK='';}return;}
+  const k=u.i+':'+u.cost+':'+u.until;if(k!==undoK){undoK=k;b.innerHTML=`${ic('undo')} ${tr('Desfazer','Undo')} +${u.cost} ${ic('coin')}<i></i>`;b.title=tr('Reembolso total (Z)','Full refund (Z)');b.hidden=false;}
+  b.style.setProperty('--p',Math.max(0,(u.until-S.t)/6*100).toFixed(1)+'%');}
 function act(a){
   if(!S)return;
   if(S.remote){if(NET.R)NET.R.emit('act',a).catch(()=>{});}
@@ -3569,21 +3600,26 @@ function doAct(a,who){
   if(!S||S.over)return;
   const s=a.i!=null?SLOTS[a.i]:null;
   switch(a.a){
-    case'build':{const T=TYPES[a.k];if(!s||s.tower||!T||!pay(who,T.cost))return;S.built.add(a.k);
-      s.tower={k:a.k,lv:1,br:0,cd:0,spent:T.cost,x:s.x,y:s.y,ang:-Math.PI/2,pri:'primeiro',dmgDone:0,owner:who,si:a.i,deaths:0};s.tower.hp=towerMax(s.tower);S.towers.push(s.tower);sfx('coin');built(s);
+    case'build':{const T=TYPES[a.k];if(!s||s.tower||!T||banned(a.k)||!pay(who,T.cost))return;S.built.add(a.k);
+      s.tower={k:a.k,lv:1,br:0,cd:0,spent:T.cost,x:s.x,y:s.y,ang:-Math.PI/2,pri:'primeiro',dmgDone:0,owner:who,si:a.i,deaths:0};s.tower.hp=towerMax(s.tower);S.towers.push(s.tower);markUndo(a.i,who,T.cost,null,s.tower);sfx('coin');built(s);
       if(Math.random()<0.6){const q=pick(Q.build);S.texts.push({x:s.x,y:s.y-26,s:q,t:0,T:1.6,sp:true});say(q,'pt-PT');}break;}
-    case'up':{const t=s&&s.tower;if(!t||t.broken||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);break;}
-    case'br':{const t=s&&s.tower;if(!t||t.broken||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
+    case'up':{const t=s&&s.tower;if(!t||t.broken||(t.lv!==1&&t.lv!==3&&t.lv!==4))return;const c=TYPES[t.k].up[t.lv===1?0:t.lv-1];if(!pay(who,c))return;markUndo(a.i,who,c,{lv:t.lv,br:t.br,spent:t.spent},t);t.spent+=c;t.lv++;fixTower(t);sfx('coin');built(s,t.lv>=4);
+      if(t.lv>=5){unlock('nivel5');if(Object.keys(TYPES).every(k=>S.towers.some(x=>x.k===k&&x.lv>=5&&!x.broken)))unlock('arsenal');}break;}
+    case'br':{const t=s&&s.tower;if(!t||t.broken||t.lv!==2)return;const c=TYPES[t.k].up[1];if(!pay(who,c))return;markUndo(a.i,who,c,{lv:t.lv,br:t.br,spent:t.spent},t);t.spent+=c;t.lv=3;t.br=a.b?1:0;fixTower(t);sfx('coin');built(s,true);break;}
     case'fix':{const t=s&&s.tower;if(!t||!t.broken||t.fixT>0||!pay(who,fixCost(t)))return;startFix(t);sfx('coin');if(S.sel===a.i)renderPanel();break;}
     case'fixAll':{const ts=fixList(who);if(!ts.length||!pay(who,fixSum(who)))return;ts.forEach(startFix);sfx('coin');if(typeof S.sel==='number')renderPanel();break;}
     case'pri':{const t=s&&s.tower;if(!t)return;const ks=Object.keys(PRI);t.pri=ks[(ks.indexOf(t.pri)+1)%ks.length];break;}
+    case'undo':{const u=S.undo;if(!undoOk(a.i,who))return;S.undo=null;const t=u.t;if(who===2)S.gold2+=u.cost;else S.gold+=u.cost;
+      if(!u.prev){S.towers=S.towers.filter(x=>x!==t);s.tower=null;if(!S.towers.some(x=>x.k===t.k))S.built.delete(t.k);}
+      else{Object.assign(t,u.prev);t.hp=Math.min(t.hp,towerMax(t));}
+      S.texts.push({x:s.x,y:s.y-24,s:tr('Desfeito: +','Undone: +')+u.cost+' ¤',t:0,T:1.4});sfx('coin');break;}
     case'sell':{const t=s&&s.tower;if(!t||(t.owner||1)!==who)return;const g=Math.floor(t.spent*0.7);if(who===2)S.gold2+=g;else S.gold+=g;
       S.towers=S.towers.filter(x=>x!==t);s.tower=null;break;}
     case'abil':useAbility(a.k,a.x,a.y,who);break;
     case'hero':{const h=S.hero;if(h.dead)return;if((h.D.water||!inRiver(a.x,a.y))&&(!DUEL||sideAt(a.x,a.y)===LV.side||(h.D.water&&sideAt(a.x,a.y)===-1))&&a.x>12&&a.x<W-12&&a.y<H-12&&!(LV.southRiver&&a.y>790)){h.tx=a.x;h.ty=a.y;}break;}
     case'heroSp':heroSpecial();break;
     case'work':{const w=WORKS.find(x=>x.k===a.k);if(!w||(w.once&&S.works[w.k]))return;
-      const c=workCost(w);if(!pay(who,c))return;S.works[w.k]=(S.works[w.k]||0)+1;applyWork(w.k);sfx('coin');jolt(2);
+      const c=workCost(w);if(!pay(who,c))return;S.works[w.k]=(S.works[w.k]||0)+1;applyWork(w.k);sfx('coin');jolt(2);if(WORKS.every(x=>S.works[x.k]))unlock('obras');
       S.fx.push({k:'ring',x:LV.heart.x,y:LV.heart.y,r:40,t:0,T:0.8,c:'201,151,28'});chips(LV.heart.x,LV.heart.y,10,'#c9971c',0.8);
       S.texts.push({x:LV.heart.x,y:LV.heart.y-44,s:w.name+'!',ic:w.ic,t:0,T:1.8});saveGame();break;}
     case'heroBuy':{const h=S.hero;
@@ -3712,7 +3748,7 @@ function renderPanel(){
   const s=SLOTS[S.sel];
   if(!s.tower){
     p.innerHTML=`<div class="ph"><b>${s.name}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div><div class="grid">`+
-      Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost?'disabled':''} title="${t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
+      Object.entries(TYPES).map(([k,t])=>`<button class="build" data-a="build" data-k="${k}" data-cost="${t.cost}" ${g<t.cost||banned(k)?'disabled':''} title="${banned(k)?tr('Proibida no desafio de hoje','Banned in today’s challenge'):t.desc}"><span class="ic">${ic(t.icon)}</span><span class="nm">${t.name}</span><span class="cs">${t.cost} ${ic('coin')}</span></button>`).join('')+`</div>`;
     return;}
   const t=s.tower,T=TYPES[t.k],st=tstat(t);
   const extra=st.splash?`${ic('blast')} ${Math.round(st.splash)}`:st.slow<1?`${tr('abranda','slows')} ${Math.round((1-st.slow)*100)}%`:st.pierce?tr('perfura','pierces'):'';
@@ -3733,7 +3769,7 @@ function renderPanel(){
   else if(t.lv===2){const c=T.up[1];up=T.br.map((B,i)=>`<button class="main br" data-a="br" data-i="${i}" data-cost="${c}" ${g<c?'disabled':''}>${B.name} · ${c} ${ic('coin')}<small>${B.desc}. ${delta(tstat({k:t.k,lv:3,br:i}))}</small></button>`).join('');}
   p.innerHTML=`<div class="ph"><b>${ic(T.icon)} ${nm} · ${tr('nível','level')} ${t.lv}/5${S.coop?(S.local?' · '+ic((t.owner||1)===2?'p2':'p1'):(mine?tr(' · tua',' · yours'):tr(' · do parceiro',' · partner’s'))):''}</b><button data-a="close" aria-label="${tr('Fechar','Close')}">${ic('close')}</button></div>
     <div class="tinfo">${sti('swords',tr('Dano','Damage'),Math.round(st.dmg))}${sti('target',tr('Alcance','Range'),Math.round(st.range))}${sti('hourglass',tr('Recarga','Reload'),Math.round(st.rate*100)/100+'s')}${extra?`<span${st.splash?` title="${tr('Área','Area')}"`:''}>${extra}</span>`:''}${st.burn?`<span>${ic('flame')} ${tr('arde','burns')}</span>`:''}${t.disT>0?`<span class="warn">${ic('warn')} ${tr('fora de combate','out of action')}</span>`:''}${t.broken?`<span class="warn">${ic('hammer')} ${t.fixT>0?tr('em reparação','being repaired'):tr('destruída','destroyed')}</span>`:`<span>${ic('heart')} ${Math.max(0,Math.round((t.hp==null?1:t.hp/towerMax(t))*100))}%</span>`}${t.deaths?`<span>${tr('caiu','fell')} ${t.deaths}×</span>`:''}</div>
-    <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}</div>`;
+    <div class="acts">${up}${t.k!=='cal'?`<button data-a="pri">${tr('Alvo','Target')}: ${PRI[t.pri]}</button>`:''}${mine?`<button data-a="sell">${tr('Vender','Sell')} +${Math.floor(t.spent*0.7)} ${ic('coin')}</button>`:''}${undoOk(S.sel,S.me||1)?`<button data-a="undo" title="${tr('Reembolso total (Z)','Full refund (Z)')}">${ic('undo')} ${tr('Desfazer','Undo')} +${S.undo.cost} ${ic('coin')}</button>`:''}</div>`;
 }
 $('panel').addEventListener('click',ev=>{
   const b=ev.target.closest('button');if(!b||b.disabled||!S)return;
@@ -3751,6 +3787,7 @@ $('panel').addEventListener('click',ev=>{
   else if(a==='br')act({a:'br',i,b:+b.dataset.i});
   else if(a==='pri')act({a:'pri',i});
   else if(a==='sell')act({a:'sell',i});
+  else if(a==='undo')act({a:'undo',i});
 });
 // os poderes ficam escondidos atrás de um botão no canto inferior esquerdo; o estado aberto/fechado fica guardado
 function setAbilOpen(o){$('abil').classList.toggle('open',o);$('abilT').setAttribute('aria-expanded',String(o));LS.set('abil',o);}
@@ -3773,8 +3810,10 @@ $('bSpeed').addEventListener('click',e=>{if(!S)return;if(S.remote||(DUEL&&DUEL.n
 $('bPause').addEventListener('click',()=>{if(!S)return;if(DUEL&&DUEL.net)return toast(tr('No duelo online não há pausa.','There is no pause in an online duel.'));if(S.remote)return toast(tr('Só o anfitrião pode pausar.','Only the host can pause.'));S.paused=!S.paused;$('bPause').innerHTML=ic(S.paused?'play':'pause');});
 $('bSound').addEventListener('click',()=>{sndMode=(sndMode+2)%3;LS.set('snd',sndMode);$('bSound').innerHTML=ic(SND_IC[sndMode]);audio();if(sndMode)sfx('coin');if(sndMode===2)say(tr('Às ordens!','At your command!'),'pt-PT',true);});
 $('bSound').innerHTML=ic(SND_IC[sndMode]);
+$('undoB').addEventListener('click',()=>{if(S&&S.undo){audio();act({a:'undo',i:S.undo.i});}});
 $('bMenu').addEventListener('click',()=>{if(!S)return showMenu();pauseMenu();});
-document.addEventListener('keydown',e=>{if(e.code==='Space'&&$('modal').hidden&&S){e.preventDefault();act({a:'wave'});}});
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&$('modal').hidden&&S){e.preventDefault();act({a:'wave'});}
+  if((e.key==='z'||e.key==='Z')&&!e.target.closest('input')&&$('modal').hidden&&S&&S.undo&&S.undo.who===(S.me||1)){e.preventDefault();act({a:'undo',i:S.undo.i});}});
 
 /* ---- 08b-animacoes.js ---- */
 /* ================= Animações da interface (CSS + JavaScript) ================= */
@@ -4050,13 +4089,13 @@ function menuBgCheck(){if(MBG.on&&S&&S.started&&!S.over&&$('modal').hidden&&!$('
 function saveGame(){
   if(!S||S.coop||DUEL||!S.started||S.over)return;
   LS.set('save',{lvl:S.lvl,di:S.di,hero:S.hero.id,gold:S.gold,lives:S.lives,sl:S.startLives,wave:S.wave,cOpen:S.cOpen,inf:S.infinite,camp:S.campaign,
-    tw:S.towers.map(t=>[t.si,t.k,t.lv,t.br,t.pri,t.spent,Math.round(t.dmgDone||0),Math.round(t.hp==null?-1:t.hp),t.deaths||0,t.broken?1:0,Math.ceil(t.fixT||0),t.fixD||0]),st:S.stats,built:[...S.built],hk:S.hero.kills,hl:S.hero.lv,hx:Math.round(S.hero.xp),hu:S.hero.ups,hg:S.hero.gift||0,works:S.works,cards:S.cards,offer:S.offer,at:Date.now()});
+    tw:S.towers.map(t=>[t.si,t.k,t.lv,t.br,t.pri,t.spent,Math.round(t.dmgDone||0),Math.round(t.hp==null?-1:t.hp),t.deaths||0,t.broken?1:0,Math.ceil(t.fixT||0),t.fixD||0]),st:S.stats,built:[...S.built],hk:S.hero.kills,hl:S.hero.lv,hx:Math.round(S.hero.xp),hu:S.hero.ups,hg:S.hero.gift||0,works:S.works,cards:S.cards,offer:S.offer,daily:S.daily||null,at:Date.now()});
 }
 function clearSave(){try{localStorage.removeItem('cerco-save');}catch(e){}}
 function loadSave(){
   const d=LS.get('save',null);if(!d||!LEVELS[d.lvl])return;
   newGame(d.lvl,d.di,d.hero);
-  Object.assign(S,{gold:d.gold,lives:d.lives,startLives:d.sl,wave:d.wave,cOpen:d.cOpen,infinite:d.inf,campaign:d.camp,stats:d.st,built:new Set(d.built)});
+  Object.assign(S,{gold:d.gold,lives:d.lives,startLives:d.sl,wave:d.wave,cOpen:d.cOpen,infinite:d.inf,campaign:d.camp,stats:d.st,built:new Set(d.built),daily:d.daily&&TYPES[d.daily.ban]?d.daily:null});
   S.hero.kills=d.hk;S.hero.lv=Math.max(1,Math.min(HERO_MAX,d.hl||1+Math.floor(d.hk/8)));S.hero.xp=d.hx||0;S.hero.gift=d.hg||0;S.works=d.works&&typeof d.works==='object'?d.works:{};Object.keys(S.works).forEach(k=>applyWork(k,true));
   S.hero.ups=(Array.isArray(d.hu)?d.hu:[]).filter(b=>b===0||b===1).slice(0,HERO_TIERS.filter(l=>S.hero.lv>=l).length);
   // efeitos imediatos (vidas, ouro) já estão no que se guardou; só se reaplicam os modificadores
@@ -4178,7 +4217,7 @@ function startLocalCoop(lvl,di,hero){
   S.coop=true;S.local=true;S.remote=false;S.me=1;S.gold2=S.gold;S.started=true;S.paused=false;
   toast(tr(`<b>Dois jogadores, um ecrã.</b> Jogador 1 ${ic('p1')} à esquerda, Jogador 2 ${ic('p2')} à direita. Cada um tem o seu ouro.`,`<b>Two players, one screen.</b> Player 1 ${ic('p1')} on the left, Player 2 ${ic('p2')} on the right. Each has their own gold.`));sfx('horn');
 }
-function restartGame(){if(DUEL&&!DUEL.net)return startDuel(DUEL.opts);const c=S.campaign;if(S.local)return startLocalCoop(S.lvl,S.di,S.hero.id);newGame(S.lvl,S.di,S.hero.id);S.campaign=c;S.started=true;clearSave();}
+function restartGame(){if(DUEL&&!DUEL.net)return startDuel(DUEL.opts);if(S.daily&&!S.coop)return startDaily();const c=S.campaign;if(S.local)return startLocalCoop(S.lvl,S.di,S.hero.id);newGame(S.lvl,S.di,S.hero.id);S.campaign=c;S.started=true;clearSave();}
 function netLeave(){try{if(NET.helloT)clearInterval(NET.helloT);if(NET.R)NET.R.leave();}catch(e){}NET={};}
 async function hostCoop(){
   netLeave();
@@ -4401,7 +4440,7 @@ function duelLose(loser){
   if(!DUEL||DUEL.over)return;DUEL.over=true;DUEL.sides.forEach(d=>{d.S.over=true;d.S.paused=false;});
   const win=loser!==DUEL.me;
   if(DUEL.net&&!win&&!DUEL.forfeit)[0,600,1500].forEach(ms=>setTimeout(()=>{if(NET.R)NET.R.emit('dend',{}).catch(()=>{});},ms));
-  withSide(DUEL.me,()=>{if(win){sfx('win');setTimeout(confetti,250);setTimeout(()=>say(tr('Ganhámos o duelo!','We won the duel!'),'pt-PT',true),700);}
+  withSide(DUEL.me,()=>{if(win){unlock('rio');sfx('win');setTimeout(confetti,250);setTimeout(()=>say(tr('Ganhámos o duelo!','We won the duel!'),'pt-PT',true),700);}
     else{sfx('lose');defeatFx(true);}});
   setSendOpen(false);showDuelEnd(win);
 }
@@ -4546,7 +4585,7 @@ function showMenu(){
   showModal(`<div class="menu"><h2 class="logo">Minho<span>Defenders</span></h2><p class="tag">${tr('Defende as praças do Alto Minho das barcas de Castela.','Defend the fortresses of the Alto Minho from the boats of Castile.')}</p>
     <p class="status">${tr('Praças por defender','Fortresses to defend')}: ${LEVEL_ORDER.filter(k=>!LS.get('wins',{})[k]).length} · ${tr('Barcas no rio','Boats on the river')}: <b>${threat}</b></p>
     <div class="mlist">${it.map(([k,l,hot])=>`<button data-go="${k}"${hot?' class="main"':''}>${l}</button>`).join('')}
-      <button data-go="foes">${ic('helmet')} ${tr('Unidades','Units')}</button>
+      <div class="row"><button data-go="daily">${ic('scroll')} ${tr('Desafio do dia','Daily challenge')}${(R=>R?` <small class="dly">${R.win?starRow(R.stars):tr('vaga ','wave ')+R.wave}</small>`:`<b class="dly new" title="${tr('Novo desafio hoje','New challenge today')}"></b>`)(dailyRes()[dayKey()])}</button><button data-go="foes">${ic('helmet')} ${tr('Unidades','Units')}</button></div>
       <div class="row"><button data-go="rec">${ic('trophy')} ${tr('Recordes','Leaderboard')}</button><button data-go="ach">${ic('medal')} ${tr('Conquistas','Achievements')}</button></div>
       <div class="row"><button data-go="opt">${ic('gear')} ${tr('Opções','Options')}</button><button data-go="help">${ic('help')} ${tr('Como jogar','How to play')}</button></div>
       <div class="langs" role="group" aria-label="${tr('Língua','Language')}"><button data-go="lang-pt" aria-pressed="${LANG==='pt'}">${ic('globe')} Português</button><button data-go="lang-en" aria-pressed="${LANG==='en'}">${ic('globe')} English</button></div></div>
@@ -4559,6 +4598,7 @@ function showMenu(){
     else if(k==='opt')showOpts(showMenu);
     else if(k==='help')showHelp(showMenu);
     else if(k==='foes')showFoes(showMenu);
+    else if(k==='daily')showDaily(showMenu);
     else if(k.startsWith('lang-'))setLang(k.slice(5));
     else{menuSel.mode=k;LS.set('mode',k);showSetup();}}));
 }
@@ -4613,6 +4653,35 @@ function offerCards(){
     <div class="cards">${three.map(c=>`<button class="bcard${c.k==='p'?' pacto':''}" data-c="${c.id}"><span class="ci">${ic(c.ic)}</span><em>${c.k==='p'?tr('Pacto','Pact'):tr('Bênção','Blessing')}</em><b>${c.name}</b><small>${c.desc}</small></button>`).join('')}</div>`,[]);
   $('mcard').querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{audio();closeModal();act({a:'card',id:b.dataset.c});}));
 }
+/* Desafio do dia: a data escolhe a praça, a dificuldade, o herói (mesmo um ainda bloqueado), um pacto já assinado e um tipo de torre proibido.
+   É o mesmo para toda a gente nesse dia; o resultado fica guardado em cerco-daily e pode partilhar-se. */
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function dailyDef(k=dayKey()){const r=rng(+k.replace(/-/g,'')*7919),pk=a=>a[Math.floor(r()*a.length)];
+  return {d:k,lvl:pk(LEVEL_ORDER),di:pk([1,1,1,2]),hero:pk(Object.keys(HEROES)),pact:pk(CARDS.filter(c=>c.k==='p').map(c=>c.id)),ban:pk(Object.keys(TYPES))};}
+const dayTxt=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(LANG==='en'?'en-GB':'pt-PT',{day:'numeric',month:'long'});};
+const dailyRes=()=>LS.get('daily',{});
+function startDaily(){const D=dailyDef();saveSel();netLeave();clearSave();newGame(D.lvl,D.di,D.hero);S.daily={d:D.d,ban:D.ban};
+  applyCard(CARDS.find(c=>c.id===D.pact));S.started=true;S.paused=false;}
+function showDaily(back){
+  menuBgShow();const D=dailyDef(),R=dailyRes()[D.d],H0=HEROES[D.hero],P=CARDS.find(c=>c.id===D.pact),T=TYPES[D.ban];
+  const wins=Object.values(dailyRes()).filter(x=>x.win).length;
+  showModal(`<h2>${ic('scroll')} ${tr('Desafio do dia','Daily challenge')}</h2><p class="small">${dayTxt(D.d)} · ${tr('o mesmo para toda a gente hoje','the same for everyone today')}</p>
+    <div class="stats-end"><span>${tr('Praça','Fortress')}</span><span>${LEVELS[D.lvl].name}</span><span>${tr('Dificuldade','Difficulty')}</span><span>${DIFFS[D.di].name}</span>
+    <span>${tr('Herói','Hero')}</span><span>${ic(H0.icon)} ${H0.name}</span><span>${tr('Pacto já assinado','Pact already signed')}</span><span>${ic(P.ic)} ${P.name}<small style="display:block;color:var(--soft)">${P.desc}</small></span>
+    <span>${tr('Torre proibida','Banned tower')}</span><span>${ic(T.icon)} ${T.name}</span></div>
+    <p class="small">${R?(R.win?tr('Hoje já defendeste a praça','You already held the fortress today')+': '+starRow(R.stars)+' · '+R.lives+' '+tr('vidas','lives'):tr('Hoje caíste na vaga ','Today you fell on wave ')+R.wave+'. '+tr('Podes tentar outra vez.','You can try again.')):tr('Ainda não tentaste hoje.','You haven’t tried yet today.')} ${wins?tr(`Desafios ganhos: ${wins}.`,`Challenges won: ${wins}.`):''}</p>`,
+    [{label:tr('Aceitar o desafio','Accept the challenge'),main:true,fn:startDaily},...(R?[{label:tr('Partilhar','Share'),keep:true,fn:()=>shareDaily(D.d)}]:[]),{label:tr('Voltar','Back'),keep:true,fn:back}]);
+}
+// guarda o melhor resultado do dia (ganhar vale mais; entre vitórias, mais vidas)
+function dailyEnd(win){const all=dailyRes(),k=S.daily.d,o=all[k],n={win:!!win,wave:S.wave,lives:S.lives,stars:win?starsOf():0};
+  const better=!o||(n.win&&!o.win)||(n.win===o.win&&(n.win?n.lives>o.lives:n.wave>o.wave));if(better){all[k]=n;LS.set('daily',all);}
+  if(win){unlock('diario');if(Object.values(all).filter(x=>x.win).length>=7)unlock('diario7');}}
+function shareDaily(k){const R=dailyRes()[k];if(!R)return;const D=dailyDef(k);
+  const txt=`Minho Defenders · ${tr('Desafio de','Challenge of')} ${dayTxt(k)} · ${LEVELS[D.lvl].name} · `+(R.win?tr(`defendida com ${R.stars} de 3 estrelas (${R.lives} vidas)`,`held with ${R.stars} of 3 stars (${R.lives} lives)`):tr(`caiu na vaga ${R.wave}`,`fell on wave ${R.wave}`));
+  const url=/^https?:$/.test(location.protocol)?location.href.split('#')[0]:'';
+  if(navigator.share)navigator.share({text:txt,url:url||undefined}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt+(url?' '+url:'')).then(()=>toast(tr('Resultado copiado.','Result copied.'))).catch(()=>toast(txt));
+  else toast(txt);}
 function saveSel(){LS.set('lvl',menuSel.lvl);LS.set('di',menuSel.di);LS.set('hero',menuSel.hero);LS.set('dside',menuSel.dside);}
 function pauseMenu(){
   if(DUEL&&DUEL.net&&!DUEL.over){showModal(tr(`<h2>Duelo online</h2><p>Sala ${(NET.code||'').toUpperCase()}. Não há pausa: do outro lado continuam a jogar.</p>`,`<h2>Online duel</h2><p>Room ${(NET.code||'').toUpperCase()}. There is no pause: your opponent keeps playing.</p>`),
@@ -4813,8 +4882,10 @@ function endGame(win){
     [0,600,1500].forEach(ms=>setTimeout(()=>{if(NET.R)NET.R.emit('end',d).catch(()=>{});},ms));
     if(win)unlock('amigos');
   }
+  if(S.daily&&!S.coop&&!S.infinite){dailyEnd(win);clearSave();}
   if(!S.coop&&!S.daily){
-    if(win&&!S.infinite){const all=LS.get('stars',{}),m=all[S.lvl]||(all[S.lvl]={});S.stars=starsOf();m[S.di]=Math.max(m[S.di]||0,S.stars);LS.set('stars',all);}
+    if(win&&!S.infinite){const all=LS.get('stars',{}),m=all[S.lvl]||(all[S.lvl]={});S.stars=starsOf();m[S.di]=Math.max(m[S.di]||0,S.stars);LS.set('stars',all);
+      if(LEVEL_ORDER.every(k=>Object.values(all[k]||{}).some(v=>v>=3)))unlock('estrelas');}
     if(S.infinite){const ib=LS.get('infbest',{});if(S.wave>(ib[S.lvl]||0)){ib[S.lvl]=S.wave;LS.set('infbest',ib);}}}
   if(!S.coop){const wave=win?S.wave:Math.max(0,S.wave-(S.infinite?0:1));submitScore(S.lvl,S.infinite?S.wave:(win?MAXW:wave),S.di);clearSave();}
   if(win){
@@ -4822,6 +4893,8 @@ function endGame(win){
     if(S.lives===S.startLives)unlock('semtoalha');
     if(S.built.size===1&&S.built.has('cal'))unlock('soazeite');
     if(S.di===2)unlock('maispaco');
+    if(!S.stats.gateLost)unlock('portas');
+    if(S.hero.D.boss)unlock('viracasaca');
     const wins=LS.get('wins',{}),nh=!wins[S.lvl]&&Object.keys(HEROES).find(k=>HEROES[k].map===S.lvl);
     wins[S.lvl]=1;LS.set('wins',wins);if(LEVEL_ORDER.every(k=>wins[k]))unlock('minho');
     if(nh)setTimeout(()=>{toast(tr(`<b>Nova lenda do teu lado!</b> ${ic(HEROES[nh].icon)} ${HEROES[nh].name} mudou de lado e já pode ser escolhido como herói.`,`<b>A legend joins you!</b> ${ic(HEROES[nh].icon)} ${HEROES[nh].name} switched sides and can now be picked as a hero.`));sfx('ach');},1200);
@@ -4897,6 +4970,7 @@ function showEnd(win){
       {l:ic('trophy')+' '+tr('Recordes','Leaderboard'),fn:()=>showBoard(S.lvl,()=>showEnd(win))},
       {l:ic('map')+' Menu',fn:showMenu}];
   }
+  if(S.daily&&!coopNet){it.splice(1,0,{l:ic('scroll')+' '+tr('Partilhar resultado','Share result'),fn:()=>shareDaily(S.daily.d)});tag=tr('Desafio do dia','Daily challenge')+' · '+tag;}
   endCard(tag,where,title,win&&!S.infinite,body,it);
 }
 // gráfico do fim: ouro na mão e vidas da praça no início de cada vaga
@@ -4970,6 +5044,8 @@ function loop(now){
     if(S.stop>0)S.stop-=dt;// congelamento de impacto
     else{let t=dt*S.speed;while(t>0){const st=Math.min(0.02,t);update(st);t-=st;if(S.over||S.stop>0)break;}}}
   if(S)juice(dt);
+  if(S&&S.undo&&!undoOk(S.undo.i,S.undo.who)){const i=S.undo.i;S.undo=null;if(S.sel===i)renderPanel();}
+  undoBtn();
   if(S&&S.coop&&!S.remote)netSend(now);
   if(DUEL&&DUEL.net)duelNet(now);
   hud();if(!(MBG.on&&now>MBG.cover))draw();// com o mapa do menu a tapar tudo não vale a pena desenhar

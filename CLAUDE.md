@@ -60,6 +60,10 @@ O jogo também está alojado no GitHub Pages.
 - **Reparar tudo:** botão nos poderes (`data-ab="fix"`, ação `fixAll`) que repara de uma vez todas as torres destruídas (`fixList`/`fixSum`) e só avança se houver ouro para o custo total, mostrado no botão.
 - **Postigo:** a porta da estrada dos nadadores é destrutível como as outras; na vaga 10 rebenta e abre o terceiro caminho, mas pode voltar a ser fechada.
 - **Modos:** campanha, jogo livre, infinito e cooperativo. Há três dificuldades: Turista, Castelhano e Capitão Paco.
+- **Desafio do dia** (`dailyDef`, `startDaily`, `S.daily`, resultados em `cerco-daily`): a data escolhe a praça, a dificuldade, o herói (mesmo bloqueado), um pacto já assinado e uma torre proibida (`banned(k)`). Não conta para estrelas nem recordes; o resultado partilha-se (`shareDaily`).
+- **Desfazer:** construir ou melhorar regista `S.undo` (`markUndo`/`undoOk`); durante 6 s de jogo, e se a torre ainda não fez dano, o botão `#undoB` (ou a tecla Z) devolve o ouro todo.
+- **Progresso por mapa:** estrelas por dificuldade em `cerco-stars` (vidas no fim: ≥80% 3, ≥40% 2, senão 1; `starsOf`, `starRow`, `mapProg`) e melhor vaga do infinito em `cerco-infbest`. O fim de jogo mostra o gráfico de ouro e vidas por vaga (`S.stats.hist`, `endChart`).
+- **Sem rede:** `sw.js` guarda o jogo para a app instalada (só em http/https e fora do claude.ai). Mudar de separador pausa a partida (`visibilitychange`).
 - **Segredo:** três toques seguidos em Melgaço (estrela ou nome) no mapa do menu (`CHEAT`) guardam `cerco-allheroes` e desbloqueiam todos os heróis (`heroLocked`).
 
 ## Testes (Playwright com o Chromium pré-instalado)
