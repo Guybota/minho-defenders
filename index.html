@@ -185,6 +185,9 @@ canvas{display:block;touch-action:none;box-shadow:0 0 0 1px var(--line),0 6px 22
 .seg small{display:block;font-size:.76rem;color:var(--soft)}
 .mbtns{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
 .mbtns button{flex:1 1 auto;min-height:44px}
+@media (max-height:900px){.card>.mbtns{position:sticky;bottom:-1.2rem;margin:1rem -1.3rem -1.2rem;padding:.6rem 1.3rem calc(.8rem + 1px);z-index:2;
+  background:linear-gradient(color-mix(in srgb,var(--bg) 0%,transparent),var(--bg) .7rem)}
+  body:is(.inmenu,.inpause) .card>.mbtns{background:linear-gradient(transparent,color-mix(in srgb,var(--bg) 96%,transparent) .7rem)}}
 .stats-end{display:grid;grid-template-columns:auto auto;gap:.2rem 1rem;font-size:.95rem;margin:.6rem 0}
 .stats-end span:nth-child(odd){color:var(--soft)}
 .ach{display:flex;gap:.6rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px dotted var(--line)}
@@ -293,7 +296,7 @@ body:is(.inmenu,.inpause) .menu .status{border-top-color:color-mix(in srgb,var(-
   body:is(.inmenu,.inpause) .menu .logo{font-size:1.75rem;margin:0}body:is(.inmenu,.inpause) .menu .logo span{display:inline;margin-left:.3rem}
   body:is(.inmenu,.inpause) .menu .tag{font-size:.9rem;margin:.1rem 0 0}body:is(.inmenu,.inpause) .menu .status{font-size:.72rem;margin:.4rem 0 .5rem;padding-top:.4rem}
   body:is(.inmenu,.inpause) .mlist{gap:.35rem}body:is(.inmenu,.inpause) .mlist>button{min-height:42px;font-size:1.02rem;padding:.3rem .8rem}body:is(.inmenu,.inpause) .mlist .row button{min-height:38px}
-  body:is(.inmenu,.inpause) #modal .card{padding:.9rem 1rem}
+  body:is(.inmenu,.inpause) #modal .card{padding:.9rem 1rem}body:is(.inmenu,.inpause) #modal .card>.mbtns{bottom:-.9rem;margin:1rem -1rem -.9rem;padding:.6rem 1rem .8rem}
   .menu.opts h3{margin:.45rem 0 .2rem}.menu.opts .seg button,.menu.opts .langs button{min-height:36px;padding:.2rem .5rem}.menu.opts>p.small{font-size:.78rem;margin:.4rem 0 0}.menu.opts .vol{min-height:32px}}
 /* --- animações extra --- */
 button{position:relative;overflow:hidden}
@@ -4923,6 +4926,10 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 showBoot(showMenu);requestAnimationFrame(loop);
+// mudar de separador ou de app pausa a partida (no telemóvel uma chamada não custa a praça)
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S&&S.started&&!S.over&&!S.paused&&!S.remote&&!(DUEL&&DUEL.net)&&$('modal').hidden)pauseMenu();});
+// app instalada: guarda o jogo para abrir sem rede (não no claude.ai nem em file://)
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!IN_CLAUDE)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 })();
 </script>
