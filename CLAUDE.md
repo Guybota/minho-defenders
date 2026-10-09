@@ -9,7 +9,8 @@ Jogo de *tower defense* no browser, passado nas praças-fortes do Alto Minho: Va
 
 Depois de cada alteração pedida:
 1. Fazer commit e push para o ramo `main`, com uma mensagem em português.
-2. **Nunca publicar nem atualizar o artefacto do claude.ai** (https://claude.ai/artifact/BpRsw1eb1qDMCaUzEdR8tW). O utilizador pediu para deixar de o fazer.
+2. **Não correr o simulador (`sim.js`)** para verificar alterações, a não ser que o utilizador o peça. Os testes Playwright chegam.
+3. **Nunca publicar nem atualizar o artefacto do claude.ai** (https://claude.ai/artifact/BpRsw1eb1qDMCaUzEdR8tW). O utilizador pediu para deixar de o fazer.
 
 O jogo também está alojado no GitHub Pages.
 
