@@ -1542,7 +1542,9 @@ const TW_HP={arq:2,bes:1,tra:2,cal:3};
 const towerMax=t=>[150,220,300,400,520][Math.max(0,Math.min(4,t.lv-1))]*(TW_HP[t.k]||1)*(S.works&&S.works.muralha?1.2:1);
 const fixCost=t=>Math.round(TYPES[t.k].cost*0.5);
 const fixDur=t=>3;
-function hurtTower(t,d){if(!t||t.broken)return;if(t.hp==null)t.hp=towerMax(t);t.hp-=d;t.hitT=0.2;if(t.hp<=0)breakTower(t);}
+// torre sem levar dano durante TW_CALM s recupera TW_REGEN de vida por segundo (igual para todas)
+const TW_CALM=5,TW_REGEN=8;
+function hurtTower(t,d){if(!t||t.broken)return;if(t.hp==null)t.hp=towerMax(t);t.hp-=d;t.hitT=0.2;t.calm=0;if(t.hp<=0)breakTower(t);}
 function breakTower(t){t.broken=true;t.hp=0;t.deaths=(t.deaths||0)+1;t.lv=Math.max(1,t.lv-1);if(t.lv<3)t.br=0;t.spent=TYPES[t.k].cost+TYPES[t.k].up.slice(0,t.lv-1).reduce((a,b)=>a+b,0);t.fixT=0;t.disT=0;
   S.fx.push({k:'boom',x:t.x,y:t.y,r:30,t:0,T:0.6});smoke(t.x,t.y,12);chips(t.x,t.y,16,'#8a7a62',1.4);sfx('smash');jolt(5);
   S.texts.push({x:t.x,y:t.y-30,s:pick([tr('Deitaram-nos a torre abaixo!','They knocked our tower down!'),tr('Lá se foi a torre!','There goes the tower!'),tr('Chamem o pedreiro!','Call the stonemason!')]),t:0,T:2,big:true});
@@ -1852,7 +1854,9 @@ function ageVisuals(dt){
     else if(p.k==='bread'){p.vy+=260*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;}
     else if(p.k==='chip'){p.vy+=320*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.97;p.rot+=p.vr*dt;}}
   S.parts=S.parts.filter(p=>p.t<p.T);
-  for(const t of S.towers){if(t.kick>0)t.kick=Math.max(0,t.kick-dt*7);if(t.hitT>0)t.hitT-=dt;if(t.broken&&!(t.fixT>0)&&Math.random()<dt*2)smoke(t.x+(Math.random()-0.5)*14,t.y-4,1);}
+  for(const t of S.towers){if(t.kick>0)t.kick=Math.max(0,t.kick-dt*7);if(t.hitT>0)t.hitT-=dt;
+    if(!t.broken&&t.hp!=null){t.calm=(t.calm||0)+dt;if(t.calm>=TW_CALM){const m=towerMax(t);if(t.hp<m){t.hp=Math.min(m,t.hp+TW_REGEN*dt);}}}
+    if(t.broken&&!(t.fixT>0)&&Math.random()<dt*2)smoke(t.x+(Math.random()-0.5)*14,t.y-4,1);}
   S.comboPop=Math.max(0,S.comboPop-dt*4);
   // o coração a arder deita fumo
   if(S.started&&!S.over&&LV.heart){const st=heartStage();if(st>=2&&Math.random()<dt*(st===3?5:2.5))smoke(LV.heart.x+(Math.random()-0.5)*14,LV.heart.y-12,1);}
